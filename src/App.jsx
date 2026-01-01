@@ -9,7 +9,8 @@ import {
 import Login from "./auth/login.jsx";
 import QMSDashboard from "./features/dashboard/dashboard.jsx";
 import CompetenceForm from "./features/training/CompetenceForm.jsx";
-import DocumentLibrary from "./features/documents/DocumentLibrary.jsx"; // <--- 1. Import Here
+import DocumentLibrary from "./features/documents/DocumentLibrary.jsx";
+import DocumentUploadPage from "./features/documents/component/DocumentUploadPage.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -25,10 +26,9 @@ function App() {
             <Route path="/dashboard" element={<QMSDashboard />} />
             <Route path="/training" element={<CompetenceForm />} />
 
-            {/* 2. Add the Documents Route Here */}
+            {/* Documents Routes - IMPORTANT: /upload must come before /* catch-all */}
             <Route path="/documents" element={<DocumentLibrary />} />
-
-            {/* Optional: Handle sub-paths if users bookmark them */}
+            <Route path="/documents/upload" element={<DocumentUploadPage />} />
             <Route path="/documents/*" element={<DocumentLibrary />} />
           </Route>
 
