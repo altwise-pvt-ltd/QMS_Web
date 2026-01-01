@@ -1,16 +1,20 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // <--- 1. Import Hook
 import {
   Search,
   FolderOpen,
   File,
   ChevronRight,
   ArrowRight,
+  Plus, // <--- 2. Import Plus Icon
 } from "lucide-react";
-import { DOC_LEVELS } from "./data.js"; // Make sure path matches your setup
+import { DOC_LEVELS } from "./data.js";
 
 const DocumentLibrary = () => {
   const [activeLevelId, setActiveLevelId] = useState("level-1");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const navigate = useNavigate(); // <--- 3. Initialize Hook
 
   const activeData = DOC_LEVELS.find((l) => l.id === activeLevelId);
 
@@ -24,15 +28,29 @@ const DocumentLibrary = () => {
           </h1>
           <p className="text-slate-600">ISO 15189 Documentation Pyramid</p>
         </div>
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-          <input
-            type="text"
-            placeholder="Search documents..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent text-sm shadow-sm transition-all"
-          />
+
+        {/* Action Area: Search + Upload */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          {/* Search Bar */}
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <input
+              type="text"
+              placeholder="Search documents..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent text-sm shadow-sm transition-all"
+            />
+          </div>
+
+          {/* 4. Upload Button */}
+          <button
+            onClick={() => navigate("/documents/upload")}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-all active:scale-95 whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4" />
+            Upload Document
+          </button>
         </div>
       </div>
 
@@ -52,7 +70,6 @@ const DocumentLibrary = () => {
                     : "bg-white border-slate-200 hover:border-indigo-400 hover:bg-slate-50/80 hover:shadow-sm"
                 }`}
               >
-                {/* The icon background colors are pulled from data.js */}
                 <div className={`p-3 rounded-lg shadow-sm ${level.color}`}>
                   <Icon className="w-6 h-6" />
                 </div>
@@ -93,7 +110,7 @@ const DocumentLibrary = () => {
 
         {/* Content Area */}
         <div className="lg:w-2/3 bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40 flex flex-col h-fit overflow-hidden">
-          <div className="p-6 border-b border-slate-100 bg-linear-to-r from-slate-50 to-white">
+          <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <FolderOpen className="w-6 h-6 text-indigo-600" />
               {activeData.title}
@@ -138,7 +155,6 @@ const DocumentLibrary = () => {
 const DocumentRow = ({ name }) => (
   <div className="group flex items-center justify-between p-3 rounded-xl border border-slate-200/80 bg-white hover:border-indigo-200 hover:bg-indigo-50 transition-all cursor-pointer hover:shadow-sm">
     <div className="flex items-center gap-3">
-      {/* Inverted hover effect on the icon for pop */}
       <div className="p-2.5 bg-slate-100 text-slate-600 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-all duration-200 shadow-sm group-hover:shadow-indigo-200">
         <File className="w-4 h-4" />
       </div>
