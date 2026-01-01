@@ -22,7 +22,7 @@ const Login = () => {
       if (displayedRole !== "" && displayedRole !== role) {
         for (let i = displayedRole.length; i >= 0; i--) {
           if (!isMounted) return;
-          await new Promise(resolve => setTimeout(resolve, 50));
+          await new Promise((resolve) => setTimeout(resolve, 50));
           setDisplayedRole(displayedRole.slice(0, i));
         }
       }
@@ -30,7 +30,7 @@ const Login = () => {
       // Type new text
       for (let i = 0; i <= role.length; i++) {
         if (!isMounted) return;
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         setDisplayedRole(role.slice(0, i));
       }
 
@@ -159,3 +159,5 @@ const Login = () => {
 };
 
 export default Login;
+
+/* changes added for the login page as required By Rudra */
