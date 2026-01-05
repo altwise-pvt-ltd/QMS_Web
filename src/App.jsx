@@ -13,11 +13,18 @@ import DocumentLibrary from "./features/documents/DocumentLibrary.jsx";
 import DocumentUploadPage from "./features/documents/component/DocumentUploadPage.jsx";
 import DocumentPreviewPage from "./features/documents/component/DocumentPreviewPage.jsx";
 import SavedDocumentsPage from "./features/documents/SavedDocumentsPage.jsx";
+import { useEffect } from "react";
+import { db } from "./db/db.js";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
 
 function App() {
+  useEffect(() => {
+    db.documents.count().then((count) => {
+      console.log("Dexie ready. Documents:", count);
+    });
+  }, []);
   return (
     <Router>
       <div className="App">
