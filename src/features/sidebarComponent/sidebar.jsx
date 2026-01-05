@@ -136,6 +136,15 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             >
               <li className="ml-2 border-l-2 border-indigo-200 pl-4 py-1">
                 <Link
+                  to="/documents/saved"
+                  className="flex items-center w-full px-3 py-2 text-sm text-slate-600 rounded-lg transition-all duration-300 hover:text-indigo-700 hover:bg-indigo-50 hover:translate-x-1 group/sub"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-300 mr-3 group-hover/sub:bg-indigo-600 group-hover/sub:scale-150 transition-all duration-300"></span>
+                  <span className="font-medium">Saved Documents</span>
+                </Link>
+              </li>
+              <li className="ml-2 border-l-2 border-indigo-200 pl-4 py-1">
+                <Link
                   to="/documents/sops"
                   className="flex items-center w-full px-3 py-2 text-sm text-slate-600 rounded-lg transition-all duration-300 hover:text-indigo-700 hover:bg-indigo-50 hover:translate-x-1 group/sub"
                 >

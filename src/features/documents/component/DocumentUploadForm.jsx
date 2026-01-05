@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
-import { Upload, FileText, X } from "lucide-react";
+import { Upload, FileText, X, Eye } from "lucide-react";
 import { DOC_LEVELS } from "../data.js";
+import UploadPreviewModal from "./UploadPreviewModal";
 
 // Helper to determine if a doc type needs an expiry date
 const checkExpiryNeed = (docType) => {
@@ -17,11 +18,28 @@ export default function DocumentUploadForm({
   onSubmit,
   initialData = {},
   defaultDepartment = "",
+  defaultTitle = "",
+  defaultLevel = "",
+  defaultSection = "",
 }) {
+  // Derive initial document type if context is provided
+  const initialDocType = useMemo(() => {
+    if (initialData.documentType) return initialData.documentType;
+    if (!defaultLevel || !defaultTitle) return "";
+
+    const itemSlug = defaultTitle.toLowerCase().replace(/\s+/g, "-");
+    if (defaultSection) {
+      // Format matches Level 3/4 layout in groupedDocTypes
+      return `${defaultLevel}-${defaultSection.toLowerCase()}-${itemSlug}`;
+    }
+    // Format matches Level 1/2 layout in groupedDocTypes
+    return `${defaultLevel}-${itemSlug}`;
+  }, [initialData.documentType, defaultLevel, defaultTitle, defaultSection]);
+
   // 1. Initialize State
   const [formData, setFormData] = useState({
-    title: initialData.title || "",
-    documentType: initialData.documentType || "",
+    title: initialData.title || defaultTitle || "",
+    documentType: initialData.documentType || initialDocType || "",
     associatedProcedure: initialData.associatedProcedure || "",
     department: defaultDepartment,
     effectiveDate:
@@ -31,6 +49,8 @@ export default function DocumentUploadForm({
     comments: initialData.comments || "",
     file: null,
   });
+
+  const [showPreview, setShowPreview] = useState(false);
 
   // Derived state for conditional logic
   const selectedLevel = formData.documentType.split("-")[0]; // e.g., "level-2"
@@ -140,13 +160,25 @@ export default function DocumentUploadForm({
                 </p>
                 <p className="text-xs text-emerald-600">Ready to upload</p>
               </div>
-              <button
-                type="button"
-                onClick={() => setFormData((prev) => ({ ...prev, file: null }))}
-                className="p-1 hover:bg-emerald-200 rounded-full text-emerald-700 transition-colors"
-              >
-                <X size={16} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition-colors"
+                >
+                  <Eye size={14} />
+                  Preview
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, file: null }))
+                  }
+                  className="p-1.5 hover:bg-emerald-200 rounded-full text-emerald-700 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -277,7 +309,7 @@ export default function DocumentUploadForm({
 
         {needsExpiry && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-            <label className="block text-sm font-medium text-amber-700 flex items-center gap-1">
+            <label className="flex text-sm font-medium text-amber-700 items-center gap-1">
               Expiry Date{" "}
               <span className="text-xs font-normal">(Required)</span>
             </label>
@@ -312,14 +344,35 @@ export default function DocumentUploadForm({
 
       <div className="pt-4 border-t border-slate-100 flex justify-end">
         <button
-          type="submit"
-          disabled={!formData.file || !formData.title || !formData.documentType}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="
+    inline-flex items-center gap-2 px-4 py-2
+    border border-indigo-400
+    rounded-md text-sm font-medium
+    bg-indigo-600 
+    shadow-sm shadow-indigo-900/40
+    hover:bg-indigo-700 hover:border-indigo-300
+    focus:outline-none
+    focus:ring-2 focus:ring-indigo-400
+    focus:ring-offset-0
+    disabled:bg-indigo-900
+    disabled:text-indigo-400
+    disabled:border-indigo-800
+    disabled:shadow-none
+    disabled:cursor-not-allowed
+    transition-colors
+  "
         >
-          <Upload className="mr-2 -ml-1 h-4 w-4" />
+          <Upload className="h-4 w-4 text-indigo-400" />
           Upload Document
         </button>
       </div>
+
+      {/* Local Preview Modal */}
+      <UploadPreviewModal
+        file={formData.file}
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+      />
     </form>
   );
 }

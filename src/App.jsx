@@ -11,6 +11,8 @@ import QMSDashboard from "./features/dashboard/dashboard.jsx";
 import CompetenceForm from "./features/training/CompetenceForm.jsx";
 import DocumentLibrary from "./features/documents/DocumentLibrary.jsx";
 import DocumentUploadPage from "./features/documents/component/DocumentUploadPage.jsx";
+import DocumentPreviewPage from "./features/documents/component/DocumentPreviewPage.jsx";
+import SavedDocumentsPage from "./features/documents/SavedDocumentsPage.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -26,9 +28,11 @@ function App() {
             <Route path="/dashboard" element={<QMSDashboard />} />
             <Route path="/training" element={<CompetenceForm />} />
 
-            {/* Documents Routes - IMPORTANT: /upload must come before /* catch-all */}
+            {/* Documents Routes - IMPORTANT: specific routes must come before /* catch-all */}
             <Route path="/documents" element={<DocumentLibrary />} />
             <Route path="/documents/upload" element={<DocumentUploadPage />} />
+            <Route path="/documents/saved" element={<SavedDocumentsPage />} />
+            <Route path="/documents/view" element={<DocumentPreviewPage />} />
             <Route path="/documents/*" element={<DocumentLibrary />} />
           </Route>
 
