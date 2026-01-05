@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertCircle, X } from "lucide-react";
 import DocumentUploadForm from "./DocumentUploadForm";
+import { createDocument } from "../../../services/documentService";
 
 export default function DocumentUploadPage() {
   const navigate = useNavigate();
@@ -11,47 +12,92 @@ export default function DocumentUploadPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStage, setUploadStage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Extract context from URL
   const context = {
     level: searchParams.get("level"),
-    title: searchParams.get("title"),
     category: searchParams.get("category"),
+    subCategory: searchParams.get("subCategory"),
     section: searchParams.get("section"),
   };
 
-  const handleSubmit = async (data) => {
+  const handleUpload = async (formData) => {
     try {
       setIsUploading(true);
+      setError(null);
       setUploadProgress(0);
+
+      // Stage 1: Preparing upload
+      setUploadStage("Preparing document upload...");
+      setUploadProgress(10);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      // Stage 2: Uploading file
       setUploadStage("Transmitting binary data...");
+      setUploadProgress(30);
 
-      // Simulate Processing Stages
-      const stages = [
-        { progress: 10, stage: "Transmitting binary data..." },
-        { progress: 40, stage: "Verifying file integrity & virus scan..." },
-        { progress: 70, stage: "Associating QMS metadata..." },
-        { progress: 90, stage: "Finalizing version authority..." },
-        { progress: 100, stage: "Document Published" },
-      ];
+      // Derive level from documentType (e.g., "level-2-procedure" -> "level-2")
+      const level = formData.documentType.split("-").slice(0, 2).join("-");
 
-      for (const step of stages) {
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        setUploadProgress(step.progress);
-        setUploadStage(step.stage);
-      }
+      // Call the actual service
+      await createDocument({
+        file: formData.file,
+        metadata: {
+          title: formData.title,
 
+          category: context.category, // from Library
+          subCategory: formData.documentType, // user-selected
+
+          level: context.level, // no re-deriving needed
+
+          description: formData.comments || "",
+          department: formData.department,
+          author: formData.uploadedBy || "Unknown",
+          version: formData.version,
+          effectiveDate: formData.effectiveDate,
+          expiryDate: formData.expiryDate,
+          associatedProcedure: formData.associatedProcedure,
+        },
+      });
+
+      // Stage 3: Processing metadata
+      setUploadStage("Associating QMS metadata...");
+      setUploadProgress(70);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Stage 4: Finalizing
+      setUploadStage("Finalizing version authority...");
+      setUploadProgress(90);
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      // Stage 5: Complete
+      setUploadStage("Document Published");
+      setUploadProgress(100);
       setShowSuccess(true);
       setIsUploading(false);
 
-      // Auto-redirect after 3 seconds
+      // Auto-redirect after 2.5 seconds
       setTimeout(() => {
         navigate("/documents");
-      }, 3000);
+      }, 2500);
     } catch (err) {
       setIsUploading(false);
+      setUploadProgress(0);
       console.error("Upload failed:", err);
-      alert("Upload failed: " + (err.message || "Please try again"));
+
+      // User-friendly error messages
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      if (err.message.includes("File upload failed")) {
+        errorMessage =
+          "Failed to upload file to server. Please check your connection and try again.";
+      } else if (err.message.includes("network")) {
+        errorMessage = "Network error. Please check your internet connection.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
     }
   };
 
@@ -77,6 +123,28 @@ export default function DocumentUploadPage() {
             </h1>
           </div>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-red-900 mb-1">
+                  Upload Failed
+                </h3>
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="text-red-400 hover:text-red-600 transition-colors"
+                aria-label="Dismiss error"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Progress Feedback */}
         {(isUploading || showSuccess) && (
@@ -118,7 +186,7 @@ export default function DocumentUploadPage() {
         <div className="">
           {/* Note: Ensure DocumentUploadForm inside this file also has 'bg-transparent' or 'bg-white' removed */}
           <DocumentUploadForm
-            onSubmit={handleSubmit}
+            onSubmit={handleUpload}
             defaultTitle={context.title || ""}
             defaultLevel={context.level || ""}
             defaultSection={context.section || ""}

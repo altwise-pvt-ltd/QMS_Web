@@ -42,7 +42,7 @@ const DocumentLibrary = () => {
       search: createSearchParams({
         level: activeLevelId,
         category: activeData.title,
-        ...(docName && { title: docName }),
+        ...(docName && { subCategory: docName }),
         ...(sectionName && { section: sectionName }),
       }).toString(),
     });
