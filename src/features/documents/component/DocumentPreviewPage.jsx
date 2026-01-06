@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { MockData } from "../../../data/jsonData/MOCK_DATA";
 import { ArrowLeft, Printer, Download } from "lucide-react";
+import { getDocuments } from "../../../services/documentService";
 
 import SavedDocumentsTable from "./SavedDocumentsTable";
 
@@ -14,6 +15,8 @@ export default function DocumentPreviewPage() {
   const [searchParams] = useSearchParams();
   const category = searchParams.get("category");
   const [documents, setDocuments] = useState([]);
+  const [dexieDocs, setDexieDocs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [viewMeta, setViewMeta] = useState({
     title: "",
     department: "",
@@ -22,6 +25,23 @@ export default function DocumentPreviewPage() {
   const isAuthorized = true;
   const subCategory = searchParams.get("subCategory");
 
+  // Fetch Dexie documents on mount
+  useEffect(() => {
+    const fetchDexieDocuments = async () => {
+      try {
+        const docs = await getDocuments();
+        setDexieDocs(docs);
+      } catch (error) {
+        console.error("Failed to fetch Dexie documents:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDexieDocuments();
+  }, []);
+
+  // Filter and merge documents based on category/subCategory
   useEffect(() => {
     setLoading(true);
 
@@ -33,17 +53,23 @@ export default function DocumentPreviewPage() {
         department: "Quality Assurance",
       });
 
-      setDocuments(
-        mockDocuments.filter(
-          (d) => d.category === category && d.subCategory === subCategory
-        )
+      // Merge mock data and Dexie documents
+      const mockFiltered = mockDocuments.filter(
+        (d) => d.category === category && d.subCategory === subCategory
       );
+
+      const dexieFiltered = dexieDocs.filter(
+        (d) => d.category === category && d.subCategory === subCategory
+      );
+
+      // Combine both sources
+      setDocuments([...mockFiltered, ...dexieFiltered]);
 
       setLoading(false);
     }, 800);
 
     return () => clearTimeout(timer);
-  }, [category, subCategory]);
+  }, [category, subCategory, dexieDocs]);
 
   if (!subCategory) {
     return (
@@ -75,7 +101,7 @@ export default function DocumentPreviewPage() {
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <button
               onClick={() => navigate("/documents")}
-              className="p-1 sm:p-1.5 hover:bg-slate-100 rounded-md text-slate-600 transition-colors flex-shrink-0"
+              className="p-1 sm:p-1.5 hover:bg-slate-100 rounded-md text-slate-600 transition-colors shrink-0"
             >
               <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
             </button>

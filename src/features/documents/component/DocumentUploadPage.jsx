@@ -44,29 +44,19 @@ export default function DocumentUploadPage() {
       setUploadStage("Transmitting binary data...");
       setUploadProgress(30);
 
-      // Derive level from documentType (e.g., "level-2-procedure" -> "level-2")
-      const level = formData.documentType.split("-").slice(0, 2).join("-");
-
       // Call the actual service
       await createDocument({
         file: formData.file,
         metadata: {
-          title: formData.title,
-
-          category: formData.category || context.category || "", // from form or fallback to context
-          subCategory: formData.subCategory || context.subCategory || "", // from form or fallback to context
-
-          level:
-            context.level ||
-            formData.documentType.split("-").slice(0, 2).join("-"), // from context or derive from documentType
-
-          description: formData.comments || "",
+          level: context.level || "level-1", // Use level from URL context
+          category: context.category || "",
+          subCategory: context.subCategory || "",
+          description: formData.description || "",
           department: formData.department,
-          author: formData.uploadedBy || "Unknown",
+          author: formData.author || "Unknown",
           version: formData.version,
           effectiveDate: formData.effectiveDate,
           expiryDate: formData.expiryDate,
-          associatedProcedure: formData.associatedProcedure,
         },
       });
 

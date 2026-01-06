@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../sidebarComponent/Sidebar";
+import { AlertProvider } from "../../services/alert/AlertProvider";
 
 const MainLayout = () => {
   // State is managed here so both Sidebar and Content can react to it
@@ -12,6 +13,9 @@ const MainLayout = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
+      {/* Global Alert Provider */}
+      <AlertProvider />
+
       {/* Pass state and toggle function to Sidebar */}
       <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
 
