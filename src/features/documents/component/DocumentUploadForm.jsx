@@ -20,6 +20,8 @@ export default function DocumentUploadForm({
   defaultDepartment = "",
   defaultTitle = "",
   defaultLevel = "",
+  defaultCategory = "",
+  defaultSubCategory = "",
   defaultSection = "",
 }) {
   // Derive initial document type if context is provided
@@ -40,6 +42,8 @@ export default function DocumentUploadForm({
   const [formData, setFormData] = useState({
     title: initialData.title || defaultTitle || "",
     documentType: initialData.documentType || initialDocType || "",
+    category: initialData.category || defaultCategory || "",
+    subCategory: initialData.subCategory || defaultSubCategory || "",
     associatedProcedure: initialData.associatedProcedure || "",
     department: defaultDepartment,
     effectiveDate:
@@ -201,6 +205,35 @@ export default function DocumentUploadForm({
             placeholder="e.g. QMS Manual 2024"
           />
         </div>
+
+        {/* Category and Sub-Category (Read-only when pre-filled) */}
+        {formData.category && (
+          <div>
+            <label className="block text-sm font-medium text-slate-700">
+              Category
+            </label>
+            <input
+              type="text"
+              readOnly
+              className="mt-1 block w-full rounded-md border-slate-300 bg-slate-50 shadow-sm sm:text-sm p-2 border text-slate-600 cursor-not-allowed"
+              value={formData.category}
+            />
+          </div>
+        )}
+
+        {formData.subCategory && (
+          <div>
+            <label className="block text-sm font-medium text-slate-700">
+              Sub-Category
+            </label>
+            <input
+              type="text"
+              readOnly
+              className="mt-1 block w-full rounded-md border-slate-300 bg-slate-50 shadow-sm sm:text-sm p-2 border text-slate-600 cursor-not-allowed"
+              value={formData.subCategory}
+            />
+          </div>
+        )}
 
         {/* Improved Dropdown with OptGroups */}
         <div className="md:col-span-2">

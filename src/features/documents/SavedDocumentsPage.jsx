@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Search, Filter, X } from "lucide-react";
 import { MockData } from "../../data/jsonData/MOCK_DATA";
 import SavedDocumentsTable from "./component/SavedDocumentsTable";
+import { getDocuments } from "../../services/documentService";
 
 const mockDocs = MockData;
 
@@ -9,27 +10,62 @@ const SavedDocumentsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedSubCategory, setSelectedSubCategory] = useState("All");
+  const [dexieDocs, setDexieDocs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch documents from Dexie on mount
+  useEffect(() => {
+    const fetchDexieDocuments = async () => {
+      try {
+        const docs = await getDocuments();
+        setDexieDocs(docs);
+      } catch (error) {
+        console.error("Failed to fetch Dexie documents:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDexieDocuments();
+  }, []);
+
+  // Handle document deletion - refresh Dexie documents
+  const handleDocumentDeleted = async (deletedId) => {
+    try {
+      const docs = await getDocuments();
+      setDexieDocs(docs);
+    } catch (error) {
+      console.error("Failed to refresh documents after deletion:", error);
+    }
+  };
+
+  // Combine mock data and Dexie data
+  const allDocuments = useMemo(() => {
+    return [...mockDocs, ...dexieDocs];
+  }, [dexieDocs]);
 
   // Extract unique categories and subcategories for filters
   const categories = useMemo(() => {
-    const cats = new Set(mockDocs.map((doc) => doc.category).filter(Boolean));
+    const cats = new Set(
+      allDocuments.map((doc) => doc.category).filter(Boolean)
+    );
     return ["All", ...Array.from(cats).sort()];
-  }, []);
+  }, [allDocuments]);
 
   const subCategories = useMemo(() => {
     const filteredDocs =
       selectedCategory === "All"
-        ? mockDocs
-        : mockDocs.filter((doc) => doc.category === selectedCategory);
+        ? allDocuments
+        : allDocuments.filter((doc) => doc.category === selectedCategory);
     const subCats = new Set(
       filteredDocs.map((doc) => doc.subCategory).filter(Boolean)
     );
     return ["All", ...Array.from(subCats).sort()];
-  }, [selectedCategory]);
+  }, [selectedCategory, allDocuments]);
 
   // Main filtering logic
   const filteredDocuments = useMemo(() => {
-    return mockDocs.filter((doc) => {
+    return allDocuments.filter((doc) => {
       const matchesSearch =
         doc.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         doc.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -43,7 +79,7 @@ const SavedDocumentsPage = () => {
 
       return matchesSearch && matchesCategory && matchesSubCategory;
     });
-  }, [searchQuery, selectedCategory, selectedSubCategory]);
+  }, [searchQuery, selectedCategory, selectedSubCategory, allDocuments]);
 
   const clearFilters = () => {
     setSearchQuery("");
@@ -145,7 +181,10 @@ const SavedDocumentsPage = () => {
 
       {/* Results Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <SavedDocumentsTable documents={filteredDocuments} />
+        <SavedDocumentsTable
+          documents={filteredDocuments}
+          onDocumentDeleted={handleDocumentDeleted}
+        />
       </div>
     </div>
   );

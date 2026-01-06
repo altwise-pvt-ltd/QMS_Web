@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { ArrowLeft, CheckCircle2, AlertCircle, X } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  AlertCircle,
+  X,
+  FolderOpen,
+  ChevronRight,
+} from "lucide-react";
 import DocumentUploadForm from "./DocumentUploadForm";
 import { createDocument } from "../../../services/documentService";
 
@@ -46,10 +53,12 @@ export default function DocumentUploadPage() {
         metadata: {
           title: formData.title,
 
-          category: context.category, // from Library
-          subCategory: formData.documentType, // user-selected
+          category: formData.category || context.category || "", // from form or fallback to context
+          subCategory: formData.subCategory || context.subCategory || "", // from form or fallback to context
 
-          level: context.level, // no re-deriving needed
+          level:
+            context.level ||
+            formData.documentType.split("-").slice(0, 2).join("-"), // from context or derive from documentType
 
           description: formData.comments || "",
           department: formData.department,
@@ -189,6 +198,8 @@ export default function DocumentUploadPage() {
             onSubmit={handleUpload}
             defaultTitle={context.title || ""}
             defaultLevel={context.level || ""}
+            defaultCategory={context.category || ""}
+            defaultSubCategory={context.subCategory || ""}
             defaultSection={context.section || ""}
           />
         </div>
