@@ -4,7 +4,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   CheckCircle2,
-  AlertCircle,
   X,
   FolderOpen,
   ChevronRight,
