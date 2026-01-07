@@ -116,4 +116,111 @@ export const DOC_LEVELS = [
       },
     ],
   },
+  {
+    id: "level-5",
+    level: 5,
+    title: "Legal & Statutory Documents",
+    description: "Documents ensuring legal identity as per ISO 15189 / NABL.",
+    icon: ClipboardList,
+    color: "bg-purple-100 text-purple-600",
+
+    sections: [
+      {
+        title: "Important Legal & Organizational Documents",
+        items: [
+          "Certificate of Incorporation",
+          "LLP Deed with Addendum",
+          "Partnership / Ownership Declaration",
+          "Shop / Partnership Registration Document",
+          "Shop and Establishment Licence",
+          "Maharashtra Pollution Control Board Authorization (BMW)",
+        ],
+      },
+      {
+        title: "Business Operation & Establishment Licenses",
+        items: [
+          "Clinical Establishment Act Registration Certificate",
+          "Trade / Municipal Licence (if applicable)",
+        ],
+      },
+      {
+        title: "Pollution Control & Environmental Compliance",
+        items: [
+          "Biomedical Waste Disposal Agency Agreement",
+          "Biomedical Waste Collection & Disposal Records",
+        ],
+      },
+      {
+        title: "Professional Responsibility & Authorization",
+        items: [
+          "Appointment Letter of Laboratory Director",
+          "Qualification Certificates of Laboratory Director",
+          "Medical Council / NMC Registration Certificate",
+        ],
+      },
+      {
+        title: "Taxation & Financial Identity",
+        items: [
+          "PAN Card of Organization",
+          "GST Registration Certificate (if applicable)",
+        ],
+      },
+      {
+        title: "Infrastructure & Safety Compliance",
+        items: [
+          "Premises Ownership / Rent Agreement",
+          "Fire Safety Certificate / Fire Extinguisher AMC",
+          "Electrical Safety Certificate (if applicable)",
+          "Laboratory Layout Plan",
+        ],
+      },
+      {
+        title: "Equipment & Technical Compliance",
+        items: [
+          "Equipment Purchase Invoices / Installation Certificates",
+          "Annual Maintenance Contract (AMC / CMC)",
+          "Calibration Certificates & Calibration Agency Details",
+        ],
+      },
+      {
+        title: "External Services & Quality Assurance",
+        items: [
+          "EQAS / Proficiency Testing Enrollment Certificates",
+          "Outsourced Test Agreements (if applicable)",
+          "Laboratory Information System (LIS) / Software Agreement",
+        ],
+      },
+      {
+        title: "Insurance & Risk Management",
+        items: [
+          "Professional Indemnity Insurance",
+          "Public Liability Insurance",
+          "Employee Insurance (ESI / Workmen Compensation, if applicable)",
+        ],
+      },
+      {
+        title: "Statutory Monitoring & Control",
+        items: [
+          "Statutory Compliance Register",
+          "License & Authorization Renewal Tracking Record",
+          "Legal & Regulatory Requirement Identification List",
+        ],
+      },
+    ],
+  },
+  {
+    id: "level-6",
+    level: 6,
+    title: "Others",
+    description: "Add the necessary documents as per ISO 15189 / NABL.",
+    icon: ClipboardList,
+    color: "bg-purple-100 text-purple-600",
+
+    sections: [
+      {
+        title: "Important Legal & Organizational Documents",
+        items: [],
+      },
+    ],
+  },
 ];
