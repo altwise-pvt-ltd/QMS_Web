@@ -33,10 +33,9 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
 
   // Common class for menu items with enhanced styling
   const menuItemClass = (path) =>
-    `flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 relative overflow-hidden ${
-      isActive(path)
-        ? "bg-indigo-100 text-indigo-700 shadow-sm"
-        : "text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 hover:shadow-sm hover:scale-[1.02]"
+    `flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 relative overflow-hidden ${isActive(path)
+      ? "bg-indigo-100 text-indigo-700 shadow-sm"
+      : "text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 hover:shadow-sm hover:scale-[1.02]"
     }`;
 
   return (
@@ -58,9 +57,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             Q
           </div>
           <span
-            className={`text-2xl font-bold bg-indigo-600 bg-clip-text text-transparent whitespace-nowrap overflow-hidden transition-all duration-300 ${
-              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-            }`}
+            className={`text-2xl font-bold bg-indigo-600 bg-clip-text text-transparent whitespace-nowrap overflow-hidden transition-all duration-300 ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+              }`}
           >
             QualiFlow
           </span>
@@ -77,9 +75,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <LayoutDashboard className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
                 Dashboard
               </span>
@@ -96,72 +93,19 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
 
           {/* 2. Documents (Enhanced Dropdown) */}
           <li>
-            <button
-              type="button"
-              onClick={() => !isCollapsed && setIsDocsOpen(!isDocsOpen)}
-              className={`flex items-center w-full px-3 py-2.5 rounded-xl transition-all duration-300 group relative overflow-hidden ${
-                isDocsRoute
-                  ? "bg-indigo-100 text-indigo-400 shadow-md scale-[1.02]"
-                  : "text-slate-600 hover:bg-indigo-100 hover:text-indigo-400 hover:shadow-md hover:scale-[1.02]"
-              }`}
-            >
-              <FileText
-                className={`min-w-5 w-5 h-5 transition-all duration-300 ${
-                  isDocsOpen
-                    ? "scale-110 rotate-3"
-                    : "group-hover:scale-110 group-hover:rotate-3"
-                }`}
-              />
+            <Link to="/documents" className={menuItemClass("/documents")}>
+              {isActive("/documents") && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
+              )}
+              <AlertTriangle className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`flex-1 ms-3 text-left whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
                 Documents
               </span>
-              {!isCollapsed && (
-                <ChevronDown
-                  className={`w-4 h-4 transition-all duration-300 ${
-                    isDocsOpen ? "rotate-180 text-indigo-600" : "text-slate-400"
-                  }`}
-                />
-              )}
-            </button>
-
-            {/* Submenu with slide animation */}
-            <ul
-              className={`overflow-hidden transition-all duration-300 ${
-                isDocsOpen && !isCollapsed ? "max-h-40 mt-2" : "max-h-0"
-              }`}
-            >
-              <li className="ml-2 border-l-2 border-indigo-200 pl-4 py-1">
-                <Link
-                  to="/documents/saved"
-                  className="flex items-center w-full px-3 py-2 text-sm text-slate-600 rounded-lg transition-all duration-300 hover:text-indigo-700 hover:bg-indigo-50 hover:translate-x-1 group/sub"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-300 mr-3 group-hover/sub:bg-indigo-600 group-hover/sub:scale-150 transition-all duration-300"></span>
-                  <span className="font-medium">Saved Documents</span>
-                </Link>
-              </li>
-              <li className="ml-2 border-l-2 border-indigo-200 pl-4 py-1">
-                <Link
-                  to="/documents/sops"
-                  className="flex items-center w-full px-3 py-2 text-sm text-slate-600 rounded-lg transition-all duration-300 hover:text-indigo-700 hover:bg-indigo-50 hover:translate-x-1 group/sub"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-300 mr-3 group-hover/sub:bg-indigo-600 group-hover/sub:scale-150 transition-all duration-300"></span>
-                  <span className="font-medium">SOPs</span>
-                </Link>
-              </li>
-              <li className="ml-2 border-l-2 border-indigo-200 pl-4 py-1">
-                <Link
-                  to="/documents/policies"
-                  className="flex items-center w-full px-3 py-2 text-sm text-slate-600 rounded-lg transition-all duration-300 hover:text-indigo-700 hover:bg-indigo-50 hover:translate-x-1 group/sub"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-300 mr-3 group-hover/sub:bg-indigo-600 group-hover/sub:scale-150 transition-all duration-300"></span>
-                  <span className="font-medium">Policies</span>
-                </Link>
-              </li>
-            </ul>
+              
+            </Link>
           </li>
 
           {/* 3. CAPA with enhanced badge */}
@@ -172,9 +116,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <AlertTriangle className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
                 CAPA & Incidents
               </span>
@@ -194,9 +137,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <ClipboardCheck className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
                 Audits
               </span>
@@ -211,9 +153,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <Users className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
                 Training
               </span>
@@ -228,9 +169,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <Box className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
                 Suppliers
               </span>
@@ -248,9 +188,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 )}
                 <Settings className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
                 <span
-                  className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                    isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                  }`}
+                  className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                    }`}
                 >
                   Settings
                 </span>
@@ -263,9 +202,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               >
                 <LogOut className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:-translate-x-1" />
                 <span
-                  className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                    isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                  }`}
+                  className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                    }`}
                 >
                   Sign Out
                 </span>

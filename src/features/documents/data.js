@@ -218,7 +218,7 @@ export const DOC_LEVELS = [
 
     sections: [
       {
-        title: "Important Legal & Organizational Documents",
+        title: "Documents",
         items: [],
       },
     ],
