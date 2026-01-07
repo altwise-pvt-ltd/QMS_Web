@@ -179,9 +179,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 CAPA & Incidents
               </span>
               {!isCollapsed && (
-                <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 text-xs font-bold text-white bg-gradient-to-r from-rose-500 to-rose-600 rounded-full shadow-lg shadow-rose-500/50 animate-pulse">
-                  3
-                </span>
+                <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 text-xs font-bold text-white bg-linear-to-r from-rose-500 to-rose-600 rounded-full shadow-lg shadow-rose-500/50 animate-pulse"></span>
               )}
             </Link>
           </li>
@@ -259,7 +257,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             <li>
               <Link
                 to="/login"
-                className="flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 text-rose-600 hover:bg-gradient-to-r hover:from-rose-50 hover:to-rose-100 hover:shadow-md hover:scale-[1.02] relative overflow-hidden"
+                className="flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 text-rose-600 hover:bg-linear-to-r hover:from-rose-50 hover:to-rose-100 hover:shadow-md hover:scale-[1.02] relative overflow-hidden"
               >
                 <LogOut className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:-translate-x-1" />
                 <span
