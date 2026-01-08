@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
 import {
   LayoutDashboard,
   FileText,
@@ -10,28 +11,43 @@ import {
   Settings,
   LogOut,
   ChevronDown,
-  Search,
-  Bell,
-  HelpCircle,
 } from "lucide-react";
 
+/**
+ * Sidebar component that provides navigation across the application.
+ * It also displays the current user's profile and provides a sign-out mechanism.
+ *
+ * @param {Object} props - Component props.
+ * @param {boolean} props.isCollapsed - Whether the sidebar is in a collapsed state.
+ * @param {Function} props.toggleSidebar - Function to toggle the collapsed state.
+ */
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
+  // Extract user data and logout function from the global AuthContext
+  const { user, logout } = useAuth();
+
   const [isDocsOpen, setIsDocsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
 
-  // Helper to check if a link is active
+  /**
+   * Helper to check if a specific navigation path is currently active.
+   * @param {string} path - The path to check.
+   * @returns {boolean} True if the path matches the current location.
+   */
   const isActive = (path) =>
     location.pathname === path || location.pathname.startsWith(path + "/");
 
   const isDocsRoute = location.pathname.startsWith("/documents");
 
-  // Auto-close submenus when sidebar collapses
+  // Automatically close submenus (like Documents) when the sidebar is collapsed
   useEffect(() => {
     if (isCollapsed) setIsDocsOpen(false);
   }, [isCollapsed]);
 
-  // Common class for menu items with enhanced styling
+  /**
+   * Generates CSS classes for menu items based on their active/inactive state.
+   * @param {string} path - The path associated with the menu item.
+   * @returns {string} Tailwind CSS class string.
+   */
   const menuItemClass = (path) =>
     `flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 relative overflow-hidden ${
       isActive(path)
@@ -71,7 +87,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           {/* 1. Dashboard */}
           <li>
             <Link to="/dashboard" className={menuItemClass("/dashboard")}>
-              {/* Active indicator bar */}
               {isActive("/dashboard") && (
                 <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
               )}
@@ -83,14 +98,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               >
                 Dashboard
               </span>
-
-              {/* Enhanced Tooltip */}
-              {isCollapsed && (
-                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-indigo-600 text-white shadow-xl border border-indigo-500 text-sm px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none z-50 whitespace-nowrap transition-all duration-300 group-hover:ml-2">
-                  Dashboard
-                  <span className="absolute right-full top-1/2 -translate-y-1/2 border-8 border-transparent border-r-indigo-600"></span>
-                </div>
-              )}
             </Link>
           </li>
 
@@ -128,7 +135,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
             </button>
 
-            {/* Submenu with slide animation */}
             <ul
               className={`overflow-hidden transition-all duration-300 ${
                 isDocsOpen && !isCollapsed ? "max-h-40 mt-2" : "max-h-0"
@@ -143,33 +149,12 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                   <span className="font-medium">Saved Documents</span>
                 </Link>
               </li>
-              <li className="ml-2 border-l-2 border-indigo-200 pl-4 py-1">
-                <Link
-                  to="/documents/sops"
-                  className="flex items-center w-full px-3 py-2 text-sm text-slate-600 rounded-lg transition-all duration-300 hover:text-indigo-700 hover:bg-indigo-50 hover:translate-x-1 group/sub"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-300 mr-3 group-hover/sub:bg-indigo-600 group-hover/sub:scale-150 transition-all duration-300"></span>
-                  <span className="font-medium">SOPs</span>
-                </Link>
-              </li>
-              <li className="ml-2 border-l-2 border-indigo-200 pl-4 py-1">
-                <Link
-                  to="/documents/policies"
-                  className="flex items-center w-full px-3 py-2 text-sm text-slate-600 rounded-lg transition-all duration-300 hover:text-indigo-700 hover:bg-indigo-50 hover:translate-x-1 group/sub"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-300 mr-3 group-hover/sub:bg-indigo-600 group-hover/sub:scale-150 transition-all duration-300"></span>
-                  <span className="font-medium">Policies</span>
-                </Link>
-              </li>
             </ul>
           </li>
 
-          {/* 3. CAPA with enhanced badge */}
+          {/* 3. CAPA */}
           <li>
             <Link to="/capa" className={menuItemClass("/capa")}>
-              {isActive("/capa") && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-              )}
               <AlertTriangle className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
                 className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
@@ -178,18 +163,12 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               >
                 CAPA & Incidents
               </span>
-              {!isCollapsed && (
-                <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 text-xs font-bold text-white bg-linear-to-r from-rose-500 to-rose-600 rounded-full shadow-lg shadow-rose-500/50 animate-pulse"></span>
-              )}
             </Link>
           </li>
 
           {/* 4. Audits */}
           <li>
             <Link to="/audits" className={menuItemClass("/audits")}>
-              {isActive("/audits") && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-              )}
               <ClipboardCheck className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
                 className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
@@ -204,9 +183,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           {/* 5. Training */}
           <li>
             <Link to="/training" className={menuItemClass("/training")}>
-              {isActive("/training") && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-              )}
               <Users className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
                 className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
@@ -221,9 +197,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           {/* 6. Suppliers */}
           <li>
             <Link to="/suppliers" className={menuItemClass("/suppliers")}>
-              {isActive("/suppliers") && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-              )}
               <Box className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
                 className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
@@ -236,14 +209,32 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           </li>
         </ul>
 
-        {/* --- Bottom Section with Divider --- */}
-        <div className="pt-4 mt-4 border-t-2 border-indigo-100">
+        {/* --- Bottom Section with User Profile and Divider --- */}
+        <div className="pt-4 mt-4 border-t-2 border-indigo-100 space-y-4">
+          {/* User Profile Card */}
+          {!isCollapsed && user && (
+            <div className="px-2 py-3 bg-indigo-50 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <img
+                src={
+                  user.avatar || "https://ui-avatars.com/api/?name=" + user.name
+                }
+                alt={user.name}
+                className="w-10 h-10 rounded-lg shadow-sm border border-white"
+              />
+              <div className="flex-1 overflow-hidden">
+                <p className="text-sm font-bold text-slate-800 truncate">
+                  {user.name}
+                </p>
+                <p className="text-xs text-slate-500 truncate">
+                  {user.role || "Administrator"}
+                </p>
+              </div>
+            </div>
+          )}
+
           <ul className="space-y-2 font-medium">
             <li>
               <Link to="/settings" className={menuItemClass("/settings")}>
-                {isActive("/settings") && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-                )}
                 <Settings className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
                 <span
                   className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
@@ -255,9 +246,9 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               </Link>
             </li>
             <li>
-              <Link
-                to="/login"
-                className="flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 text-rose-600 hover:bg-linear-to-r hover:from-rose-50 hover:to-rose-100 hover:shadow-md hover:scale-[1.02] relative overflow-hidden"
+              <button
+                onClick={logout}
+                className="w-full flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 text-rose-600 hover:bg-linear-to-r hover:from-rose-50 hover:to-rose-100 hover:shadow-md hover:scale-[1.02] relative overflow-hidden"
               >
                 <LogOut className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:-translate-x-1" />
                 <span
@@ -267,7 +258,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 >
                   Sign Out
                 </span>
-              </Link>
+              </button>
             </li>
           </ul>
         </div>
