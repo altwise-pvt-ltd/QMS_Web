@@ -101,11 +101,9 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             </Link>
           </li>
 
+          {/* 2. Documents */}
           <li>
-            <div
-              onClick={() => !isCollapsed && setIsDocsOpen(!isDocsOpen)}
-              className={menuItemClass("/documents")}
-            >
+            <Link to="/documents" className={menuItemClass("/documents")}>
               {isActive("/documents") && (
                 <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
               )}
@@ -117,30 +115,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               >
                 Documents
               </span>
-              {!isCollapsed && (
-                <ChevronDown
-                  className={`w-4 h-4 transition-all duration-300 ${
-                    isDocsOpen ? "rotate-180 text-indigo-600" : "text-slate-400"
-                  }`}
-                />
-              )}
-            </div>
-
-            <ul
-              className={`overflow-hidden transition-all duration-300 ${
-                isDocsOpen && !isCollapsed ? "max-h-40 mt-2" : "max-h-0"
-              }`}
-            >
-              <li className="ml-2 border-l-2 border-indigo-200 pl-4 py-1">
-                <Link
-                  to="/documents/saved"
-                  className="flex items-center w-full px-3 py-2 text-sm text-slate-600 rounded-lg transition-all duration-300 hover:text-indigo-700 hover:bg-indigo-50 hover:translate-x-1 group/sub"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-300 mr-3 group-hover/sub:bg-indigo-600 group-hover/sub:scale-150 transition-all duration-300"></span>
-                  <span className="font-medium">Saved Documents</span>
-                </Link>
-              </li>
-            </ul>
+            </Link>
           </li>
 
           {/* 3. CAPA */}

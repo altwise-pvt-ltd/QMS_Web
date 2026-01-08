@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../../../auth/AuthContext";
 
 import {
   ArrowLeft,
@@ -7,12 +8,14 @@ import {
   X,
   FolderOpen,
   ChevronRight,
+  AlertCircle,
 } from "lucide-react";
 import DocumentUploadForm from "./DocumentUploadForm";
 import { createDocument } from "../../../services/documentService";
 
 export default function DocumentUploadPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const [showSuccess, setShowSuccess] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -52,10 +55,14 @@ export default function DocumentUploadPage() {
           subCategory: context.subCategory || "",
           description: formData.description || "",
           department: formData.department,
-          author: formData.author || "Unknown",
+          author: formData.author || user?.name || "Anonymous",
           version: formData.version,
           effectiveDate: formData.effectiveDate,
           expiryDate: formData.expiryDate,
+          uploadedBy: {
+            name: user?.name || "Anonymous",
+            id: user?.id || "unknown",
+          },
         },
       });
 
