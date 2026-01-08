@@ -54,12 +54,20 @@ function App() {
               <Route path="/documents/*" element={<DocumentLibrary />} />
             </Route>
 
+<<<<<<< HEAD
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </div>
       </Router>
     </AuthProvider>
+=======
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </div>
+    </Router>
+>>>>>>> 5cc9936dd4c679d2f70c120d1fc627cbbbf0e7f7
   );
 }
 
