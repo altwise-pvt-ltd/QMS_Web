@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Activity,
   AlertTriangle,
@@ -26,6 +27,7 @@ import AuditReadinessWidget from "./widgets/AuditReadinessWidget";
 import DocumentStatusWidget from "./widgets/DocumentStatusWidget";
 
 const QMSDashboard = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-slate-100 p-4 md:p-8">
       {/* Header */}
@@ -40,7 +42,10 @@ const QMSDashboard = () => {
           <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-sm font-medium shadow-sm">
             <Calendar className="w-4 h-4" /> Date Range
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-slate-600 rounded-lg hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 shadow-md shadow-indigo-300/50 text-sm font-medium">
+          <button
+            onClick={() => navigate("/incidents/new")}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-black rounded-lg hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 shadow-md shadow-indigo-300/50 text-sm font-medium"
+          >
             <FileText className="w-4 h-4" /> New Incident
           </button>
         </div>
@@ -71,7 +76,7 @@ const QMSDashboard = () => {
         <BentoCard
           title="Next Audit"
           icon={Clock}
-          className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-none row-span-2"
+          className="bg-linear-to-br from-indigo-500 to-purple-600 text-white border-none row-span-2"
         >
           <div className="flex flex-col h-full justify-center items-center text-center text-white">
             <div className="text-sm opacity-80 uppercase tracking-wide">

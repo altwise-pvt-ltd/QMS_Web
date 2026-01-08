@@ -17,6 +17,7 @@ import DocumentLibrary from "./features/documents/DocumentLibrary.jsx";
 import DocumentUploadPage from "./features/documents/component/DocumentUploadPage.jsx";
 import DocumentPreviewPage from "./features/documents/component/DocumentPreviewPage.jsx";
 import SavedDocumentsPage from "./features/documents/SavedDocumentsPage.jsx";
+import NonConformanceForm from "./features/NC/NonConformanceForm.jsx";
 import Capa from "./features/capa/capa.jsx";
 
 // Layout Import
@@ -40,6 +41,7 @@ function App() {
               <Route path="/dashboard" element={<QMSDashboard />} />
               <Route path="/training" element={<CompetenceForm />} />
               <Route path="/capa" element={<Capa />} />
+              <Route path="/incidents/new" element={<NonConformanceForm />} />
 
               {/* Documents Routes */}
               <Route path="/documents" element={<DocumentLibrary />} />
