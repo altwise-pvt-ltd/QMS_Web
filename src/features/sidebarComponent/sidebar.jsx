@@ -118,7 +118,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             </Link>
           </li>
 
-          {/* 3. CAPA */}
+          {/* 3. CAPA & Incidents */}
           <li>
             <Link to="/capa" className={menuItemClass("/capa")}>
               <AlertTriangle className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />

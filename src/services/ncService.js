@@ -1,4 +1,5 @@
 import { db } from "../db";
+import { uploadFile } from "./documentService";
 
 /**
  * NC Service
@@ -8,6 +9,7 @@ import { db } from "../db";
 const ncService = {
   /**
    * Saves or updates an NC report in the local database.
+   * Now supporting remote image upload for traceability.
    *
    * @param {Object} report - The NC report data payload.
    * @returns {Promise<string>} The ID of the saved report.
@@ -15,6 +17,26 @@ const ncService = {
   async saveNCReport(report) {
     if (!report.id) {
       report.id = crypto.randomUUID();
+    }
+
+    // NEW Logic: If evidenceImage is a File object, upload it to Cloudflare R2
+    if (report.entry?.evidenceImage instanceof File) {
+      try {
+        console.log(
+          "📸 Evidence image detected. Uploading to remote storage..."
+        );
+        const uploadResponse = await uploadFile(report.entry.evidenceImage);
+
+        // Replace the File object with the remote URL for persistent storage
+        report.entry.evidenceImage = uploadResponse.fileUrl;
+        console.log("🔗 Image uploaded successfully:", uploadResponse.fileUrl);
+      } catch (uploadError) {
+        console.error(
+          "⚠️ Image upload failed, storing locally instead:",
+          uploadError
+        );
+        // Fallback: stay as File object (Dexie will store locally)
+      }
     }
 
     console.log("💾 Saving NC report to Dexie:", report);
