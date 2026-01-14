@@ -1,110 +1,203 @@
-import React, { useEffect, useState } from "react";
-import { Eye, Play, FileText, X } from "lucide-react";
-import { db } from "../../../db";
+import React, { useState } from "react";
+import { Eye, FileText, Plus, ClipboardList, CheckCircle, Search, Filter, Calendar, Download } from "lucide-react";
 
-const FormPreview = ({ forms: createdForms = [] }) => {
-  const [activeTab, setActiveTab] = useState("created");
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [modalType, setModalType] = useState("");
+const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew, onView }) => {
+  const [activeTab, setActiveTab] = useState("ncs");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [appliedForms, setAppliedForms] = useState([]);
-
-  useEffect(() => {
-    const loadData = async () => {
-      setAppliedForms(await db.capa_responses.toArray());
-    };
-    loadData();
-  }, []);
-
-  const handleAction = (item, type) => {
-    setSelectedItem(item);
-    setModalType(type);
-  };
-
-  const closeAction = () => {
-    setSelectedItem(null);
-    setModalType("");
-  };
-
-  const tableData = activeTab === "created" ? createdForms : appliedForms;
+  const displayData = activeTab === "ncs" ? ncs : filedCapas;
+  const filteredData = displayData.filter(item => {
+    const name = (item.name || item.subCategory || "").toLowerCase();
+    const issueNo = (item.issueNo || "").toLowerCase();
+    const search = searchTerm.toLowerCase();
+    return name.includes(search) || issueNo.includes(search);
+  });
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      {/* Header */}
-      <div className="border-b p-4 flex justify-between bg-slate-50/50">
-        <h2 className="font-semibold flex items-center gap-2">
-          <FileText className="w-5 h-5 text-indigo-600" />
-          Form Dashboard
-        </h2>
+    <div className="space-y-6">
+      {/* Search and Filters Bar */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="relative w-full md:w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by NC name or issue number..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-20 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm font-medium"
+          />
+        </div>
 
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+
           <button
-            onClick={() => setActiveTab("created")}
-            className={activeTab === "created" ? "font-semibold" : ""}
+            onClick={onCreateNew}
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 bg-slate-900 text-black rounded-xl text-sm font-black hover:bg-black transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-slate-200"
           >
-            Created Forms
-          </button>
-          <button
-            onClick={() => setActiveTab("applied")}
-            className={activeTab === "applied" ? "font-semibold" : ""}
-          >
-            Applied Forms
+            <Plus className="w-4 h-4" />
+            New CAPA Entry
           </button>
         </div>
       </div>
 
-      {/* Table */}
-      <table className="w-full">
-        <thead className="border-b text-xs text-slate-500">
-          <tr>
-            <th className="px-6 py-3">Form Name</th>
-            <th className="px-6 py-3">Date</th>
-            <th className="px-6 py-3">
-              {activeTab === "created" ? "Created By" : "Filled By"}
-            </th>
-            <th className="px-6 py-3 text-right">Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {tableData.map((form) => (
-            <tr key={form.id} className="border-b">
-              <td className="px-6 py-3 font-medium">{form.title}</td>
-              <td className="px-6 py-3 text-sm text-slate-500">
-                {form.createdAt || form.filledAt}
-              </td>
-              <td className="px-6 py-3 text-sm text-slate-600">
-                {form.createdBy || form.filledBy || "—"}
-              </td>
-              <td className="px-6 py-3 text-right">
-                <button
-                  onClick={() =>
-                    handleAction(form, activeTab === "created" ? "use" : "view")
-                  }
-                  className="text-indigo-600 text-sm"
-                >
-                  {activeTab === "created" ? "Use Form" : "View"}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Modal */}
-      {selectedItem && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl w-96">
-            <h3 className="font-semibold mb-3">
-              {modalType === "use" ? "Use Form" : "Form Details"}
-            </h3>
-            <p>{selectedItem.title}</p>
-            <button onClick={closeAction} className="mt-4">
-              Close
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        {/* Navigation Tabs */}
+        <div className="border-b border-slate-100 flex items-center justify-between p-2 bg-slate-50/30">
+          <div className="flex p-1 gap-2">
+            <button
+              onClick={() => setActiveTab("ncs")}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black transition-all ${activeTab === "ncs"
+                ? "bg-white text-indigo-600 shadow-sm border border-slate-200"
+                : "text-slate-500 hover:text-slate-900 hover:bg-white/50"
+                }`}
+            >
+              <ClipboardList className="w-4 h-4" />
+              List of NC's
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === 'ncs' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-200 text-slate-600'
+                }`}>
+                {ncs.length}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab("filed")}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black transition-all ${activeTab === "filed"
+                ? "bg-white text-emerald-600 shadow-sm border border-slate-200"
+                : "text-slate-500 hover:text-slate-900 hover:bg-white/50"
+                }`}
+            >
+              <CheckCircle className="w-4 h-4" />
+              Filed CAPA's
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === 'filed' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-600'
+                }`}>
+                {filedCapas.length}
+              </span>
             </button>
           </div>
+
+          <div className="hidden md:flex items-center px-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+            {activeTab === 'ncs' ? 'Awaiting Action' : 'Historical Records'}
+          </div>
         </div>
-      )}
+
+        {/* Table Container */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100 text-[10px] uppercase tracking-[0.15em] text-slate-400 font-black bg-slate-50/50">
+                <th className="px-8 py-5">Issue Identity</th>
+                <th className="px-8 py-5">Non-Conformity Name</th>
+                <th className="px-8 py-5">Ownership</th>
+                <th className="px-8 py-5">Timeline</th>
+                <th className="px-8 py-5">Organization</th>
+                <th className="px-8 py-5 text-right">Operations</th>
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-slate-50">
+              {filteredData.length > 0 ? (
+                filteredData.map((item, index) => (
+                  <tr key={item.id || item.issueNo || index} className="hover:bg-slate-50/50 transition-colors group">
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-sm shadow-indigo-200" />
+                        <span className="font-mono text-xs font-black text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                          {item.issueNo}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div>
+                        <p className="font-black text-slate-900 text-sm leading-tight hover:text-indigo-600 transition-colors cursor-default">
+                          {item.name || item.subCategory}
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">
+                          {activeTab === 'ncs' ? item.category : 'NC Resolved'}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-black ${activeTab === 'ncs' ? 'bg-indigo-500' : 'bg-emerald-500'
+                          }`}>
+                          {(item.reportedBy || item.filedBy || item.responsibility || "U").charAt(0)}
+                        </div>
+                        <span className="text-sm font-bold text-slate-700">{item.reportedBy || item.filedBy || item.responsibility}</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-2 text-slate-500">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span className="text-xs font-bold">{item.date || item.filedDate}</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className="text-[11px] font-black text-slate-500 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-tighter shadow-inner">
+                        {item.department}
+                      </span>
+                    </td>
+                    <td className="px-8 py-6 text-right">
+                      {activeTab === "ncs" ? (
+                        <button
+                          onClick={() => onFileCapa(item)}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-black hover:bg-indigo-600 hover:text-black transition-all shadow-sm active:scale-95 group/btn"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          File CAPA
+                        </button>
+                      ) : (
+                        <div className="flex items-center justify-end">
+                          <button
+                            onClick={() => onView(item)}
+                            className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+
+                          {/* VIEW ATTACHED PDF */}
+                          {item.uploadedFile?.fileUrl && (
+                            <a
+                              href={item.uploadedFile.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                              title="View Attached PDF"
+                            >
+                              <Download className="w-5 h-5" />
+                            </a>
+                          )}
+
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="px-8 py-20 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="p-4 bg-slate-50 rounded-full">
+                        <Search className="w-8 h-8 text-slate-200" />
+                      </div>
+                      <p className="text-slate-400 text-sm font-bold tracking-tight">
+                        No records found matching "{searchTerm}"
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer Info */}
+        <div className="bg-slate-50/50 p-4 border-t border-slate-100 flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          <div>Showing {filteredData.length} records</div>
+          <div className="flex gap-4">
+            <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /> Pending</span>
+            <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Completed</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

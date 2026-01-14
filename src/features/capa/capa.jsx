@@ -1,91 +1,77 @@
-import React, { useEffect, useState } from "react";
-import { Search, Plus } from "lucide-react";
-import { db } from "../../db";
-
-// Components
-import CapaFormPopup from "../capa/components/capaformpopup";
-import FormPreview from "../capa/components/formpreview";
+import React, { useState } from "react";
+import CapaForm from "./components/capaform";
+import FormPreview from "./components/formpreview";
+import CAPAFormView from "./CAPAFormView";
+import { initialNCs, initialFiledCapas } from "./data";
 
 const Capa = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showCreatePopup, setShowCreatePopup] = useState(false);
-  const [forms, setForms] = useState([]);
+  const [view, setView] = useState("history"); // Start with history/dashboard
+  const [ncs, setNcs] = useState(initialNCs);
+  const [filedCapas, setFiledCapas] = useState(initialFiledCapas);
+  const [selectedNC, setSelectedNC] = useState(null);
+  const [selectedFiledCapa, setSelectedFiledCapa] = useState(null);
 
-  // 🔹 Load forms from Dexie
-  const loadForms = async () => {
-    const allForms = await db.capa_forms.toArray();
-    setForms(allForms);
+  const handleFileCapa = (nc) => {
+    setSelectedNC(nc);
+    setView("form");
   };
 
-  // 🔹 Load on page open
-  useEffect(() => {
-    loadForms();
-  }, []);
+  const handleCreateNew = () => {
+    setSelectedNC(null);
+    setView("form");
+  };
+
+  const handleViewOriginal = (capa) => {
+    setSelectedFiledCapa(capa);
+    setView("preview-original");
+  };
+
+  const handleSubmitCapa = (formData) => {
+    const newCapa = {
+      ...formData,
+      id: `CAPA-2026-${String(filedCapas.length + 1).padStart(3, '0')}`,
+      ncId: selectedNC?.id || "Direct Entry",
+      issueNo: selectedNC?.issueNo || "N/A",
+      name: selectedNC?.name || formData.subCategory,
+      filedBy: formData.responsibility, // Mapping responsibility to filedBy for the list view
+      filedDate: formData.date || new Date().toISOString().split('T')[0],
+      status: "Submitted"
+    };
+
+    setFiledCapas([newCapa, ...filedCapas]);
+
+    // If it was linked to an NC, we might want to remove it from the list or mark it as filed
+    if (selectedNC) {
+      setNcs(ncs.filter(nc => nc.id !== selectedNC.id));
+    }
+
+    setSelectedNC(null);
+    setView("history");
+  };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto min-h-screen bg-slate-50/50">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            CAPA & Incidents
-          </h1>
-          <p className="text-slate-600">
-            Corrective and Preventive Action
-          </p>
-        </div>
-
-        {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          {/* Search */}
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <input
-              type="text"
-              placeholder="Search forms..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 text-sm shadow-sm"
-            />
-          </div>
-
-          {/* Create Form */}
-          <button
-            onClick={() => setShowCreatePopup(true)}
-            className="
-              inline-flex items-center gap-2
-              px-4 py-2.5
-              bg-indigo-50 text-indigo-700
-              border border-indigo-200
-              rounded-lg
-              shadow-sm
-              hover:bg-indigo-100 hover:shadow-md
-              focus:ring-2 focus:ring-indigo-400
-              transition-all
-              active:scale-95
-            "
-          >
-            <Plus className="w-4 h-4" />
-            Create New Form
-          </button>
-        </div>
-      </div>
-
-      {/* Created / Applied Forms */}
-      <FormPreview
-        forms={forms.filter((f) =>
-          f.title?.toLowerCase().includes(searchTerm.toLowerCase())
-        )}
-      />
-
-      {/* Popup */}
-      {showCreatePopup && (
-        <CapaFormPopup
-          onClose={() => {
-            setShowCreatePopup(false);
-            loadForms(); // 🔥 refresh list after save
-          }}
+    <div className="min-h-screen bg-slate-50">
+      {view === "form" ? (
+        <CapaForm
+          selectedNC={selectedNC}
+          onViewHistory={() => setView("history")}
+          onSubmit={handleSubmitCapa}
         />
+      ) : view === "preview-original" ? (
+        <CAPAFormView
+          capa={selectedFiledCapa}
+          onBack={() => setView("history")}
+        />
+      ) : (
+        <div className="p-6 max-w-7xl mx-auto">
+          <FormPreview
+            ncs={ncs}
+            filedCapas={filedCapas}
+            onFileCapa={handleFileCapa}
+            onCreateNew={handleCreateNew}
+            onView={handleViewOriginal}
+          />
+        </div>
       )}
     </div>
   );
