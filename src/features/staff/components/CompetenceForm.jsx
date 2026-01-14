@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Trash2,
@@ -8,7 +8,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-const CompetenceForm = () => {
+const CompetenceForm = ({ initialData }) => {
   // --- STATE MANAGEMENT ---
   const [formData, setFormData] = useState({
     // Section 1: Identification
@@ -44,6 +44,21 @@ const CompetenceForm = () => {
     assessorName: "Super Admin", // Auto-filled in real app
     assessmentDate: new Date().toISOString().split("T")[0],
   });
+
+  // --- EFFECTS ---
+  // Populate form when editing existing staff
+  useEffect(() => {
+    if (initialData) {
+      setFormData((prev) => ({
+        ...prev,
+        employeeName: initialData.name || "",
+        employeeId: initialData.id?.toString() || "",
+        jobTitle: initialData.role || "",
+        department: initialData.dept || "",
+        overallStatus: initialData.status || "",
+      }));
+    }
+  }, [initialData]);
 
   // --- HANDLERS ---
   const handleInputChange = (e) => {
@@ -246,7 +261,7 @@ const CompetenceForm = () => {
                   gap: true,
                 })
               }
-              className="text-sm bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2 font-medium shadow-sm"
+              className="text-sm bg-purple-600 text-black px-4 py-2 rounded-lg hover:bg-purple-700 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2 font-medium shadow-sm"
             >
               <Plus size={16} /> Add Skill
             </button>
@@ -368,7 +383,7 @@ const CompetenceForm = () => {
                   expiryDate: "",
                 })
               }
-              className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2 font-medium shadow-sm"
+              className="text-sm bg-green-600 text-black px-4 py-2 rounded-lg hover:bg-green-700 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2 font-medium shadow-sm"
             >
               <Plus size={16} /> Add Entry
             </button>
@@ -537,7 +552,7 @@ const CompetenceForm = () => {
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2 shadow-md"
+              className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-black bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2 shadow-md"
             >
               <Save size={18} /> Save Record
             </button>

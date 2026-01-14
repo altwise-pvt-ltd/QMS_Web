@@ -12,13 +12,13 @@ import Login from "./auth/login.jsx";
 
 // Feature Imports
 import QMSDashboard from "./features/dashboard/dashboard.jsx";
-import CompetenceForm from "./features/training/CompetenceForm.jsx";
 import DocumentLibrary from "./features/documents/DocumentLibrary.jsx";
 import DocumentUploadPage from "./features/documents/component/DocumentUploadPage.jsx";
 import DocumentPreviewPage from "./features/documents/component/DocumentPreviewPage.jsx";
 import SavedDocumentsPage from "./features/documents/SavedDocumentsPage.jsx";
 import NonConformanceForm from "./features/NC/NonConformanceForm.jsx";
 import Capa from "./features/capa/capa.jsx";
+import StaffModule from "./features/staff/StaffModule.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -39,7 +39,7 @@ function App() {
               }
             >
               <Route path="/dashboard" element={<QMSDashboard />} />
-              <Route path="/training" element={<CompetenceForm />} />
+              <Route path="/staff" element={<StaffModule />} />
               <Route path="/capa" element={<Capa />} />
               <Route path="/incidents/new" element={<NonConformanceForm />} />
 
