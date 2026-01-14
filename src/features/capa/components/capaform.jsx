@@ -175,7 +175,8 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   const [department, setDepartment] = useState('');
   const [details, setDetails] = useState('');
   const [rootCause, setRootCause] = useState('');
-  const [actionTaken, setActionTaken] = useState('');
+  const [correctiveAction, setCorrectiveAction] = useState('');
+  const [preventiveAction, setPreventiveAction] = useState('');
   const [closureVerification, setClosureVerification] = useState('');
   const [responsibility, setResponsibility] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -221,10 +222,15 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
       department,
       details,
       rootCause,
-      actionTaken,
+      correctiveAction,
+      preventiveAction,
       closureVerification,
       responsibility,
-      uploadedFile: uploadedFile?.name,
+      uploadedFile: uploadedFile ? {
+        fileName: uploadedFile.name,
+        fileUrl: URL.createObjectURL(uploadedFile),
+        fileSizeMB: (uploadedFile.size / (1024 * 1024)).toFixed(2)
+      } : null,
       submittedAt: new Date().toISOString()
     };
     if (onSubmit) onSubmit(formData);
@@ -371,8 +377,8 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-slate-700 block">Corrective Action Taken</label>
             <textarea
-              value={actionTaken}
-              onChange={(e) => setActionTaken(e.target.value)}
+              value={correctiveAction}
+              onChange={(e) => setCorrectiveAction(e.target.value)}
               rows={4}
               placeholder="Describe actions taken..."
               className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 resize-none transition-all"
@@ -382,8 +388,8 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-slate-700 block">Preventive Action Taken</label>
             <textarea
-              value={actionTaken}
-              onChange={(e) => setActionTaken(e.target.value)}
+              value={preventiveAction}
+              onChange={(e) => setPreventiveAction(e.target.value)}
               rows={4}
               placeholder="Describe actions taken..."
               className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 resize-none transition-all"
