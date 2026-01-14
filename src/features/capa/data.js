@@ -35,13 +35,92 @@ export const initialNCs = [
 
 export const initialFiledCapas = [
   {
-    id: "CAPA-2026-001",
-    ncId: "NC-2025-095",
-    issueNo: "ISS-950",
-    name: "Reagent Expiry Not Tracked",
-    filedBy: "Harsh Patel",
-    filedDate: "2026-01-02",
-    department: "Quality Assurance",
-    status: "Closed"
+    // ================= BASIC CAPA INFO =================
+    issueNo: "NC-2025-014",
+    category: "Pre-Analytical",
+    subCategory: "Vein puncture failure",
+
+    date: "2025-01-10",
+    targetDate: "2025-01-20",
+
+    department: "Phlebotomy",
+    responsibility: "Mr. Rajesh Kumar",
+
+    // ================= CAPA CONTENT =================
+    details:
+      "Patient experienced difficulty during blood collection due to multiple puncture attempts. Sample collection was delayed and patient discomfort was reported.",
+
+    rootCause:
+      "Improper vein assessment and insufficient training of newly assigned phlebotomist.",
+
+    correctiveAction:
+      "Senior phlebotomist completed sample collection and patient was monitored. Staff counseling was done immediately.",
+
+    preventiveAction:
+      "Refresher training on vein selection and patient positioning scheduled for all phlebotomy staff.",
+
+    closureVerification:
+      "Training records reviewed and competency assessment completed. No repeat incidents reported in last 30 days.",
+
+    // ================= DOCUMENT METADATA (NEW) =================
+    documentMeta: {
+      documentNo: "ADC-FORM-03",
+      issueNo: "01",
+      issueDate: "2025-01-10",
+      amendmentNo: null,
+      amendmentDate: null,
+      issuedBy: "QA Department",
+      reviewedBy: "Lab Director",
+      status: "Controlled"
+    },
+
+    // ================= OPTIONAL QUESTIONS (NOT USED IN VIEW) =================
+    questions: [
+      "Was the patient properly identified before sample collection?",
+      "Was appropriate vein selection performed?",
+      "Was the tourniquet applied correctly?",
+      "Was proper needle gauge used?",
+      "Was the phlebotomist adequately trained?",
+      "Was the patient properly identified before sample collection?",
+      "Was appropriate vein selection performed?",
+      "Was the tourniquet applied correctly?",
+      "Was proper needle gauge used?",
+      "Was the phlebotomist adequately trained?",
+      "Was the patient properly identified before sample collection?",
+      "Was appropriate vein selection performed?",
+      "Was the tourniquet applied correctly?",
+      "Was proper needle gauge used?",
+      "Was the phlebotomist adequately trained?"
+    ],
+
+    questionAnswers: {
+      0: "yes",
+      1: "no",
+      2: "yes",
+      3: "yes",
+      4: "no",
+      5: "yes",
+      6: "no",
+      7: "yes",
+      8: "no",
+      9: "yes",
+      10: "no",
+      11: "yes",
+      12: "no",
+      13: "yes"
+    },
+
+    // ================= ATTACHED FILE =================
+    uploadedFile: {
+      fileName: "Vein_Puncture_Incident_Report.pdf",
+      fileType: "application/pdf",
+      fileSizeMB: 1.8,
+      fileUrl:
+        "https://example.com/uploads/Vein_Puncture_Incident_Report.pdf"
+    },
+
+    // ================= SYSTEM FIELDS =================
+    submittedAt: "2025-01-10T14:35:22.000Z",
+    status: "Open"
   }
 ];

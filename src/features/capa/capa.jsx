@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import CapaForm from "./components/capaform";
 import FormPreview from "./components/formpreview";
+import CAPAFormView from "./CAPAFormView";
 import { initialNCs, initialFiledCapas } from "./data";
 
 const Capa = () => {
@@ -8,6 +9,7 @@ const Capa = () => {
   const [ncs, setNcs] = useState(initialNCs);
   const [filedCapas, setFiledCapas] = useState(initialFiledCapas);
   const [selectedNC, setSelectedNC] = useState(null);
+  const [selectedFiledCapa, setSelectedFiledCapa] = useState(null);
 
   const handleFileCapa = (nc) => {
     setSelectedNC(nc);
@@ -19,15 +21,20 @@ const Capa = () => {
     setView("form");
   };
 
+  const handleViewOriginal = (capa) => {
+    setSelectedFiledCapa(capa);
+    setView("preview-original");
+  };
+
   const handleSubmitCapa = (formData) => {
     const newCapa = {
+      ...formData,
       id: `CAPA-2026-${String(filedCapas.length + 1).padStart(3, '0')}`,
       ncId: selectedNC?.id || "Direct Entry",
       issueNo: selectedNC?.issueNo || "N/A",
       name: selectedNC?.name || formData.subCategory,
-      filedBy: formData.filedBy,
-      filedDate: new Date().toISOString().split('T')[0],
-      department: formData.department,
+      filedBy: formData.responsibility, // Mapping responsibility to filedBy for the list view
+      filedDate: formData.date || new Date().toISOString().split('T')[0],
       status: "Submitted"
     };
 
@@ -50,6 +57,11 @@ const Capa = () => {
           onViewHistory={() => setView("history")}
           onSubmit={handleSubmitCapa}
         />
+      ) : view === "preview-original" ? (
+        <CAPAFormView
+          capa={selectedFiledCapa}
+          onBack={() => setView("history")}
+        />
       ) : (
         <div className="p-6 max-w-7xl mx-auto">
           <FormPreview
@@ -57,6 +69,7 @@ const Capa = () => {
             filedCapas={filedCapas}
             onFileCapa={handleFileCapa}
             onCreateNew={handleCreateNew}
+            onView={handleViewOriginal}
           />
         </div>
       )}

@@ -1,15 +1,17 @@
 import React, { useState } from "react";
-import { Eye, FileText, Plus, ClipboardList, CheckCircle, Search, Filter, MoreVertical, Calendar } from "lucide-react";
+import { Eye, FileText, Plus, ClipboardList, CheckCircle, Search, Filter, Calendar, Download } from "lucide-react";
 
-const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew }) => {
+const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew, onView }) => {
   const [activeTab, setActiveTab] = useState("ncs");
   const [searchTerm, setSearchTerm] = useState("");
 
   const displayData = activeTab === "ncs" ? ncs : filedCapas;
-  const filteredData = displayData.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.issueNo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredData = displayData.filter(item => {
+    const name = (item.name || item.subCategory || "").toLowerCase();
+    const issueNo = (item.issueNo || "").toLowerCase();
+    const search = searchTerm.toLowerCase();
+    return name.includes(search) || issueNo.includes(search);
+  });
 
   return (
     <div className="space-y-6">
@@ -93,8 +95,8 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew }) => 
 
             <tbody className="divide-y divide-slate-50">
               {filteredData.length > 0 ? (
-                filteredData.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
+                filteredData.map((item, index) => (
+                  <tr key={item.id || item.issueNo || index} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-sm shadow-indigo-200" />
@@ -106,7 +108,7 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew }) => 
                     <td className="px-8 py-6">
                       <div>
                         <p className="font-black text-slate-900 text-sm leading-tight hover:text-indigo-600 transition-colors cursor-default">
-                          {item.name}
+                          {item.name || item.subCategory}
                         </p>
                         <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">
                           {activeTab === 'ncs' ? item.category : 'NC Resolved'}
@@ -117,9 +119,9 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew }) => 
                       <div className="flex items-center gap-2">
                         <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-black ${activeTab === 'ncs' ? 'bg-indigo-500' : 'bg-emerald-500'
                           }`}>
-                          {(item.reportedBy || item.filedBy || "U").charAt(0)}
+                          {(item.reportedBy || item.filedBy || item.responsibility || "U").charAt(0)}
                         </div>
-                        <span className="text-sm font-bold text-slate-700">{item.reportedBy || item.filedBy}</span>
+                        <span className="text-sm font-bold text-slate-700">{item.reportedBy || item.filedBy || item.responsibility}</span>
                       </div>
                     </td>
                     <td className="px-8 py-6">
@@ -143,13 +145,27 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew }) => 
                           File CAPA
                         </button>
                       ) : (
-                        <div className="flex items-center justify-end gap-2">
-                          <button className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all">
-                            <Eye className="w-4 h-4" />
+                        <div className="flex items-center justify-end">
+                          <button
+                            onClick={() => onView(item)}
+                            className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                          >
+                            <Eye className="w-5 h-5" />
                           </button>
-                          <button className="p-2 text-slate-300 hover:text-slate-600 rounded-lg transition-all">
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
+
+                          {/* VIEW ATTACHED PDF */}
+                          {item.uploadedFile?.fileUrl && (
+                            <a
+                              href={item.uploadedFile.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                              title="View Attached PDF"
+                            >
+                              <Download className="w-5 h-5" />
+                            </a>
+                          )}
+
                         </div>
                       )}
                     </td>
