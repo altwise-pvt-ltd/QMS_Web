@@ -1,8 +1,14 @@
 // src/features/mrm/components/MrmList.jsx
-import React from "react";
-import { Plus, Calendar, CheckCircle, Clock } from "lucide-react";
+import React, { useState } from "react";
+import { Plus } from "lucide-react";
+import MeetingViewModal from "./MeetingViewModal";
+import { useMrm } from "../hooks/useMrm";
 
-const MrmList = ({ meetings, onSelect, onCreate }) => {
+const MrmList = ({ meetings, onSelect, onCreate, onViewPdf }) => {
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedMeetingForView, setSelectedMeetingForView] = useState(null);
+  const { getActionItems, getMinutes } = useMrm();
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Draft":
@@ -22,6 +28,11 @@ const MrmList = ({ meetings, onSelect, onCreate }) => {
     }
   };
 
+  const handleViewMeeting = (meeting) => {
+    setSelectedMeetingForView(meeting);
+    setViewModalOpen(true);
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -29,13 +40,16 @@ const MrmList = ({ meetings, onSelect, onCreate }) => {
           <h1 className="text-2xl font-bold text-gray-900">
             Management Reviews
           </h1>
-          <p className="text-gray-500">ISO 9001:2015 Clause 9.3 Compliance</p>
+          <p className="text-gray-500 mt-1">
+            ISO 9001:2015 Clause 9.3 - Management Review Meetings
+          </p>
         </div>
         <button
           onClick={onCreate}
-          className="flex items-center gap-2 bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-gray-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
         >
-          <Plus size={18} /> Schedule New MRM
+          <Plus size={20} />
+          New Meeting
         </button>
       </div>
 
@@ -43,26 +57,14 @@ const MrmList = ({ meetings, onSelect, onCreate }) => {
         {meetings.map((meeting) => (
           <div
             key={meeting.id}
-            onClick={() => onSelect(meeting)}
-            className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer flex justify-between items-center group"
+            className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex justify-between items-center group"
           >
             <div className="flex items-center gap-4">
-              <div
-                className={`p-3 rounded-full ${
-                  meeting.status === "Closed"
-                    ? "bg-green-50 text-green-600"
-                    : "bg-blue-50 text-blue-600"
-                }`}
-              >
-                <Calendar size={24} />
-              </div>
               <div>
-                <h3 className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
-                  {meeting.title}
-                </h3>
+                <h3 className="font-bold text-gray-800">{meeting.title}</h3>
                 <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
                   <span className="flex items-center gap-1">
-                    <Clock size={14} /> {meeting.date}
+                    {meeting.date}
                   </span>
                   <span>•</span>
                   <span>{meeting.agenda}</span>
@@ -78,10 +80,43 @@ const MrmList = ({ meetings, onSelect, onCreate }) => {
               >
                 {meeting.status}
               </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewMeeting(meeting);
+                  }}
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 hover:text-blue-600 transition-colors shadow-sm font-medium"
+                >
+                  View
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(meeting);
+                  }}
+                  className="bg-blue-600 text-gray-600 px-4 py-2 rounded-lg hover:bg-blue-700 
+                  hover:text-green-400
+                  transition-colors shadow-sm font-medium"
+                >
+                  Edit
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
+
+      {/* View Modal */}
+      <MeetingViewModal
+        meeting={selectedMeetingForView}
+        isOpen={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        getActionItems={getActionItems}
+        getMinutes={getMinutes}
+        onViewPdf={onViewPdf}
+      />
     </div>
   );
 };

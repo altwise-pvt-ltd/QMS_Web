@@ -1,31 +1,77 @@
 // src/features/mrm/MrmPage.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMrm } from "./hooks/useMrm";
 import MrmList from "./components/MrmList";
 import CreateMeetingPage from "./pages/CreateMeetingPage";
 import ActionItemsPage from "./pages/ActionItemsPage";
 import MinutesOfMeeting from "./components/MinutesOfMeeting";
+import MrmPdfView from "./components/MrmPdfView";
+import { seedMrmData } from "./utils/seedData";
 
 const MrmPage = () => {
-  const { meetings, createMeeting, updateMeeting } = useMrm();
-  const [view, setView] = useState("LIST"); // 'LIST', 'CREATE', 'ACTIONS', or 'MINUTES'
+  const {
+    meetings,
+    createMeeting,
+    updateMeeting,
+    saveActionItems,
+    getActionItems,
+    saveMinutes,
+    getMinutes,
+  } = useMrm();
+
+  const [view, setView] = useState("LIST"); // 'LIST', 'CREATE', 'ACTIONS', 'MINUTES', 'PDF_VIEW'
   const [selectedMeeting, setSelectedMeeting] = useState(null);
+  const [pdfData, setPdfData] = useState({
+    meeting: null,
+    actionItems: [],
+    minutes: null,
+  });
+
+  // Seed sample data on first mount
+  useEffect(() => {
+    const initData = async () => {
+      try {
+        await seedMrmData();
+      } catch (error) {
+        console.error("Error initializing MRM data:", error);
+      }
+    };
+    initData();
+  }, []);
 
   const handleCreateNew = () => {
     setSelectedMeeting(null);
     setView("CREATE");
   };
 
-  const handleSelectMeeting = (meeting) => {
+  const handleSelectMeeting = async (meeting) => {
     setSelectedMeeting(meeting);
+    // Load existing action items for this meeting
+    const existingActions = await getActionItems(meeting.id);
+    setSelectedMeeting({ ...meeting, actionItems: existingActions });
     setView("ACTIONS"); // Go to Action Items when clicking a meeting
   };
 
-  const handleSaveMeeting = (data) => {
+  const handleViewPdf = async (meeting) => {
+    // Load complete meeting data
+    const [actions, mins] = await Promise.all([
+      getActionItems(meeting.id),
+      getMinutes(meeting.id),
+    ]);
+
+    setPdfData({
+      meeting,
+      actionItems: actions || [],
+      minutes: mins,
+    });
+    setView("PDF_VIEW");
+  };
+
+  const handleSaveMeeting = async (data) => {
     if (selectedMeeting) {
-      updateMeeting(selectedMeeting.id, data);
+      await updateMeeting(selectedMeeting.id, data);
     } else {
-      const newMeeting = createMeeting(data);
+      const newMeeting = await createMeeting(data);
       setSelectedMeeting(newMeeting);
       setView("ACTIONS"); // After creating, go to action items
       return;
@@ -33,18 +79,49 @@ const MrmPage = () => {
     setView("LIST");
   };
 
-  const handleSaveActions = (updatedMeeting) => {
-    updateMeeting(updatedMeeting.id, updatedMeeting);
-    setView("LIST");
+  const handleSaveActions = async (actionItems) => {
+    try {
+      // Save action items to IndexedDB
+      await saveActionItems(selectedMeeting.id, actionItems);
+
+      // Update meeting status if needed
+      await updateMeeting(selectedMeeting.id, {
+        status: "In Progress",
+      });
+
+      console.log("Action items saved successfully");
+    } catch (error) {
+      console.error("Error saving action items:", error);
+    }
   };
 
-  const handleSaveMinutes = (minutesData) => {
-    // Save the minutes data to the meeting
-    updateMeeting(selectedMeeting.id, {
-      ...selectedMeeting,
-      minutes: minutesData,
-    });
-    setView("LIST");
+  const handleNextToMinutes = async () => {
+    // Load existing minutes if any
+    const existingMinutes = await getMinutes(selectedMeeting.id);
+    if (existingMinutes) {
+      setSelectedMeeting({
+        ...selectedMeeting,
+        minutes: existingMinutes,
+      });
+    }
+    setView("MINUTES");
+  };
+
+  const handleSaveMinutes = async (minutesData) => {
+    try {
+      // Save the minutes data to IndexedDB
+      await saveMinutes(selectedMeeting.id, minutesData);
+
+      // Update meeting status to completed
+      await updateMeeting(selectedMeeting.id, {
+        status: "Completed",
+      });
+
+      console.log("Minutes saved successfully");
+      setView("LIST");
+    } catch (error) {
+      console.error("Error saving minutes:", error);
+    }
   };
 
   return (
@@ -54,6 +131,7 @@ const MrmPage = () => {
           meetings={meetings}
           onCreate={handleCreateNew}
           onSelect={handleSelectMeeting}
+          onViewPdf={handleViewPdf}
         />
       )}
 
@@ -70,13 +148,23 @@ const MrmPage = () => {
           meeting={selectedMeeting}
           onSave={handleSaveActions}
           onBack={() => setView("LIST")}
-          onNext={() => setView("MINUTES")}
+          onNext={handleNextToMinutes}
         />
       )}
 
       {view === "MINUTES" && selectedMeeting && (
         <MinutesOfMeeting
+          meeting={selectedMeeting}
           onSave={handleSaveMinutes}
+          onBack={() => setView("ACTIONS")}
+        />
+      )}
+
+      {view === "PDF_VIEW" && (
+        <MrmPdfView
+          meeting={pdfData.meeting}
+          actionItems={pdfData.actionItems}
+          minutes={pdfData.minutes}
           onBack={() => setView("LIST")}
         />
       )}

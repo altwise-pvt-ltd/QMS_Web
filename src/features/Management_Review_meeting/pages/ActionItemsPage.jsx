@@ -35,7 +35,7 @@ const ActionItemsPage = ({ meeting, onSave, onBack, onNext }) => {
   };
 
   const handleSave = () => {
-    onSave({ ...meeting, actionItems });
+    onSave(actionItems); // Pass action items array directly
   };
 
   return (

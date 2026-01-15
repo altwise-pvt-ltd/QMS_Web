@@ -1,139 +1,120 @@
-// 1. IMPORT STANDARD HOOKS
-// We use standard React hooks (useState, useEffect) to build our custom one.
 import { useState, useEffect } from "react";
-
-// MOCK DATA - Sample Management Review Meetings
-const MOCK_MEETINGS = [
-  {
-    id: 1,
-    title: "Q4 2025 Management Review",
-    date: "2025-12-15",
-    time: "10:00 AM",
-    location: "Conference Room A",
-    agenda:
-      "Review annual quality objectives, customer feedback analysis, and process improvements",
-    attendees: "ceo@company.com, qm@company.com, operations@company.com",
-    status: "Closed",
-    // Inputs
-    inputAuditResults:
-      "Internal audit completed in November 2025. 3 minor non-conformances identified and closed. External audit scheduled for Q1 2026.",
-    inputCustomerFeedback:
-      "Customer satisfaction score: 4.2/5. Received 15 complaints this quarter, down from 22 last quarter. Main issues: delivery delays (60%), product defects (40%).",
-    inputProcessPerformance:
-      "Production efficiency: 92% (target: 90%). Quality rejection rate: 2.1% (target: <3%). On-time delivery: 88% (target: 95% - needs improvement).",
-    inputRisks:
-      "Supply chain disruptions due to vendor delays. Mitigation: Identified backup suppliers.",
-    // Execution
-    discussionPoints:
-      "- Reviewed Q4 performance metrics\n- Discussed customer complaint trends\n- Analyzed audit findings\n- Evaluated resource adequacy",
-    decisionsMade:
-      "1. Hire additional QA staff to improve inspection coverage\n2. Implement new supplier evaluation process\n3. Invest in automated testing equipment",
-    // Outputs
-    actionItems: [
-      {
-        id: 1001,
-        task: "Recruit 2 QA inspectors",
-        owner: "HR Manager",
-        deadline: "2026-01-31",
-      },
-      {
-        id: 1002,
-        task: "Develop supplier scorecard system",
-        owner: "Procurement Lead",
-        deadline: "2026-02-15",
-      },
-      {
-        id: 1003,
-        task: "Get quotes for automated testing equipment",
-        owner: "QA Manager",
-        deadline: "2026-01-20",
-      },
-    ],
-  },
-  {
-    id: 2,
-    title: "Q1 2026 Management Review",
-    date: "2026-03-20",
-    time: "2:00 PM",
-    location: "Executive Boardroom",
-    agenda:
-      "Review Q1 performance, external audit results, and strategic quality initiatives",
-    attendees:
-      "ceo@company.com, cfo@company.com, qm@company.com, production@company.com",
-    status: "Planned",
-    // Inputs
-    inputAuditResults:
-      "External ISO 9001 surveillance audit scheduled for March 2026. Preparation in progress.",
-    inputCustomerFeedback:
-      "Q1 feedback collection ongoing. Preliminary data shows improvement in delivery times.",
-    inputProcessPerformance:
-      "January metrics: Production efficiency 93%, Quality rejection 1.8%. February data pending.",
-    inputRisks:
-      "New regulatory requirements for product testing expected in Q2 2026.",
-    // Execution
-    discussionPoints: "",
-    decisionsMade: "",
-    // Outputs
-    actionItems: [],
-  },
-  {
-    id: 3,
-    title: "Mid-Year Strategic Review 2026",
-    date: "2026-06-30",
-    time: "9:00 AM",
-    location: "Virtual Meeting",
-    agenda:
-      "Six-month performance review, strategic planning for H2, resource allocation",
-    attendees: "leadership@company.com, qm@company.com, dept-heads@company.com",
-    status: "Planned",
-    // Inputs
-    inputAuditResults: "",
-    inputCustomerFeedback: "",
-    inputProcessPerformance: "",
-    inputRisks: "",
-    // Execution
-    discussionPoints: "",
-    decisionsMade: "",
-    // Outputs
-    actionItems: [],
-  },
-];
+import * as mrmService from "../services/mrmService";
 
 export const useMrm = () => {
-  // 2. DEFINE STATE (The Data)
-  // This holds the actual array of meetings, initialized with mock data
-  const [meetings, setMeetings] = useState(MOCK_MEETINGS);
-  const [loading, setLoading] = useState(false);
+  const [meetings, setMeetings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // 3. DEFINE LOGIC (The Methods)
-  // This function handles the logic of creating a new ID and saving.
-  // Updated to handle the new data structure with invitedAttendees
-  const createMeeting = (data) => {
-    const newEntry = {
-      ...data,
-      id: Date.now(),
-      status: "Draft",
-      createdAt: new Date().toISOString(),
-    };
+  // Load meetings from IndexedDB on mount
+  useEffect(() => {
+    loadMeetings();
+  }, []);
 
-    // In a real app, you would call axios.post() here
-    setMeetings((prev) => [...prev, newEntry]);
-    return newEntry; // Return the created meeting
+  const loadMeetings = async () => {
+    setLoading(true);
+    try {
+      const data = await mrmService.getAllMeetings();
+      setMeetings(data);
+    } catch (error) {
+      console.error("Error loading meetings:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateMeeting = (id, updatedFields) => {
-    // Logic to find the specific item and update it
-    setMeetings((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, ...updatedFields } : m))
-    );
+  const createMeeting = async (data) => {
+    try {
+      const newMeeting = await mrmService.createMeeting(data);
+      setMeetings((prev) => [...prev, newMeeting]);
+      return newMeeting;
+    } catch (error) {
+      console.error("Error creating meeting:", error);
+      throw error;
+    }
   };
 
-  // 4. RETURN THE INTERFACE (The Public API)
-  // We only return what the UI needs to know.
+  const updateMeeting = async (id, updatedFields) => {
+    try {
+      const updated = await mrmService.updateMeeting(id, updatedFields);
+      setMeetings((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, ...updatedFields } : m))
+      );
+      return updated;
+    } catch (error) {
+      console.error("Error updating meeting:", error);
+      throw error;
+    }
+  };
+
+  const deleteMeeting = async (id) => {
+    try {
+      await mrmService.deleteMeeting(id);
+      setMeetings((prev) => prev.filter((m) => m.id !== id));
+    } catch (error) {
+      console.error("Error deleting meeting:", error);
+      throw error;
+    }
+  };
+
+  // Action Items methods
+  const saveActionItems = async (meetingId, actionItems) => {
+    try {
+      return await mrmService.saveActionItems(meetingId, actionItems);
+    } catch (error) {
+      console.error("Error saving action items:", error);
+      throw error;
+    }
+  };
+
+  const getActionItems = async (meetingId) => {
+    try {
+      return await mrmService.getActionItems(meetingId);
+    } catch (error) {
+      console.error("Error getting action items:", error);
+      return [];
+    }
+  };
+
+  // Minutes methods
+  const saveMinutes = async (meetingId, minutesData) => {
+    try {
+      return await mrmService.saveMinutes(meetingId, minutesData);
+    } catch (error) {
+      console.error("Error saving minutes:", error);
+      throw error;
+    }
+  };
+
+  const getMinutes = async (meetingId) => {
+    try {
+      return await mrmService.getMinutes(meetingId);
+    } catch (error) {
+      console.error("Error getting minutes:", error);
+      return null;
+    }
+  };
+
+  // Get complete meeting data
+  const getCompleteMeetingData = async (meetingId) => {
+    try {
+      return await mrmService.getCompleteMeetingData(meetingId);
+    } catch (error) {
+      console.error("Error getting complete meeting data:", error);
+      return null;
+    }
+  };
+
   return {
-    meetings, // The Data
-    loading, // The Status
-    createMeeting, // The Action
-    updateMeeting, // The Action
+    meetings,
+    loading,
+    createMeeting,
+    updateMeeting,
+    deleteMeeting,
+    saveActionItems,
+    getActionItems,
+    saveMinutes,
+    getMinutes,
+    getCompleteMeetingData,
+    refreshMeetings: loadMeetings,
   };
 };

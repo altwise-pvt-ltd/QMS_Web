@@ -67,7 +67,7 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
           </div>
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm font-medium transition-all"
+            className="flex items-center gap-2 px-5 py-2 bg-indigo-600 text-black rounded-lg hover:bg-indigo-700 shadow-sm font-medium transition-all"
           >
             <Save size={18} /> Save Minutes
           </button>
