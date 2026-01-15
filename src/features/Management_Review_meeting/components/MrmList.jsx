@@ -4,7 +4,13 @@ import { Plus } from "lucide-react";
 import MeetingViewModal from "./MeetingViewModal";
 import { useMrm } from "../hooks/useMrm";
 
-const MrmList = ({ meetings, onSelect, onCreate, onViewPdf }) => {
+const MrmList = ({
+  meetings,
+  onSelect,
+  onCreate,
+  onViewPdf,
+  onViewMinutesPreview,
+}) => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedMeetingForView, setSelectedMeetingForView] = useState(null);
   const { getActionItems, getMinutes } = useMrm();
@@ -85,7 +91,9 @@ const MrmList = ({ meetings, onSelect, onCreate, onViewPdf }) => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleViewMeeting(meeting);
+                    if (onViewMinutesPreview) {
+                      onViewMinutesPreview(meeting);
+                    }
                   }}
                   className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 hover:text-blue-600 transition-colors shadow-sm font-medium"
                 >
@@ -96,7 +104,7 @@ const MrmList = ({ meetings, onSelect, onCreate, onViewPdf }) => {
                     e.stopPropagation();
                     onSelect(meeting);
                   }}
-                  className="bg-blue-600 text-gray-600 px-4 py-2 rounded-lg hover:bg-blue-700 
+                  className="bg-blue-600 text-gray-600 px-4 py-2 rounded-lg hover:bg-blue-700
                   hover:text-green-400
                   transition-colors shadow-sm font-medium"
                 >
