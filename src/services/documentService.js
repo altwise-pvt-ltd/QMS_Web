@@ -5,7 +5,7 @@ const WORKER_BASE_URL = "https://qms-worker.altwisedigital.workers.dev";
 /* ======================================
    Upload file to Cloudflare Worker
 ====================================== */
-async function uploadFile(file) {
+export async function uploadFile(file) {
   const formData = new FormData();
   formData.append("file", file);
 

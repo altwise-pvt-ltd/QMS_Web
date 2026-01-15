@@ -118,7 +118,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             </Link>
           </li>
 
-          {/* 3. CAPA */}
+          {/* 3. CAPA & Incidents */}
           <li>
             <Link to="/capa" className={menuItemClass("/capa")}>
               <AlertTriangle className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
@@ -146,16 +146,19 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             </Link>
           </li>
 
-          {/* 5. Training */}
+          {/* 5. Staff */}
           <li>
-            <Link to="/training" className={menuItemClass("/training")}>
+            <Link to="/staff" className={menuItemClass("/staff")}>
+              {isActive("/staff") && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
+              )}
               <Users className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
                 className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
                   isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
                 }`}
               >
-                Training
+                Staff
               </span>
             </Link>
           </li>

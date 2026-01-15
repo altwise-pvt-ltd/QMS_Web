@@ -3,15 +3,17 @@ import Dexie from "dexie";
 // QMS Web Database configuration using Dexie.js
 export const db = new Dexie("QMS_Web_DB");
 
-// Define schema version and stores
-db.version(2).stores({
+// UPDATE VERSION: Bump version to apply schema changes (e.g., 2 -> 3)
+db.version(3).stores({
   // Persistent storage for documents metadata
   documents:
     "id, name, level, category, subCategory, status, department, author, version, createdDate, expiryDate",
-  // Storage for CAPA (Corrective and Preventive Action) forms and responses
+
+  // Storage for CAPA forms
   capa_forms: "id, title, createdAt",
   capa_responses: "id, title, filledAt, filledBy",
-  // NEW: Storage for Non-Conformance (NC) reports
+
+  // UPDATED: Added "++" before id for Auto-Increment (1, 2, 3...)
   nc_reports:
-    "id, documentNo, documentName, status, submittedBy.name, lastModified",
+    "++id, documentNo, documentName, status, submittedBy.name, lastModified",
 });

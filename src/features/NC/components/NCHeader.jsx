@@ -5,10 +5,6 @@ import { FileText } from "lucide-react";
  * NCHeader Component
  *
  * Handles the display and editing of document-level metadata for the Non-Conformance form.
- *
- * @param {Object} props
- * @param {Object} props.formData - The current state of the entire form.
- * @param {Function} props.onFieldChange - Callback to update top-level form fields.
  */
 const NCHeader = ({ formData, onFieldChange }) => {
   return (
@@ -34,7 +30,8 @@ const NCHeader = ({ formData, onFieldChange }) => {
 
       {/* Document Info Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-        <div className="space-y-1">
+        {/* COMMENTED OUT: Document No */}
+        {/* <div className="space-y-1">
           <label
             className="text-xs font-medium text-gray-500 uppercase"
             title="Unique identification number for the document"
@@ -47,8 +44,11 @@ const NCHeader = ({ formData, onFieldChange }) => {
             onChange={(e) => onFieldChange("documentNo", e.target.value)}
             className="w-full px-3 py-1.5 text-sm font-medium bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
-        </div>
-        <div className="space-y-1">
+        </div> 
+        */}
+
+        {/* COMMENTED OUT: Issue No */}
+        {/* <div className="space-y-1">
           <label
             className="text-xs font-medium text-gray-500 uppercase"
             title="Current issue number of the document"
@@ -61,8 +61,11 @@ const NCHeader = ({ formData, onFieldChange }) => {
             onChange={(e) => onFieldChange("issueNo", e.target.value)}
             className="w-full px-3 py-1.5 text-sm font-medium bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
-        </div>
-        <div className="space-y-1">
+        </div> 
+        */}
+
+        {/* COMMENTED OUT: Amendment No */}
+        {/* <div className="space-y-1">
           <label
             className="text-xs font-medium text-gray-500 uppercase"
             title="Current amendment number of the document"
@@ -75,7 +78,9 @@ const NCHeader = ({ formData, onFieldChange }) => {
             onChange={(e) => onFieldChange("amendmentNo", e.target.value)}
             className="w-full px-3 py-1.5 text-sm font-medium bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
-        </div>
+        </div> 
+        */}
+
         <div className="space-y-1">
           <label
             className="text-xs font-medium text-gray-500 uppercase"
@@ -90,7 +95,9 @@ const NCHeader = ({ formData, onFieldChange }) => {
             className="w-full px-3 py-1.5 text-sm font-medium bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
-        <div className="space-y-1">
+
+        {/* COMMENTED OUT: Amendment Date */}
+        {/* <div className="space-y-1">
           <label
             className="text-xs font-medium text-gray-500 uppercase"
             title="Date of the last amendment"
@@ -103,7 +110,9 @@ const NCHeader = ({ formData, onFieldChange }) => {
             onChange={(e) => onFieldChange("amendmentDate", e.target.value)}
             className="w-full px-3 py-1.5 text-sm font-medium bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
-        </div>
+        </div> 
+        */}
+
         <div className="space-y-1">
           <label
             className="text-xs font-medium text-gray-500 uppercase"

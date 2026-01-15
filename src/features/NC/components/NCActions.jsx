@@ -1,35 +1,34 @@
 import React from "react";
-import { Plus, Save } from "lucide-react";
+import { Save } from "lucide-react";
 
 /**
  * NCActions Component
  *
- * Handles the "Add NC Entry" and "Save Form" buttons.
+ * Handles the "Save Form" action.
+ * Updated: Removed "Add NC Entry" functionality.
  *
  * @param {Object} props
- * @param {Function} props.onAddEntry - Callback to add a new NC record.
  * @param {Function} props.onSubmit - Callback to submit the entire form.
  */
-const NCActions = ({ onAddEntry, onSubmit }) => {
+const NCActions = ({ onSubmit, isSubmitting }) => {
   return (
-    <div className="flex gap-3 mt-6">
-      <button
-        type="button"
-        onClick={onAddEntry}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-        title="Click to add a new Non-Conformance entry"
-      >
-        <Plus className="w-4 h-4" />
-        Add NC Entry
-      </button>
+    // Changed to justify-end to align the single button to the right
+    <div className="flex mt-6 justify-end">
+      {/* REMOVED: Add NC Entry Button */}
+
       <button
         type="button"
         onClick={onSubmit}
-        className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ml-auto shadow-sm hover:shadow-md transition-all"
+        disabled={isSubmitting}
+        className={`flex items-center gap-2 px-6 py-2 rounded-md shadow-sm hover:shadow-md transition-all ${
+          isSubmitting
+            ? "bg-gray-400 cursor-not-allowed text-slate-800 "
+            : "bg-blue-600 text-slate-800  hover:bg-blue-700 font-medium"
+        }`}
         title="Save this form and forward the data to the document repository"
       >
-        <Save className="w-4 h-4" />
-        Save Form
+        <Save className={`w-4 h-4 ${isSubmitting ? "animate-pulse" : ""}`} />
+        {isSubmitting ? "Saving..." : "Save Form"}
       </button>
     </div>
   );
