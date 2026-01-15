@@ -73,7 +73,7 @@ const MrmPdfView = ({ meeting, actionItems = [], minutes = null, onBack }) => {
         id="mrm-report-content"
         className="print-area relative max-w-[900px] mx-auto bg-white text-black font-['Times_New_Roman'] border border-slate-200 shadow-sm"
       >
-        <div className="hidden print:block fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[64px] font-bold text-black/10 pointer-events-none select-none z-[9999] whitespace-nowrap rotate-[-30deg]">
+        <div className="hidden print:block fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[64px] font-bold text-black/10 pointer-events-none select-none z-9999 whitespace-nowrap rotate-[-30deg]">
           CONTROLLED COPY
         </div>
 

@@ -49,7 +49,7 @@ export const transformMeetingDataForPDF = (meeting, actionItems, minutes) => {
 export const generateMRMPdf = async (meeting, actionItems, minutes) => {
   try {
     const data = transformMeetingDataForPDF(meeting, actionItems, minutes);
-    const blob = await pdf(<MRMPdf data={data}></MRMPdf>).toBlob();
+    const blob = await pdf(<MRMPdf data={data} />).toBlob();
     saveAs(
       blob,
       `MRM_${meeting.title.replace(/\s+/g, "_")}_${meeting.date}.pdf`
@@ -67,9 +67,7 @@ export const generateMRMPdf = async (meeting, actionItems, minutes) => {
 export const generateMinutesPdf = async (meeting, actionItems, minutes) => {
   try {
     const data = transformMeetingDataForPDF(meeting, actionItems, minutes);
-    const blob = await pdf(
-      <MinutesOfMeetingPdf data={data}></MinutesOfMeetingPdf>
-    ).toBlob();
+    const blob = await pdf(<MinutesOfMeetingPdf data={data} />).toBlob();
     saveAs(
       blob,
       `Minutes_${meeting.title.replace(/\s+/g, "_")}_${meeting.date}.pdf`

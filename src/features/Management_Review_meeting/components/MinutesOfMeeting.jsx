@@ -87,7 +87,7 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
                 </span>
                 <button
                   onClick={() => removeItem(item.id)}
-                  className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                  className="text-gray-500 hover:text-red-500 transition-colors p-1"
                   title="Remove Item"
                 >
                   <Trash2 size={18} />
@@ -99,7 +99,7 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
                 {/* 1. Review Input */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Review Input (Agenda)
+                    Review Input
                   </label>
                   <input
                     type="text"
@@ -115,12 +115,12 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
                 {/* 2. Review Activities */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Review Activities / Discussion
+                    Review Activities
                   </label>
                   <textarea
                     rows={3}
                     className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3 text-sm bg-gray-50 focus:bg-white transition-colors resize-none"
-                    placeholder="Describe the discussion details here..."
+                    placeholder="Describe the review activities here..."
                     value={item.activity}
                     onChange={(e) =>
                       updateItem(item.id, "activity", e.target.value)

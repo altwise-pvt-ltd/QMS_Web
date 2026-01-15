@@ -6,6 +6,7 @@ import CreateMeetingPage from "./pages/CreateMeetingPage";
 import ActionItemsPage from "./pages/ActionItemsPage";
 import MinutesOfMeeting from "./components/MinutesOfMeeting";
 import MrmPdfView from "./components/MrmPdfView";
+import MinutesOfMeetingPreview from "./components/MinutesOfMeetingPreview";
 import { seedMrmData } from "./utils/seedData";
 
 const MrmPage = () => {
@@ -19,9 +20,14 @@ const MrmPage = () => {
     getMinutes,
   } = useMrm();
 
-  const [view, setView] = useState("LIST"); // 'LIST', 'CREATE', 'ACTIONS', 'MINUTES', 'PDF_VIEW'
+  const [view, setView] = useState("LIST"); // 'LIST', 'CREATE', 'ACTIONS', 'MINUTES', 'PDF_VIEW', 'MINUTES_PREVIEW'
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [pdfData, setPdfData] = useState({
+    meeting: null,
+    actionItems: [],
+    minutes: null,
+  });
+  const [previewData, setPreviewData] = useState({
     meeting: null,
     actionItems: [],
     minutes: null,
@@ -65,6 +71,21 @@ const MrmPage = () => {
       minutes: mins,
     });
     setView("PDF_VIEW");
+  };
+
+  const handleViewMinutesPreview = async (meeting) => {
+    // Load complete meeting data for preview
+    const [actions, mins] = await Promise.all([
+      getActionItems(meeting.id),
+      getMinutes(meeting.id),
+    ]);
+
+    setPreviewData({
+      meeting,
+      actionItems: actions || [],
+      minutes: mins,
+    });
+    setView("MINUTES_PREVIEW");
   };
 
   const handleSaveMeeting = async (data) => {
@@ -132,6 +153,7 @@ const MrmPage = () => {
           onCreate={handleCreateNew}
           onSelect={handleSelectMeeting}
           onViewPdf={handleViewPdf}
+          onViewMinutesPreview={handleViewMinutesPreview}
         />
       )}
 
@@ -165,6 +187,15 @@ const MrmPage = () => {
           meeting={pdfData.meeting}
           actionItems={pdfData.actionItems}
           minutes={pdfData.minutes}
+          onBack={() => setView("LIST")}
+        />
+      )}
+
+      {view === "MINUTES_PREVIEW" && (
+        <MinutesOfMeetingPreview
+          meeting={previewData.meeting}
+          actionItems={previewData.actionItems}
+          minutes={previewData.minutes}
           onBack={() => setView("LIST")}
         />
       )}
