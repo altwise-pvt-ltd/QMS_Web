@@ -77,38 +77,98 @@ button:focus-visible {
 /* ================= PRINT MODE ================= */
 @media print {
 
-  /* Hide everything by default */
-  body * {
-    visibility: hidden;
-  }
-
-  /* Show only CAPA print area */
-  .print-area,
-  .print-area * {
-    visibility: visible;
-  }
-
-  /* Place CAPA at top-left */
-  .print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
-
-  /* Hide UI elements */
-  .no-print {
-    display: none !important;
-  }
-
-  /* Remove background colors */
   body {
     background: white !important;
   }
 
-  /* A4 page setup */
-  @page {
-    size: A4;
-    margin: 15mm;
+  .no-print {
+    display: none !important;
+  }
+
+  .print-area {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  /* 🔴 KEY FIX: prevent footer from forcing new page */
+  tfoot tr {
+    page-break-inside: avoid !important;
+  }
+
+  tr {
+    page-break-inside: auto !important;
+  }
+
+  td,
+  th {
+    vertical-align: top !important;
+    word-break: break-word !important;
+  }
+
+  .pdf-header {
+    padding: 16px 40px 8px 40px;
+    margin-bottom: 8px;
+  }
+
+  .pdf-footer {
+    padding: 8px 40px 16px 40px;
+    margin-top: 8px;
+  }
+}
+
+@media print {
+
+  /* 🔴 HIDE APP CHROME */
+  aside,
+  nav,
+  header,
+  footer,
+  .sidebar,
+  .app-sidebar,
+  .dashboard-sidebar,
+  .layout-sidebar {
+    display: none !important;
+    width: 0 !important;
+    visibility: hidden !important;
+  }
+
+  /* 🔴 FORCE BODY TO SINGLE COLUMN */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* 🔴 ENSURE ONLY FORM IS VISIBLE */
+  body * {
+    visibility: hidden;
+  }
+
+  #report-content,
+  #report-content * {
+    visibility: visible;
+  }
+
+  #report-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
   }
 }
