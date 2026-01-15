@@ -1,10 +1,15 @@
 import { db } from "../../../db/index";
 
+let isSeeding = false;
+
 /**
  * Seed sample MRM data to IndexedDB
  * Run this once to populate the database with test data
  */
 export const seedMrmData = async () => {
+  if (isSeeding) return;
+  isSeeding = true;
+
   try {
     console.log("Seeding MRM sample data...");
 
@@ -16,6 +21,7 @@ export const seedMrmData = async () => {
     }
 
     // Create sample meeting
+    console.log("Creating first sample meeting...");
     const meetingId = await db.mrm_meetings.add({
       title: "Q1 2026 Management Review Meeting",
       date: "2026-01-15",
@@ -112,6 +118,8 @@ export const seedMrmData = async () => {
   } catch (error) {
     console.error("Error seeding MRM data:", error);
     throw error;
+  } finally {
+    isSeeding = false;
   }
 };
 

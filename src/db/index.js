@@ -22,3 +22,20 @@ db.version(4).stores({
   mrm_action_items: "++id, meetingId, task, dueDate, createdAt",
   mrm_minutes: "++id, meetingId, agendaItems, createdAt",
 });
+
+/**
+ * Utility to clear all data and reset the database.
+ * Use this ONLY for troubleshooting or clearing local test data.
+ * It will delete the entire IndexedDB database and reopen it.
+ */
+export const resetDatabase = async () => {
+  try {
+    await db.delete();
+    await db.open();
+    console.log("✅ Database reset successfully.");
+    window.location.reload(); // Reload to re-initialize seeding
+  } catch (error) {
+    console.error("❌ Failed to reset database:", error);
+  }
+};
+

@@ -50,10 +50,9 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
    * @returns {string} Tailwind CSS class string.
    */
   const menuItemClass = (path) =>
-    `flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 relative overflow-hidden ${
-      isActive(path)
-        ? "bg-indigo-100 text-indigo-700 shadow-sm"
-        : "text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 hover:shadow-sm hover:scale-[1.02]"
+    `flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 relative overflow-hidden ${isActive(path)
+      ? "bg-indigo-100 text-indigo-700 shadow-sm"
+      : "text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 hover:shadow-sm hover:scale-[1.02]"
     }`;
 
   return (
@@ -75,9 +74,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             Q
           </div>
           <span
-            className={`text-2xl font-bold bg-indigo-600 bg-clip-text text-transparent whitespace-nowrap overflow-hidden transition-all duration-300 ${
-              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-            }`}
+            className={`text-2xl font-bold bg-indigo-600 bg-clip-text text-transparent whitespace-nowrap overflow-hidden transition-all duration-300 ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+              }`}
           >
             QualiFlow
           </span>
@@ -93,9 +91,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <LayoutDashboard className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
                 Dashboard
               </span>
@@ -110,9 +107,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <FileText className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
                 Documents
               </span>
@@ -124,9 +120,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             <Link to="/capa" className={menuItemClass("/capa")}>
               <AlertTriangle className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
                 CAPA & Incidents
               </span>
@@ -138,9 +133,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             <Link to="/audits" className={menuItemClass("/audits")}>
               <ClipboardCheck className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
                 Audits
               </span>
@@ -155,9 +149,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
                 Management Review
               </span>
@@ -172,25 +165,23 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <Users className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
                 Staff
               </span>
             </Link>
           </li>
 
-          {/* 7. Suppliers */}
+          {/* 7. Quality Indicators */}
           <li>
-            <Link to="/suppliers" className={menuItemClass("/suppliers")}>
-              <Box className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+            <Link to="/quality-indicators" className={menuItemClass("/quality-indicators")}>
+              <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
               >
-                Suppliers
+                Quality Indicators
               </span>
             </Link>
           </li>
@@ -224,9 +215,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               <Link to="/settings" className={menuItemClass("/settings")}>
                 <Settings className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
                 <span
-                  className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                    isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                  }`}
+                  className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                    }`}
                 >
                   Settings
                 </span>
@@ -239,9 +229,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               >
                 <LogOut className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:-translate-x-1" />
                 <span
-                  className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                    isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                  }`}
+                  className={`ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                    }`}
                 >
                   Sign Out
                 </span>

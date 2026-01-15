@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import Sidebar from "../sidebarComponent/Sidebar";
+import Sidebar from "../sidebarComponent/sidebar";
 import { AlertProvider } from "../../services/alert/AlertProvider";
 
 const MainLayout = () => {
@@ -21,9 +21,8 @@ const MainLayout = () => {
 
       {/* Adjust margin based on collapsed state */}
       <div
-        className={`flex-1 p-4 transition-all duration-300 ease-in-out ${
-          isSidebarCollapsed ? "ml-20" : "ml-64"
-        }`}
+        className={`flex-1 p-4 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "ml-20" : "ml-72"
+          }`}
       >
         <Outlet />
       </div>

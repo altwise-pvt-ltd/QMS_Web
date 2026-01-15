@@ -15,20 +15,20 @@ const ncService = {
    * @returns {Promise<string>} The ID of the saved report.
    */
   async saveNCReport(report) {
-    if (!report.id) {
-      report.id = crypto.randomUUID();
-    }
+    // Strip id if it exists but is falsy (especially if undefined) to allow ++id auto-increment
+    const { id, ...reportData } = report;
+    const finalReport = id ? { id, ...reportData } : reportData;
 
     // NEW Logic: If evidenceImage is a File object, upload it to Cloudflare R2
-    if (report.entry?.evidenceImage instanceof File) {
+    if (finalReport.entry?.evidenceImage instanceof File) {
       try {
         console.log(
           "📸 Evidence image detected. Uploading to remote storage..."
         );
-        const uploadResponse = await uploadFile(report.entry.evidenceImage);
+        const uploadResponse = await uploadFile(finalReport.entry.evidenceImage);
 
         // Replace the File object with the remote URL for persistent storage
-        report.entry.evidenceImage = uploadResponse.fileUrl;
+        finalReport.entry.evidenceImage = uploadResponse.fileUrl;
         console.log("🔗 Image uploaded successfully:", uploadResponse.fileUrl);
       } catch (uploadError) {
         console.error(
@@ -39,12 +39,12 @@ const ncService = {
       }
     }
 
-    console.log("💾 Saving NC report to Dexie:", report);
+    console.log("💾 Saving NC report to Dexie:", finalReport);
 
     try {
-      await db.nc_reports.put(report);
+      const savedId = await db.nc_reports.put(finalReport);
       console.log("✅ NC report saved successfully.");
-      return report.id;
+      return savedId;
     } catch (error) {
       console.error("❌ Failed to save NC report:", error);
       throw error;

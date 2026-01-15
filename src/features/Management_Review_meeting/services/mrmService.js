@@ -7,12 +7,15 @@ import { db } from "../../../db/index";
  */
 export const createMeeting = async (meetingData) => {
   try {
-    const id = await db.mrm_meetings.add({
-      ...meetingData,
+    // Strip id if it exists (especially if undefined) to allow ++id auto-increment
+    const { id, ...cleanData } = meetingData;
+
+    const newId = await db.mrm_meetings.add({
+      ...cleanData,
       createdAt: new Date().toISOString(),
-      status: meetingData.status || "Draft",
+      status: cleanData.status || "Draft",
     });
-    return { id, ...meetingData };
+    return { id: newId, ...cleanData };
   } catch (error) {
     console.error("Error creating meeting:", error);
     throw error;
