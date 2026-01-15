@@ -19,6 +19,7 @@ import SavedDocumentsPage from "./features/documents/SavedDocumentsPage.jsx";
 import NonConformanceForm from "./features/NC/NonConformanceForm.jsx";
 import Capa from "./features/capa/capa.jsx";
 import StaffModule from "./features/staff/StaffModule.jsx";
+import MrmPage from "./features/Management_Review_meeting/MrmPage.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -41,6 +42,7 @@ function App() {
               <Route path="/dashboard" element={<QMSDashboard />} />
               <Route path="/staff" element={<StaffModule />} />
               <Route path="/capa" element={<Capa />} />
+              <Route path="/mrm" element={<MrmPage />} />
               <Route path="/incidents/new" element={<NonConformanceForm />} />
 
               {/* Documents Routes */}

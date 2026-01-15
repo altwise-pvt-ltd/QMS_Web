@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   ChevronDown,
+  Presentation,
 } from "lucide-react";
 
 /**
@@ -146,7 +147,24 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             </Link>
           </li>
 
-          {/* 5. Staff */}
+          {/* 5. Management Review */}
+          <li>
+            <Link to="/mrm" className={menuItemClass("/mrm")}>
+              {isActive("/mrm") && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
+              )}
+              <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <span
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
+                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                }`}
+              >
+                Management Review
+              </span>
+            </Link>
+          </li>
+
+          {/* 6. Staff */}
           <li>
             <Link to="/staff" className={menuItemClass("/staff")}>
               {isActive("/staff") && (
@@ -163,7 +181,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             </Link>
           </li>
 
-          {/* 6. Suppliers */}
+          {/* 7. Suppliers */}
           <li>
             <Link to="/suppliers" className={menuItemClass("/suppliers")}>
               <Box className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
