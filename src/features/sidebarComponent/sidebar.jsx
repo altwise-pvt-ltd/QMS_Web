@@ -186,6 +186,17 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               </span>
             </Link>
           </li>
+          <li>
+            <Link to="/department" className={menuItemClass("/department")}>
+              <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <span
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
+              >
+                Department
+              </span>
+            </Link>
+          </li>
         </ul>
 
         {/* --- Bottom Section with User Profile and Divider --- */}

@@ -21,6 +21,8 @@ import Capa from "./features/capa/capa.jsx";
 import StaffModule from "./features/staff/StaffModule.jsx";
 import MrmPage from "./features/Management_Review_meeting/MrmPage.jsx";
 import QualityIndicator from "./features/qualityindicator/qualityindicator.jsx";
+import ComplianceCalendarPage from "./features/compliance_calendar/ComplianceCalendarPage.jsx";
+import Department from "./features/department/department.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -45,7 +47,9 @@ function App() {
               <Route path="/capa" element={<Capa />} />
               <Route path="/mrm" element={<MrmPage />} />
               <Route path="/quality-indicators" element={<QualityIndicator />} />
+              <Route path="/compliance" element={<ComplianceCalendarPage />} />
               <Route path="/incidents/new" element={<NonConformanceForm />} />
+              <Route path="/department" element={<Department />} />
 
               {/* Documents Routes */}
               <Route path="/documents" element={<DocumentLibrary />} />

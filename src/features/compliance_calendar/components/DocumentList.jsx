@@ -10,6 +10,7 @@ import {
 import { db } from "../../../db/index";
 import { useNavigate } from "react-router-dom";
 import DocumentViewModal from "./DocumentViewModal";
+import AlertManager from "../../../services/alert/alertService";
 
 const DocumentList = () => {
   const [documents, setDocuments] = useState([]);
@@ -38,9 +39,11 @@ const DocumentList = () => {
     if (window.confirm("Are you sure you want to delete this document?")) {
       try {
         await db.documents.delete(id);
+        AlertManager.success("Document deleted successfully", "Deleted");
         await loadDocuments();
       } catch (error) {
         console.error("Error deleting document:", error);
+        AlertManager.error("Failed to delete document", "Error");
       }
     }
   };
@@ -84,7 +87,7 @@ const DocumentList = () => {
         <h2 className="text-2xl font-bold text-gray-900">Document Library</h2>
         <button
           onClick={() => navigate("/documents/upload")}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
         >
           <Plus size={20} />
           Add Document
@@ -174,7 +177,7 @@ const DocumentList = () => {
                       Expires in{" "}
                       {Math.ceil(
                         (new Date(doc.expiryDate) - new Date()) /
-                          (1000 * 60 * 60 * 24)
+                        (1000 * 60 * 60 * 24)
                       )}{" "}
                       days
                     </span>

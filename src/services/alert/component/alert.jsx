@@ -1,9 +1,11 @@
 import React, { useEffect } from "react";
-import { Alert } from "@material-tailwind/react";
-import { CheckCircle, XCircle, AlertTriangle, Info } from "lucide-react";
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import Stack from "@mui/material/Stack";
+import Slide from "@mui/material/Slide";
 
 /**
- * Reusable Alert Component for notifications
+ * Reusable Alert Component for notifications using Material UI
  *
  * @param {Object} props
  * @param {boolean} props.open - Controls alert visibility
@@ -32,72 +34,46 @@ export function CustomAlert({
     }
   }, [open, duration, onClose]);
 
-  // Alert type configurations
-  const alertConfig = {
-    success: {
-      color: "green",
-      icon: CheckCircle,
-      defaultTitle: "Success",
-      bgClass: "bg-green-50 border-green-500",
-      textClass: "text-green-900",
-      iconClass: "text-green-600",
-    },
-    error: {
-      color: "red",
-      icon: XCircle,
-      defaultTitle: "Error",
-      bgClass: "bg-red-50 border-red-500",
-      textClass: "text-red-900",
-      iconClass: "text-red-600",
-    },
-    warning: {
-      color: "amber",
-      icon: AlertTriangle,
-      defaultTitle: "Warning",
-      bgClass: "bg-amber-50 border-amber-500",
-      textClass: "text-amber-900",
-      iconClass: "text-amber-600",
-    },
-    info: {
-      color: "blue",
-      icon: Info,
-      defaultTitle: "Information",
-      bgClass: "bg-blue-50 border-blue-500",
-      textClass: "text-blue-900",
-      iconClass: "text-blue-600",
-    },
-  };
-
-  const config = alertConfig[type] || alertConfig.info;
-  const Icon = config.icon;
-  const displayTitle = title || config.defaultTitle;
-
   if (!open) return null;
 
+  // Map types to severity for MUI Alert
+  const severityMap = {
+    success: "success",
+    error: "error",
+    critical: "error", // Handle critical as error
+    warning: "warning",
+    info: "info",
+  };
+
+  const severity = severityMap[type] || "info";
+  const displayTitle = title || (severity.charAt(0).toUpperCase() + severity.slice(1));
+
   return (
-    <Alert
-      open={open}
-      onClose={onClose}
-      className={`fixed top-4 right-4 z-50 max-w-md shadow-lg border-l-4 ${config.bgClass}`}
-      animate={{
-        mount: { opacity: 1, y: 0 },
-        unmount: { opacity: 0, y: -20 },
-      }}
-    >
-      <div className="flex items-start gap-3">
-        <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${config.iconClass}`} />
-        <div className="flex-1">
-          {displayTitle && (
-            <h5 className={`font-semibold text-sm mb-1 ${config.textClass}`}>
-              {displayTitle}
-            </h5>
-          )}
-          <p className={`text-sm ${config.textClass}`}>{message}</p>
-        </div>
-      </div>
-    </Alert>
+    <div style={{
+      position: 'fixed',
+      top: '24px',
+      right: '24px',
+      zIndex: 9999,
+      minWidth: '320px',
+      maxWidth: '450px'
+    }}>
+      <Slide direction="left" in={open} mountOnEnter unmountOnExit>
+        <Stack sx={{ width: '100%' }} spacing={2}>
+          <Alert
+            severity={severity}
+            onClose={onClose}
+            sx={{
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              borderRadius: '12px'
+            }}
+          >
+            <AlertTitle sx={{ fontWeight: 700 }}>{displayTitle}</AlertTitle>
+            {message}
+          </Alert>
+        </Stack>
+      </Slide>
+    </div>
   );
 }
 
-// Export default for backward compatibility
 export default CustomAlert;

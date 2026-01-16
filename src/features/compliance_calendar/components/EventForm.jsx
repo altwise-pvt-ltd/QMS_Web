@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Save, Calendar } from "lucide-react";
 import { createEvent, updateEvent } from "../services/complianceService";
+import AlertManager from "../../../services/alert/alertService";
 import { FREQUENCY_OPTIONS } from "../config/eventTypes";
 
 const EventForm = ({ event, eventTypes, onClose }) => {
@@ -44,14 +45,23 @@ const EventForm = ({ event, eventTypes, onClose }) => {
       if (eventId) {
         // Update existing event
         await updateEvent(eventId, formData);
+
+        // Show what changed if possible (e.g. status)
+        const statusChanged = event && event.status !== formData.status;
+        const msg = statusChanged
+          ? `Event updated (Status: ${formData.status})`
+          : "Event updated successfully";
+
+        AlertManager.success(msg, "Updated");
       } else {
         // Create new event
         await createEvent(formData);
+        AlertManager.success("New event created successfully", "Created");
       }
       onClose();
     } catch (error) {
       console.error("Error saving event:", error);
-      alert("Error saving event. Please try again.");
+      AlertManager.error("Error saving event. Please try again.", "Error");
     } finally {
       setSaving(false);
     }
@@ -228,7 +238,7 @@ const EventForm = ({ event, eventTypes, onClose }) => {
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-grey-600 rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50"
             >
               <Save size={18} />
               {saving ? "Saving..." : eventId ? "Update Event" : "Create Event"}

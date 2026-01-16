@@ -19,6 +19,27 @@ const QualityIndicator = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [indicators, setIndicators] = useState(QUALITY_INDICATORS);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [newName, setNewName] = useState("");
+    const [newCategory, setNewCategory] = useState("");
+
+    const handleAddIndicator = () => {
+        if (!newName || !newCategory) return;
+
+        const newIndicator = {
+            id: `new-${Date.now()}`,
+            name: newName,
+            category: newCategory,
+            count: 0,
+            hasCapa: false,
+            incidents: []
+        };
+
+        setIndicators([newIndicator, ...indicators]);
+        setIsModalOpen(false);
+        setNewName("");
+        setNewCategory("");
+    };
 
     const filteredIndicators = indicators.filter(indicator => {
         const matchesSearch = indicator.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -46,8 +67,8 @@ const QualityIndicator = () => {
             <div>
                 <div className="flex justify-between items-start mb-4">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${indicator.category === 'Pre-Analytical' ? 'bg-amber-50 text-amber-600' :
-                            indicator.category === 'Analytical' ? 'bg-indigo-50 text-indigo-600' :
-                                'bg-emerald-50 text-emerald-600'
+                        indicator.category === 'Analytical' ? 'bg-indigo-50 text-indigo-600' :
+                            'bg-emerald-50 text-emerald-600'
                         }`}>
                         {indicator.category}
                     </span>
@@ -170,7 +191,10 @@ const QualityIndicator = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {/* Add New Card */}
-                    <div className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 group hover:border-indigo-300 transition-all flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-white min-h-[220px]">
+                    <div
+                        onClick={() => setIsModalOpen(true)}
+                        className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 group hover:border-indigo-300 transition-all flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-white min-h-[220px]"
+                    >
                         <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all mb-4">
                             <Plus size={28} />
                         </div>
@@ -183,6 +207,65 @@ const QualityIndicator = () => {
                     ))}
                 </div>
             </div>
+
+            {/* Add New Indicator Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="p-8">
+                            <h2 className="text-2xl font-black text-slate-800 mb-2">New Indicator</h2>
+                            <p className="text-slate-500 text-sm mb-8">Define a new quality metric for your laboratory</p>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">Select Stage</label>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {CATEGORIES.map(cat => (
+                                            <button
+                                                key={cat}
+                                                onClick={() => setNewCategory(cat)}
+                                                className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${newCategory === cat
+                                                    ? "border-indigo-600 bg-indigo-50/50 text-indigo-700"
+                                                    : "border-slate-100 hover:border-slate-200 text-slate-600"}`}
+                                            >
+                                                <span className="font-bold">{cat}</span>
+                                                {newCategory === cat && <CheckCircle2 size={18} />}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">Indicator Name</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. Turnaround Time Overrun"
+                                        value={newName}
+                                        onChange={(e) => setNewName(e.target.value)}
+                                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-hidden font-bold text-slate-800"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 mt-10">
+                                <button
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="flex-1 py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleAddIndicator}
+                                    disabled={!newName || !newCategory}
+                                    className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                                >
+                                    Define Metric
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

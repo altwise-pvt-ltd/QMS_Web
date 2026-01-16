@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { QUALITY_INDICATORS } from "./qi_data";
+import { ChevronRight } from "lucide-react";
 import html2pdf from "html2pdf.js";
 
 // Sub-components
@@ -8,76 +9,88 @@ import QIFormSidebar from "./components/QIFormSidebar";
 import QIReportTable from "./components/QIReportTable";
 
 const QalityIndicatorForm = ({ onBack }) => {
-    const [selectedMonth, setSelectedMonth] = useState("NOV 2025");
-    const [selectedIndicators, setSelectedIndicators] = useState(QUALITY_INDICATORS.map(i => i.id));
-    const [metadata, setMetadata] = useState({
-        documentNo: "ADC--L--22",
-        documentName: "QUALITY INDICATOR CHART FORM",
-        issueNo: "01",
-        issueDate: "01.07.2022",
-        status: "Controlled",
-        page: "1 of 1",
-        amendmentNo: "00",
-        amendmentDate: ""
-    });
-    const reportRef = useRef(null);
+  const [selectedMonth, setSelectedMonth] = useState("NOV 2025");
+  const [selectedIndicators, setSelectedIndicators] = useState(QUALITY_INDICATORS.map(i => i.id));
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [metadata, setMetadata] = useState({
+    documentNo: "ADC--L--22",
+    documentName: "QUALITY INDICATOR CHART FORM",
+    issueNo: "01",
+    issueDate: "01.07.2022",
+    status: "Controlled",
+    page: "1 of 1",
+    amendmentNo: "00",
+    amendmentDate: ""
+  });
+  const reportRef = useRef(null);
 
-    const toggleIndicator = (id) => {
-        setSelectedIndicators(prev =>
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-        );
+  const toggleIndicator = (id) => {
+    setSelectedIndicators(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownloadPdf = () => {
+    const element = reportRef.current;
+    const opt = {
+      margin: [10, 5, 10, 5],
+      filename: `Quality_Indicators_${selectedMonth.replace(' ', '_')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
+    html2pdf().set(opt).from(element).save();
+  };
 
-    const handlePrint = () => {
-        window.print();
-    };
+  const displayedIndicators = QUALITY_INDICATORS.filter(i => selectedIndicators.includes(i.id));
 
-    const handleDownloadPdf = () => {
-        const element = reportRef.current;
-        const opt = {
-            margin: [10, 5, 10, 5],
-            filename: `Quality_Indicators_${selectedMonth.replace(' ', '_')}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        };
-        html2pdf().set(opt).from(element).save();
-    };
+  return (
+    <div className="space-y-6 animate-in slide-in-from-right duration-500 pb-20">
+      <QIFormHeader
+        onBack={onBack}
+        onDownload={handleDownloadPdf}
+        onPrint={handlePrint}
+        title="Quality Indicator Chart Form"
+      />
 
-    const displayedIndicators = QUALITY_INDICATORS.filter(i => selectedIndicators.includes(i.id));
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className={`transition-all duration-300 ${isSidebarCollapsed ? "w-0 overflow-hidden opacity-0" : "w-full lg:w-1/4"}`}>
+          <QIFormSidebar
+            selectedMonth={selectedMonth}
+            setSelectedMonth={setSelectedMonth}
+            selectedIndicators={selectedIndicators}
+            toggleIndicator={toggleIndicator}
+            onSelectAll={() => setSelectedIndicators(QUALITY_INDICATORS.map(i => i.id))}
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          />
+        </div>
 
-    return (
-        <div className="space-y-6 animate-in slide-in-from-right duration-500 pb-20">
-            <QIFormHeader
-                onBack={onBack}
-                onDownload={handleDownloadPdf}
-                onPrint={handlePrint}
-                title="Quality Indicator Chart Form"
-            />
+        <div className={`transition-all duration-300 ${isSidebarCollapsed ? "w-full" : "w-full lg:w-3/4"}`}>
+          {isSidebarCollapsed && (
+            <button
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="mb-4 flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold text-indigo-600 shadow-sm hover:shadow-md transition-all no-print"
+            >
+              <ChevronRight size={14} />
+              Show Sidebar
+            </button>
+          )}
+          <QIReportTable
+            ref={reportRef}
+            selectedMonth={selectedMonth}
+            displayedIndicators={displayedIndicators}
+            metadata={metadata}
+          />
+        </div>
+      </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-1">
-                    <QIFormSidebar
-                        selectedMonth={selectedMonth}
-                        setSelectedMonth={setSelectedMonth}
-                        selectedIndicators={selectedIndicators}
-                        toggleIndicator={toggleIndicator}
-                        onSelectAll={() => setSelectedIndicators(QUALITY_INDICATORS.map(i => i.id))}
-                    />
-                </div>
-
-                <div className="lg:col-span-3">
-                    <QIReportTable
-                        ref={reportRef}
-                        selectedMonth={selectedMonth}
-                        displayedIndicators={displayedIndicators}
-                        metadata={metadata}
-                    />
-                </div>
-            </div>
-
-            <style dangerouslySetInnerHTML={{
-                __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
         }
@@ -92,31 +105,65 @@ const QalityIndicatorForm = ({ onBack }) => {
           background: #cbd5e1;
         }
       `}} />
-            <style dangerouslySetInnerHTML={{
-                __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @media print {
-          body * {
-            visibility: hidden;
+          @page {
+            size: A3 landscape !important;
+            margin: 10mm !important;
           }
-          .printable-report, .printable-report * {
-            visibility: visible;
+          
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
-          .printable-report {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-          }
-          /* Hide sidebar, header and other UI elements */
-          nav, aside, button, select, .no-print {
+
+          /* Hide UI elements */
+          nav, aside, .sidebar, .sidebar-container, 
+          button, .no-print, header, footer,
+          .lg:col-span-1, [className*="sidebar"],
+          div:has(> button), .fixed {
             display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+          }
+
+          /* Show only report */
+          body * {
+            visibility: hidden !important;
+          }
+
+          .printable-report, .printable-report * {
+            visibility: visible !important;
+          }
+
+          .printable-report {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 20px !important;
+          }
+
+          /* Table optimization */
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            page-break-inside: auto !important;
+          }
+          tr {
+            page-break-inside: avoid !important;
+            page-break-after: auto !important;
           }
         }
       `}} />
-        </div>
-    );
+    </div>
+  );
 };
 
 export default QalityIndicatorForm;

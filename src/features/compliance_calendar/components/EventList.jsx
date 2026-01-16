@@ -15,6 +15,7 @@ import {
   deleteEvent,
   updateEvent,
 } from "../services/complianceService";
+import AlertManager from "../../../services/alert/alertService";
 import {
   getAlertColor,
   formatDueDate,
@@ -87,9 +88,11 @@ const EventList = () => {
     if (window.confirm("Are you sure you want to delete this event?")) {
       try {
         await deleteEvent(id);
+        AlertManager.success("Event deleted successfully", "Deleted");
         await loadData();
       } catch (error) {
         console.error("Error deleting event:", error);
+        AlertManager.error("Failed to delete event", "Error");
       }
     }
   };
@@ -97,9 +100,11 @@ const EventList = () => {
   const handleMarkComplete = async (event) => {
     try {
       await updateEvent(event.id, { status: "completed" });
+      AlertManager.success(`"${event.title}" marked as completed`, "Status Updated");
       await loadData();
     } catch (error) {
       console.error("Error updating event:", error);
+      AlertManager.error("Failed to update event status", "Error");
     }
   };
 
@@ -129,7 +134,7 @@ const EventList = () => {
         <h2 className="text-2xl font-bold text-gray-900">Compliance Events</h2>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
         >
           <Plus size={20} />
           New Event
