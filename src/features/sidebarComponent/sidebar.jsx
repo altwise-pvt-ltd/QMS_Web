@@ -12,6 +12,7 @@ import {
   LogOut,
   ChevronDown,
   Presentation,
+  Calendar,
 } from "lucide-react";
 
 /**
@@ -133,16 +134,16 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             </Link>
           </li>
 
-          {/* 4. Audits */}
+          {/* 4. Compliance Calendar */}
           <li>
-            <Link to="/audits" className={menuItemClass("/audits")}>
-              <ClipboardCheck className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+            <Link to="/compliance" className={menuItemClass("/compliance")}>
+              <Calendar className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
                 className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
                   isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
                 }`}
               >
-                Audits
+                Compliance Calendar
               </span>
             </Link>
           </li>
@@ -182,7 +183,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           </li>
 
           {/* 7. Suppliers */}
-          <li>
+          {/* <li>
             <Link to="/suppliers" className={menuItemClass("/suppliers")}>
               <Box className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
@@ -193,7 +194,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 Suppliers
               </span>
             </Link>
-          </li>
+          </li> */}
         </ul>
 
         {/* --- Bottom Section with User Profile and Divider --- */}
