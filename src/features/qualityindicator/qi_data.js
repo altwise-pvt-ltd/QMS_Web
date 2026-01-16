@@ -9,7 +9,11 @@ export const QUALITY_INDICATORS = [
         capaId: "CAPA-2026-001",
         incidents: [
             { date: "2026-01-05", value: 1 },
+            { date: "2026-01-29", value: 2 },
             { date: "2026-01-12", value: 2 },
+            { date: "2026-01-15", value: 5 },
+            { date: "2026-01-21", value: 1 },
+            { date: "2026-01-30", value: 2 },
         ]
     },
     {
@@ -35,7 +39,11 @@ export const QUALITY_INDICATORS = [
         category: "Pre-Analytical",
         count: 8,
         hasCapa: false,
-        incidents: []
+        incidents: [{ date: "2026-01-12", value: 2 },
+        { date: "2026-01-12", value: 2 },
+        { date: "2026-01-14", value: 1 },
+        { date: "2026-01-16", value: 2 },
+        { date: "2026-01-25", value: 5 },]
     },
     {
         id: "pre-5",
@@ -60,7 +68,11 @@ export const QUALITY_INDICATORS = [
         category: "Pre-Analytical",
         count: 1,
         hasCapa: false,
-        incidents: []
+        incidents: [{ date: "2026-01-12", value: 2 },
+        { date: "2026-01-2", value: 2 },
+        { date: "2026-01-13", value: 2 },
+        { date: "2026-01-14", value: 2 },
+        { date: "2026-01-12", value: 2 },]
     },
 
     // --- Analytical ---
@@ -78,7 +90,11 @@ export const QUALITY_INDICATORS = [
         category: "Analytical",
         count: 4,
         hasCapa: false,
-        incidents: []
+        incidents: [{ date: "2026-01-12", value: 2 },
+        { date: "2026-01-12", value: 2 },
+        { date: "2026-01-13", value: 1 },
+        { date: "2026-01-17", value: 4 },
+        { date: "2026-01-18", value: 6 },]
     },
     {
         id: "ana-3",
@@ -96,7 +112,11 @@ export const QUALITY_INDICATORS = [
         count: 9,
         hasCapa: true,
         capaId: "CAPA-2026-005",
-        incidents: []
+        incidents: [{ date: "2026-01-12", value: 2 },
+        { date: "2026-01-23", value: 1 },
+        { date: "2026-01-19", value: 1 },
+        { date: "2026-01-20", value: 9 },
+        ]
     },
     {
         id: "ana-5",
@@ -113,7 +133,11 @@ export const QUALITY_INDICATORS = [
         category: "Analytical",
         count: 22,
         hasCapa: false,
-        incidents: []
+        incidents: [{ date: "2026-01-12", value: 2 },
+        { date: "2026-01-9", value: 2 },
+        { date: "2026-01-04", value: 2 },
+        { date: "2026-01-05", value: 2 },
+        { date: "2026-01-06", value: 2 },]
     },
 
     // --- Post-Analytical ---
@@ -123,7 +147,11 @@ export const QUALITY_INDICATORS = [
         category: "Post-Analytical",
         count: 6,
         hasCapa: false,
-        incidents: []
+        incidents: [{ date: "2026-01-12", value: 2 },
+        { date: "2026-01-12", value: 2 },
+        { date: "2026-01-31", value: 2 },
+        { date: "2026-01-21", value: 2 },
+        { date: "2026-01-22", value: 2 },]
     },
     {
         id: "post-2",
@@ -164,7 +192,13 @@ export const QUALITY_INDICATORS = [
         category: "Post-Analytical",
         count: 7,
         hasCapa: false,
-        incidents: []
+        incidents: [
+            { date: "2026-01-12", value: 2 },
+            { date: "2026-01-12", value: 5 },
+            { date: "2026-01-16", value: 2 },
+            { date: "2026-01-14", value: 6 },
+            { date: "2026-01-18", value: 2 },
+        ]
     }
 ];
 
