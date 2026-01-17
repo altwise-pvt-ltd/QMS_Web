@@ -186,6 +186,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               </span>
             </Link>
           </li>
+
+          {/* 8. Department */}
           <li>
             <Link to="/department" className={menuItemClass("/department")}>
               <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
@@ -194,6 +196,19 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                   }`}
               >
                 Department
+              </span>
+            </Link>
+          </li>
+
+          {/* 9. Intrusment */}
+          <li>
+            <Link to="/intrusment" className={menuItemClass("/intrusment")}>
+              <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <span
+                className={`flex-1 ms-3 whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
+              >
+                Instrument Caliberation
               </span>
             </Link>
           </li>

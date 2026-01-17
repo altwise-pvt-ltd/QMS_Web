@@ -23,6 +23,7 @@ import MrmPage from "./features/Management_Review_meeting/MrmPage.jsx";
 import QualityIndicator from "./features/qualityindicator/qualityindicator.jsx";
 import ComplianceCalendarPage from "./features/compliance_calendar/ComplianceCalendarPage.jsx";
 import Department from "./features/department/department.jsx";
+import Instrument from "./features/Instrument/Instrument.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -50,6 +51,7 @@ function App() {
               <Route path="/compliance" element={<ComplianceCalendarPage />} />
               <Route path="/incidents/new" element={<NonConformanceForm />} />
               <Route path="/department" element={<Department />} />
+              <Route path="/intrusment" element={<Instrument />} />
 
               {/* Documents Routes */}
               <Route path="/documents" element={<DocumentLibrary />} />

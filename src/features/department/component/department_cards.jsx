@@ -88,13 +88,9 @@ const DepartmentCard = ({ dept, isSelected, onSelect }) => {
                     <p className="text-xs font-semibold truncate">Lead: {dept.head || "Not Assigned"}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                     <div className={`${isSelected ? "bg-indigo-50/50" : "bg-slate-50/80"} p-3 rounded-2xl transition-colors`}>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Equipment</p>
-                        <p className={`text-lg font-black transition-colors ${isSelected ? "text-indigo-700" : "text-slate-700"}`}>24</p>
-                    </div>
-                    <div className={`${isSelected ? "bg-indigo-50/50" : "bg-slate-50/80"} p-3 rounded-2xl transition-colors`}>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Staff</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Staff Member Count</p>
                         <p className={`text-lg font-black transition-colors ${isSelected ? "text-indigo-700" : "text-slate-700"}`}>{dept.employeeCount}</p>
                     </div>
                 </div>

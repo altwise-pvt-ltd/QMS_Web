@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
     Building2,
     LayoutDashboard,
-    Wrench,
     Plus,
     Search,
     Filter,
@@ -16,7 +15,6 @@ import DepartmentView from "./component/department_view";
 import AddDepartment from "./component/add_department";
 
 const Department = () => {
-    const [view, setView] = useState("overview"); // "overview" or "equipments"
     const [departments, setDepartments] = useState(DEPARTMENTS);
     const [selectedDeptId, setSelectedDeptId] = useState(DEPARTMENTS[0]?.id);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -35,8 +33,6 @@ const Department = () => {
     const stats = [
         { label: "Total Departments", value: departments.length, icon: Building2, color: "text-indigo-600", bg: "bg-indigo-50" },
         { label: "Onboarded Staff", value: departments.reduce((acc, curr) => acc + curr.employeeCount, 0), icon: Users2, color: "text-emerald-600", bg: "bg-emerald-50" },
-        { label: "Inventory Assets", value: "482", icon: Wrench, color: "text-amber-600", bg: "bg-amber-50" },
-        { label: "Operational Efficiency", value: "94%", icon: BarChart3, color: "text-rose-600", bg: "bg-rose-50" },
     ];
 
     return (
@@ -49,117 +45,77 @@ const Department = () => {
                             <Building2 className="text-indigo-600" />
                             Departmental Hub
                         </h1>
-                        <p className="text-slate-500 mt-1 font-medium">Manage hospital units, staffing, and equipment inventory</p>
-                    </div>
-                </div>
-
-                <div className="flex flex-col md:flex-row items-center justify-start gap-4 pt-6 border-t border-slate-100">
-                    <div className="flex items-center">
-                        <button
-                            onClick={() => setView("overview")}
-                            className={`flex items-center gap-2 px-10 py-2.5 rounded-xl text-sm font-bold transition-all ${view === "overview"
-                                ? "bg-indigo-600 text-black shadow-lg shadow-indigo-200"
-                                : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600"
-                                }`}
-                        >
-                            <LayoutDashboard size={18} />
-                            Main Overview
-                        </button>
-                        <button
-                            onClick={() => setView("equipments")}
-                            className={`flex items-center gap-2 px-10 py-2.5 rounded-xl text-sm font-bold transition-all ${view === "equipments"
-                                ? "bg-indigo-600 text-black shadow-lg shadow-indigo-200"
-                                : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600"
-                                }`}
-                        >
-                            <Wrench size={18} />
-                            Equipment Register
-                        </button>
+                        <p className="text-slate-500 mt-1 font-medium">Manage hospital units and staffing roster</p>
                     </div>
                 </div>
             </div>
 
-            {view === "overview" ? (
-                <>
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {stats.map((stat, idx) => (
-                            <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
-                                <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full ${stat.bg} opacity-10 group-hover:scale-110 transition-transform duration-500`}></div>
-                                <div className="flex items-center gap-4 relative z-10">
-                                    <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color} shadow-sm group-hover:scale-110 transition-transform`}>
-                                        <stat.icon size={24} />
-                                    </div>
-                                    <div>
-                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
-                                        <h3 className="text-2xl font-black text-slate-800 tracking-tight">{stat.value}</h3>
-                                    </div>
-                                </div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                {stats.map((stat, idx) => (
+                    <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+                        <div className={`absolute -right-3 -top-3 w-24 h-24 rounded-full ${stat.bg} opacity-10 group-hover:scale-110 transition-transform duration-500`}></div>
+                        <div className="flex items-center gap-4 relative z-10">
+                            <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color} shadow-sm group-hover:scale-110 transition-transform`}>
+                                <stat.icon size={24} />
                             </div>
-                        ))}
-                    </div>
-
-                    {/* Controls & Grid */}
-                    <div className="bg-slate-50/50 p-8 rounded-[40px] border border-slate-100 shadow-inner">
-                        <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
-                            <div className="flex flex-col gap-1">
-                                <h2 className="text-xl font-black text-slate-800 tracking-tight">Active Departments</h2>
-                                <p className="text-xs text-slate-400 font-medium">Click on a card below to switch the roster view</p>
+                            <div>
+                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
+                                <h3 className="text-2xl font-black text-slate-800 tracking-tight">{stat.value}</h3>
                             </div>
-
-                            <button
-                                onClick={() => setIsAddModalOpen(true)}
-                                className="w-full md:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-indigo-600 text-black rounded-2xl font-black shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all"
-                            >
-                                <Plus size={20} />
-                                Add Department
-                            </button>
                         </div>
-
-                        {filteredDepartments.length > 0 ? (
-                            <div className="space-y-12">
-                                <DepartmentCards
-                                    departments={filteredDepartments}
-                                    selectedId={selectedDeptId}
-                                    onSelect={setSelectedDeptId}
-                                />
-
-                                <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm p-10 animate-in slide-in-from-bottom-8 duration-500">
-                                    <div className="flex items-center gap-4 mb-8">
-                                        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm">
-                                            <Users2 size={24} />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-black text-slate-800 tracking-tight">Departmental Roster</h3>
-                                            <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">
-                                                Active Team: {departments.find(d => d.id === selectedDeptId)?.name}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <DepartmentView deptId={selectedDeptId} />
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="py-20 text-center">
-                                <Building2 className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-                                <h3 className="text-xl font-bold text-slate-400">No departments found</h3>
-                                <p className="text-slate-400 text-sm">Try adjusting your search criteria</p>
-                            </div>
-                        )}
                     </div>
-                </>
-            ) : (
-                <div className="bg-white p-20 rounded-[40px] border border-slate-100 shadow-sm text-center animate-in zoom-in-95 duration-500">
-                    <div className="w-20 h-20 bg-amber-50 rounded-3xl flex items-center justify-center text-amber-500 mx-auto mb-6 shadow-sm border border-amber-100">
-                        <Wrench size={40} />
+                ))}
+            </div>
+
+            {/* Controls & Grid */}
+            <div className="bg-slate-50/50 p-8 rounded-[40px] border border-slate-100 shadow-inner">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+                    <div className="flex flex-col gap-1">
+                        <h2 className="text-xl font-black text-slate-800 tracking-tight">Active Departments</h2>
+                        <p className="text-xs text-slate-400 font-medium">Click on a card below to switch the roster view</p>
                     </div>
-                    <h2 className="text-2xl font-black text-slate-800 mb-2">Equipment Management</h2>
-                    <p className="text-slate-500 max-w-sm mx-auto mb-8 font-medium">Tracking and maintenance scheduling for hospital machinery and laboratory instruments across all departments.</p>
-                    <button className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl">
-                        View Equipment Register
+
+                    <button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="w-full md:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-indigo-600 text-black rounded-2xl font-black shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all"
+                    >
+                        <Plus size={20} />
+                        Add Department
                     </button>
                 </div>
-            )}
+
+                {filteredDepartments.length > 0 ? (
+                    <div className="space-y-12">
+                        <DepartmentCards
+                            departments={filteredDepartments}
+                            selectedId={selectedDeptId}
+                            onSelect={setSelectedDeptId}
+                        />
+
+                        <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm p-10 animate-in slide-in-from-bottom-8 duration-500">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm">
+                                    <Users2 size={24} />
+                                </div>
+                                <div className>
+                                    <h3 className="text-xl font-black text-slate-800 tracking-tight">Departmental Roster</h3>
+                                    <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">
+                                        Active Team: {departments.find(d => d.id === selectedDeptId)?.name}
+                                    </p>
+                                </div>
+                            </div>
+                            <DepartmentView deptId={selectedDeptId} />
+                        </div>
+                    </div>
+                ) : (
+                    <div className="py-20 text-center">
+                        <Building2 className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+                        <h3 className="text-xl font-bold text-slate-400">No departments found</h3>
+                        <p className="text-slate-400 text-sm">Try adjusting your search criteria</p>
+                    </div>
+                )}
+            </div>
 
             <AddDepartment
                 isOpen={isAddModalOpen}
