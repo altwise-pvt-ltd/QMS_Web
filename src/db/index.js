@@ -3,8 +3,8 @@ import Dexie from "dexie";
 // QMS Web Database configuration using Dexie.js
 export const db = new Dexie("QMS_Web_DB");
 
-// UPDATE VERSION: Bump version to apply schema changes (e.g., 4 -> 5)
-db.version(5).stores({
+// UPDATE VERSION: Bump version to apply schema changes (e.g., 6 -> 7)
+db.version(7).stores({
   // Persistent storage for documents metadata
   documents:
     "id, name, level, category, subCategory, status, department, author, version, createdDate, expiryDate",
@@ -13,7 +13,7 @@ db.version(5).stores({
   capa_forms: "id, title, createdAt",
   capa_responses: "id, title, filledAt, filledBy",
 
-  // UPDATED: Added "++" before id for Auto-Increment (1, 2, 3...)
+  // NC Reports: ++id for auto-increment
   nc_reports:
     "++id, documentNo, documentName, status, submittedBy.name, lastModified",
 
@@ -30,21 +30,54 @@ db.version(5).stores({
     "++id, documentType, documentName, issueDate, expiryDate, status, fileData, createdAt",
   compliance_records:
     "++id, eventId, documentId, uploadDate, fileName, fileData, notes, uploadedBy",
+
+  // Quality Indicators storage (Persistent QMS metrics)
+  quality_indicators:
+    "id, name, category, count, threshold, severity, minValue, maxValue",
+
+  // Training & Competency tracking
+  training_attendance: "++id, eventId, staffId, status, score, completionDate",
+
+  // Staff/Personnel directory
+  staff: "++id, name, role, dept, status, joinDate",
 });
 
 /**
- * Utility to clear all data and reset the database.
- * Use this ONLY for troubleshooting or clearing local test data.
- * It will delete the entire IndexedDB database and reopen it.
+ * Robust initialization that handles Dexie UpgradeErrors (primary key changes).
+ * Since primary keys cannot be changed in IndexedDB, we catch the error,
+ * delete the outdated database, and re-open to create a fresh schema.
+ */
+export const initDatabase = async () => {
+  try {
+    await db.open();
+    return db;
+  } catch (err) {
+    if (
+      err.name === "UpgradeError" ||
+      (err.inner && err.inner.name === "UpgradeError")
+    ) {
+      console.warn(
+        "⚠️ Database schema mismatch (primary key change). Resetting database...",
+      );
+      await db.delete();
+      await db.open();
+      console.log("✅ Database reset and re-opened successfully.");
+      return db;
+    }
+    throw err;
+  }
+};
+
+/**
+ * Manual reset utility for troubleshooting.
  */
 export const resetDatabase = async () => {
   try {
     await db.delete();
     await db.open();
     console.log("✅ Database reset successfully.");
-    window.location.reload(); // Reload to re-initialize seeding
+    window.location.reload();
   } catch (error) {
     console.error("❌ Failed to reset database:", error);
   }
 };
-

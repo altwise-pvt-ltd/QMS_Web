@@ -65,7 +65,7 @@ const EventList = () => {
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter((event) =>
-        event.title.toLowerCase().includes(searchTerm.toLowerCase())
+        event.title.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -77,7 +77,7 @@ const EventList = () => {
     // Type filter
     if (typeFilter !== "all") {
       filtered = filtered.filter(
-        (event) => event.eventTypeId === parseInt(typeFilter)
+        (event) => event.eventTypeId === parseInt(typeFilter),
       );
     }
 
@@ -100,7 +100,10 @@ const EventList = () => {
   const handleMarkComplete = async (event) => {
     try {
       await updateEvent(event.id, { status: "completed" });
-      AlertManager.success(`"${event.title}" marked as completed`, "Status Updated");
+      AlertManager.success(
+        `"${event.title}" marked as completed`,
+        "Status Updated",
+      );
       await loadData();
     } catch (error) {
       console.error("Error updating event:", error);
@@ -131,10 +134,10 @@ const EventList = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Compliance Events</h2>
+        <h2 className="text-2xl font-bold text-white">Compliance Events</h2>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
         >
           <Plus size={20} />
           New Event
@@ -226,7 +229,7 @@ const EventList = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredEvents.map((event) => {
                   const eventType = eventTypes.find(
-                    (t) => t.id === event.eventTypeId
+                    (t) => t.id === event.eventTypeId,
                   );
                   return (
                     <tr key={event.id} className="hover:bg-gray-50">
@@ -252,7 +255,7 @@ const EventList = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium bg-${getStatusColor(
-                            event.status
+                            event.status,
                           )}-100 text-${getStatusColor(event.status)}-700`}
                         >
                           {event.status}
