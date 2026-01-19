@@ -19,9 +19,20 @@ export const addExpiryDatesToDocuments = async () => {
       if (!doc.expiryDate) {
         // Calculate expiry date based on document type
         let expiryDate;
-        const createdDate = doc.createdDate
-          ? new Date(doc.createdDate)
-          : new Date();
+
+        // Parse createdDate with validation
+        let createdDate = new Date();
+        if (doc.createdDate) {
+          const parsedDate = new Date(doc.createdDate);
+          // Check if the date is valid
+          if (!isNaN(parsedDate.getTime())) {
+            createdDate = parsedDate;
+          } else {
+            console.warn(
+              `Invalid createdDate for document ${doc.id}: ${doc.createdDate}, using current date`,
+            );
+          }
+        }
 
         // Set different expiry periods based on category
         if (
@@ -55,13 +66,13 @@ export const addExpiryDatesToDocuments = async () => {
 
         updatedCount++;
         console.log(
-          `Updated document: ${doc.name} with expiry date: ${formattedExpiryDate}`
+          `Updated document: ${doc.name} with expiry date: ${formattedExpiryDate}`,
         );
       }
     }
 
     console.log(
-      `✅ Successfully added expiry dates to ${updatedCount} documents`
+      `✅ Successfully added expiry dates to ${updatedCount} documents`,
     );
     return {
       success: true,
@@ -86,7 +97,7 @@ export const setDocumentExpiryDate = async (documentId, expiryDate) => {
       expiryDate: expiryDate,
     });
     console.log(
-      `✅ Updated document ${documentId} with expiry date: ${expiryDate}`
+      `✅ Updated document ${documentId} with expiry date: ${expiryDate}`,
     );
     return { success: true };
   } catch (error) {

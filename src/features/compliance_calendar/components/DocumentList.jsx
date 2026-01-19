@@ -172,7 +172,7 @@ const DocumentList = () => {
 
                 {doc.expiryDate && status.label === "Expiring Soon" && (
                   <div className="mt-4 p-2 bg-orange-50 border border-orange-200 rounded-lg flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-orange-600 flex-shrink-0" />
+                    <AlertTriangle className="w-4 h-4 text-orange-600 shrink-0" />
                     <span className="text-xs text-orange-700">
                       Expires in{" "}
                       {Math.ceil(

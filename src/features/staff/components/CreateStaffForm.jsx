@@ -5,8 +5,8 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    employeeId: "",
     email: "",
+    mobileNumber: "",
     department: "",
     jobTitle: "",
     joinDate: new Date().toISOString().split("T")[0],
@@ -22,8 +22,8 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
       setFormData({
         firstName,
         lastName,
-        employeeId: initialData.id?.toString() || "",
         email: initialData.email || "",
+        mobileNumber: initialData.mobileNumber || "",
         department: initialData.dept || "",
         jobTitle: initialData.role || "",
         joinDate:
@@ -107,22 +107,6 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
             />
           </div>
 
-          {/* Employee ID */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Employee ID *
-            </label>
-            <input
-              type="text"
-              name="employeeId"
-              required
-              value={formData.employeeId}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              placeholder="e.g. EMP-2026-001"
-            />
-          </div>
-
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -135,6 +119,24 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="john.doe@company.com"
+            />
+          </div>
+
+          {/* Mobile Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Mobile Number *
+            </label>
+            <input
+              type="tel"
+              name="mobileNumber"
+              required
+              value={formData.mobileNumber}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              placeholder="+91 98765 43210"
+              pattern="[+]?[0-9\s-()]+"
+              title="Please enter a valid phone number"
             />
           </div>
 
