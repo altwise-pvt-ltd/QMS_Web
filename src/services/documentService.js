@@ -68,7 +68,10 @@ export async function createDocument({ file, metadata }) {
     author: metadata.author || "Unknown",
     status: "Pending",
     version: metadata.version || "v1.0",
-    createdDate: new Date().toLocaleDateString("en-GB"), // Format: DD/MM/YYYY like mock data
+    createdDate: new Date().toISOString().split("T")[0], // Format: YYYY-MM-DD for proper date parsing
+    effectiveDate:
+      metadata.effectiveDate || new Date().toISOString().split("T")[0],
+    expiryDate: metadata.expiryDate || "", // Include expiry date from form
     fileUrl, // 🔗 Cloudflare Worker URL
   };
 
