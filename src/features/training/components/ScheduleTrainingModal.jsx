@@ -13,7 +13,7 @@ import {
   getAllEventTypes,
 } from "../../compliance_calendar/services/complianceService";
 
-const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess }) => {
+const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
   const [loading, setLoading] = useState(false);
   const [staff, setStaff] = useState([]);
   const [formData, setFormData] = useState({
@@ -27,8 +27,14 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess }) => {
   useEffect(() => {
     if (isOpen) {
       loadStaff();
+      if (initialDate && !Array.isArray(initialDate)) {
+        setFormData((prev) => ({
+          ...prev,
+          dueDate: new Date(initialDate).toISOString().split("T")[0],
+        }));
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, initialDate]);
 
   const loadStaff = async () => {
     try {

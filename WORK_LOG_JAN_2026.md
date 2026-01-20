@@ -1,19 +1,22 @@
-# QMS Web - Work Log (January 1 - January 19, 2026)
+# QMS Web - Work Log (January 1 - January 20, 2026)
 
 ## Overview
-This document summarizes all development work completed on the QMS Web project from January 1, 2026 to January 19, 2026.
+
+This document summarizes all development work completed on the QMS Web project from January 1, 2026 to January 20, 2026.
 
 ---
 
 ## Week 1: January 1-5, 2026
 
 ### January 1, 2026
+
 - **Initial Project Setup**
   - Added gitignore for dependencies and build artifacts
   - Made changes as per requirements
   - Added basic file preview structure and filtration logic
 
 ### January 2-5, 2026
+
 - **Document Management Foundation**
   - Implemented document upload integration and UI refinements
   - Updated app layout and global styles
@@ -25,6 +28,7 @@ This document summarizes all development work completed on the QMS Web project f
 ## Week 2: January 6-12, 2026
 
 ### January 6, 2026
+
 - **Document Management Features**
   - Implemented document upload, document library, and Dexie Cloud database integration
   - Initialized core application structure
@@ -32,6 +36,7 @@ This document summarizes all development work completed on the QMS Web project f
   - Implemented document preview, upload, Dexie database, and alert service
 
 ### January 7, 2026
+
 - **Session Management & Route Protection** *(Conversation: f827c914)*
   - Implemented session maintenance across page refreshes
   - Created AuthContext for global authentication state management
@@ -40,6 +45,7 @@ This document summarizes all development work completed on the QMS Web project f
   - Added access and refresh token management using localStorage
 
 ### January 8, 2026
+
 - **CAPA Form & Non-Conformance** *(Conversations: 149352a8, 65b24d19)*
   - Implemented CAPA form creation with dynamic question building
   - Added department assignment functionality
@@ -51,6 +57,7 @@ This document summarizes all development work completed on the QMS Web project f
   - Generated project progress report for client
 
 ### January 9, 2026
+
 - **Non-Conformance Improvements** *(Conversation: f522cc5e)*
   - Refactored NC History to inline toggle within Non-Conformance form
   - Removed separate NC History page from sidebar
@@ -59,6 +66,7 @@ This document summarizes all development work completed on the QMS Web project f
   - Completed PDF view functionality
 
 ### January 10, 2026
+
 - **Overview Screen Refactoring** *(Conversation: 1cd1755f)*
   - Extracted inline components into separate files:
     - StatusBadge, PriorityIcon, DashboardHeader
@@ -70,6 +78,7 @@ This document summarizes all development work completed on the QMS Web project f
   - Improved code organization and readability
 
 ### January 12, 2026
+
 - **Authentication & CORS** *(Conversations: 343318c5, 52b5e1be, 13b6185c)*
   - Integrated Redux Toolkit for centralized state management
   - Set up Redux store and auth slice
@@ -83,6 +92,7 @@ This document summarizes all development work completed on the QMS Web project f
 ## Week 3: January 13-19, 2026
 
 ### January 13, 2026
+
 - **User Details & API Integration** *(Conversations: 1603ca8c, 04e3c2c1, 44d00523)*
   - Created `/api/auth/user-details` endpoint integration
   - Added new API service function in authService.js
@@ -92,6 +102,7 @@ This document summarizes all development work completed on the QMS Web project f
   - Analyzed POST gender data handling in API calls
 
 ### January 14, 2026
+
 - **Dashboard & Staff Module** *(Conversations: d6ec47a4, 39d28843)*
   - Updated TaskListWidget to display real-time data from Compliance Calendar
   - Created taskWidgetService.js for fetching compliance events
@@ -103,6 +114,7 @@ This document summarizes all development work completed on the QMS Web project f
   - Implemented staff module for staff creation
 
 ### January 16, 2026
+
 - **Document Management & Chat** *(Conversations: 92381841, 0b605db0, e56a2492)*
   - Troubleshot document expiry date submission issue
   - Refactored Tailwind CSS classes in Navbar.jsx to canonical syntax
@@ -113,6 +125,7 @@ This document summarizes all development work completed on the QMS Web project f
   - Integrated actionList widget with real-time data sync from compliance calendar
 
 ### January 17, 2026
+
 - **Dynamic Document Sections & Seeding** *(Conversations: 80875730, 9f4c41be, 44dc487b)*
   - Made Medical Fitness Records section dynamic
   - Made Vaccination Records section dynamic
@@ -121,31 +134,46 @@ This document summarizes all development work completed on the QMS Web project f
   - Created repository interfaces for DeliveryStatus, MessageReceiptStatus, ContentType
 
 ### January 19, 2026
-- **Management Review & Compliance** *(Current work)*
+
+- **Management Review & Compliance**
+
   - Implemented Compliance Calendar feature with event and document management
   - Added CAPA form integration
   - Created new sidebar component
-  - Added PDF generation and preview for Management Review Meeting
-  - Added PDF generation for Minutes of Meeting
-  - Implemented Management Review Meeting (MRM) module:
-    - Comprehensive viewing capabilities
-    - Action item management
-    - PDF generation functionality
+  - Added PDF generation and preview for Management Review Meeting and Minutes of Meeting
+  - Implemented Management Review Meeting (MRM) module with comprehensive viewing and action item management
+
+- **Quality Indicator & Department Management**
+
+  - Implemented initial versions of Quality Indicator feature
+  - Added department management functionality and worked on quality indicator code
+  - Integrated instrument code and refined department equipment handling
+
+- **Staff Management & Document Handling**
+
+  - Introduced a comprehensive staff management module with employee document handling
   - Added staff competence record management
+  - Implemented a utility for migrating document expiry dates
+
+- **Technical & UI Improvements**
+
   - Implemented dynamic sidebar navigation
-  - Reviewed WebSocket flow for chat functionality *(Conversation: 990dc0cc)*
+  - Optimized project build by adding Vite pre-bundled dependencies
+  - Reviewed and refined WebSocket flow for chat functionality *(Conversation: 990dc0cc)*
 
 ---
 
 ## Key Features Implemented
 
 ### 1. Authentication & Security
+
 - Session management with JWT tokens
 - Protected routes with AuthContext
 - CORS configuration
 - Redux-based authentication state
 
 ### 2. Document Management
+
 - Document upload and preview
 - Document library with search and filter
 - Dexie database integration
@@ -153,6 +181,7 @@ This document summarizes all development work completed on the QMS Web project f
 - PDF generation capabilities
 
 ### 3. Non-Conformance & CAPA
+
 - NC form with dynamic fields
 - CAPA form with question building
 - Department assignment
@@ -160,24 +189,28 @@ This document summarizes all development work completed on the QMS Web project f
 - Persistent storage with Dexie.js
 
 ### 4. Staff Management
+
 - Staff creation and editing
 - Competence record management
 - Dynamic document sections (Medical, Vaccination, Training)
 - Multiple record support
 
 ### 5. Dashboard & Widgets
+
 - Task list widget with real-time compliance data
 - Priority-based task sorting
 - Overview screen with multiple components
 - Activity feeds and deadline tracking
 
 ### 6. Compliance & Management Review
+
 - Compliance Calendar with event management
 - Management Review Meeting (MRM) module
 - Action item tracking
 - PDF generation for meetings and minutes
 
 ### 7. Communication
+
 - Chat feature integration
 - WebSocket flow for real-time messaging
 - Team member chat interface
@@ -187,21 +220,25 @@ This document summarizes all development work completed on the QMS Web project f
 ## Technical Improvements
 
 ### Code Organization
+
 - Component extraction and modularization
 - Barrel exports for cleaner imports
 - Separation of concerns (components, services, data)
 
 ### State Management
+
 - Redux Toolkit integration
 - Centralized authentication state
 - User details management
 
 ### Database
+
 - Dexie.js for local storage
 - Lookup table seeding
 - Repository pattern implementation
 
 ### UI/UX
+
 - Tailwind CSS refactoring
 - Responsive layouts
 - Dynamic forms and toggles
@@ -209,15 +246,16 @@ This document summarizes all development work completed on the QMS Web project f
 
 ---
 
-## Git Statistics (January 1-19, 2026)
+## Git Statistics (January 1-20, 2026)
 
-**Total Commits**: 40+ commits
-**Key Contributors**: 
+**Total Commits**: 50+ commits
+**Key Contributors**:
 - shallowAwe
 - rudrainduk
 - Harsh (harsh_main branch)
 
 **Active Branches**:
+
 - `rudra_dev` (current)
 - `harsh_main`
 - `main`
@@ -234,6 +272,6 @@ This document summarizes all development work completed on the QMS Web project f
 
 ---
 
-*Generated on: January 19, 2026*
+*Generated on: January 20, 2026*
 *Project: QMS Web Application*
 *Repository: altwise-pvt-ltd/QMS_Web*

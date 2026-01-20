@@ -93,24 +93,53 @@ const QualityIndicator = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const StatsCard = ({ title, value, color, icon: Icon }) => (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+  const StatsCard = ({ title, value, color, icon: Icon }) => {
+    const getColorClasses = (baseColor) => {
+      const colorMap = {
+        "bg-indigo-500": {
+          bg: "bg-indigo-50",
+          text: "text-indigo-600",
+          border: "border-indigo-100",
+          hover: "hover:border-indigo-200",
+        },
+        "bg-rose-500": {
+          bg: "bg-rose-50",
+          text: "text-rose-600",
+          border: "border-rose-100",
+          hover: "hover:border-rose-200",
+        },
+        "bg-emerald-500": {
+          bg: "bg-emerald-50",
+          text: "text-emerald-600",
+          border: "border-emerald-100",
+          hover: "hover:border-emerald-200",
+        },
+      };
+      return colorMap[baseColor] || colorMap["bg-indigo-500"];
+    };
+
+    const colors = getColorClasses(color);
+
+    return (
       <div
-        className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-5 group-hover:scale-110 transition-transform ${color}`}
-      ></div>
-      <div className="flex justify-between items-start relative z-10">
-        <div>
-          <p className="text-slate-500 text-sm font-medium mb-1">{title}</p>
-          <h3 className="text-3xl font-bold text-slate-800">{value}</h3>
+        className={`bg-white p-6 rounded-xl border-2 ${colors.border} ${colors.hover} transition-all group`}
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div className={`p-2.5 rounded-lg ${colors.bg}`}>
+            <Icon className={`w-5 h-5 ${colors.text}`} strokeWidth={2.5} />
+          </div>
         </div>
-        <div
-          className={`p-3 rounded-xl ${color.replace("bg-", "bg-").replace("text-", "text-")} bg-opacity-10`}
-        >
-          <Icon className={`w-6 h-6 ${color.replace("bg-", "text-")}`} />
+        <div className="space-y-1">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            {title}
+          </p>
+          <h3 className="text-4xl font-bold text-slate-900 tracking-tight">
+            {value}
+          </h3>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const IndicatorCard = ({ indicator }) => {
     const isOverThreshold =

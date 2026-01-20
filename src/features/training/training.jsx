@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import { getAllEvents } from "../compliance_calendar/services/complianceService";
 import { db } from "../../db";
-import TrainingMatrix from "./components/TrainingMatrix";
+// import TrainingMatrix from "./components/TrainingMatrix";
+import CustomCalendar from "./components/CustomCalendar";
 import ScheduleTrainingModal from "./components/ScheduleTrainingModal";
 
 const Training = () => {
@@ -21,6 +22,8 @@ const Training = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [date, setDate] = useState(new Date());
+  const [selectRange, setSelectRange] = useState(false);
 
   useEffect(() => {
     fetchTrainings();
@@ -56,7 +59,28 @@ const Training = () => {
       .includes(searchTerm.toLowerCase());
     const matchesStatus =
       filterStatus === "All" || t.status === filterStatus.toLowerCase();
-    return matchesSearch && matchesStatus;
+
+    // Calendar Date Filtering
+    let matchesDate = true;
+    if (date) {
+      if (Array.isArray(date)) {
+        // Range selection
+        const start = new Date(date[0]);
+        const end = new Date(date[1]);
+        const trainingDate = new Date(t.dueDate);
+        matchesDate = trainingDate >= start && trainingDate <= end;
+      } else {
+        // Single date selection
+        const selected = new Date(date);
+        const trainingDate = new Date(t.dueDate);
+        matchesDate =
+          trainingDate.getDate() === selected.getDate() &&
+          trainingDate.getMonth() === selected.getMonth() &&
+          trainingDate.getFullYear() === selected.getFullYear();
+      }
+    }
+
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   const stats = {
@@ -69,7 +93,7 @@ const Training = () => {
   const StatCard = ({ title, value, icon: Icon, color }) => (
     <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
       <div
-        className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-5 group-hover:scale-110 transition-transform ${color}`}
+        className={`absolute top-0 right-0 w-20 h-20 -mr-8 -mt-8 rounded-full opacity-5 group-hover:scale-110 transition-transform ${color}`}
       ></div>
       <div className="flex justify-between items-start relative z-10">
         <div>
@@ -138,9 +162,19 @@ const Training = () => {
         <div className="xl:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
           <div className="p-8 border-b border-slate-50">
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-              <h2 className="text-xl font-bold text-slate-800">
-                Training Schedule
-              </h2>
+              <div className="flex items-center gap-4">
+                <h2 className="text-xl font-bold text-slate-800">
+                  Training Schedule
+                </h2>
+                {date && (
+                  <button
+                    onClick={() => setDate(null)}
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full transition-all"
+                  >
+                    Clear Date Filter
+                  </button>
+                )}
+              </div>
               <div className="relative w-full sm:w-80">
                 <Search
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -251,7 +285,15 @@ const Training = () => {
 
         {/* Competency Matrix */}
         <div className="xl:col-span-1">
-          <TrainingMatrix />
+          {/* <TrainingMatrix />
+           */}
+          <CustomCalendar
+            date={date}
+            setDate={setDate}
+            selectRange={selectRange}
+            setSelectRange={setSelectRange}
+            trainings={trainings}
+          />
         </div>
       </div>
 
@@ -259,6 +301,7 @@ const Training = () => {
       <ScheduleTrainingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        initialDate={date}
         onSuccess={() => {
           fetchTrainings();
         }}
