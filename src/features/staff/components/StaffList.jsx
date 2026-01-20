@@ -1,17 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Plus,
-  MoreVertical,
-  Briefcase,
-  Edit,
-  ClipboardCheck,
-  Trash2,
-} from "lucide-react";
+import { Plus, MoreVertical, Edit, ClipboardCheck, Shield } from "lucide-react";
 import { db } from "../../../db";
 
-const StaffList = ({ onAddNew, onEdit, onCompetence }) => {
+const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
   const [staffData, setStaffData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [permissions, setPermissions] = useState([]);
   const [openMenuId, setOpenMenuId] = useState(null);
   const menuRef = useRef(null);
 
@@ -186,6 +180,16 @@ const StaffList = ({ onAddNew, onEdit, onCompetence }) => {
                           className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-colors border-t border-gray-100"
                         >
                           <Edit size={16} /> Edit
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuId(null);
+                            onPermissions && onPermissions(staff);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-green-600 flex items-center gap-2 transition-colors border-t border-gray-100"
+                        >
+                          <Shield size={16} /> Permissions
                         </button>
                       </div>
                     )}

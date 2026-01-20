@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Clock,
   ChevronRight,
+  AlertCircle,
 } from "lucide-react";
 import { getAllEvents } from "../compliance_calendar/services/complianceService";
 import { db } from "../../db";
@@ -37,9 +38,17 @@ const Training = () => {
       const trainingType = eventTypes.find((t) => t.name === "Training");
 
       if (trainingType) {
-        const trainingEvents = allEvents.filter(
-          (e) => e.eventTypeId === trainingType.id,
-        );
+        const today = new Date().toISOString().split("T")[0];
+        const trainingEvents = allEvents
+          .filter((e) => e.eventTypeId === trainingType.id)
+          .map((e) => {
+            // Derived Status Logic: Overdue check
+            if (e.status !== "completed" && e.dueDate < today) {
+              return { ...e, status: "overdue" };
+            }
+            return e;
+          });
+
         setTrainings(
           trainingEvents.sort(
             (a, b) => new Date(a.dueDate) - new Date(b.dueDate),
@@ -64,13 +73,11 @@ const Training = () => {
     let matchesDate = true;
     if (date) {
       if (Array.isArray(date)) {
-        // Range selection
         const start = new Date(date[0]);
         const end = new Date(date[1]);
         const trainingDate = new Date(t.dueDate);
         matchesDate = trainingDate >= start && trainingDate <= end;
       } else {
-        // Single date selection
         const selected = new Date(date);
         const trainingDate = new Date(t.dueDate);
         matchesDate =
@@ -85,9 +92,17 @@ const Training = () => {
 
   const stats = {
     total: trainings.length,
-    upcoming: trainings.filter((t) => t.status === "pending").length,
-    inProgress: trainings.filter((t) => t.status === "in-progress").length,
+    upcoming: trainings.filter((t) => {
+      const today = new Date();
+      const futureDate = new Date();
+      futureDate.setDate(today.getDate() + 30);
+      const dueDate = new Date(t.dueDate);
+      return (
+        t.status !== "completed" && dueDate >= today && dueDate <= futureDate
+      );
+    }).length,
     completed: trainings.filter((t) => t.status === "completed").length,
+    overdue: trainings.filter((t) => t.status === "overdue").length,
   };
 
   const StatCard = ({ title, value, icon: Icon, color }) => (
@@ -129,8 +144,8 @@ const Training = () => {
         </button>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Stats Grid - Fixed 4 column for desktop */}
+      <div className="grid grid-cols-4 gap-6">
         <StatCard
           title="Total Modules"
           value={stats.total}
@@ -138,16 +153,16 @@ const Training = () => {
           color="bg-indigo-500"
         />
         <StatCard
-          title="Upcoming"
+          title="Upcoming (30d)"
           value={stats.upcoming}
           icon={Clock}
-          color="bg-amber-500"
+          color="bg-blue-500"
         />
         <StatCard
-          title="In Progress"
-          value={stats.inProgress}
-          icon={TrendingUp}
-          color="bg-blue-500"
+          title="Overdue"
+          value={stats.overdue}
+          icon={AlertCircle}
+          color="bg-rose-500"
         />
         <StatCard
           title="Completed"
@@ -157,9 +172,9 @@ const Training = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Training Schedule */}
-        <div className="xl:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+      <div className="grid grid-cols-12 gap-8">
+        {/* Training Schedule - 8/12 width on wide screens */}
+        <div className="col-span-12 xl:col-span-8 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
           <div className="p-8 border-b border-slate-50">
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
               <div className="flex items-center gap-4">
@@ -196,7 +211,10 @@ const Training = () => {
               <thead>
                 <tr className="bg-slate-50/50">
                   <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    Training Module
+                    Training Requirement
+                  </th>
+                  <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                    Assignee / Target
                   </th>
                   <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center text-nowrap">
                     Due Date
@@ -213,7 +231,7 @@ const Training = () => {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan="4"
+                      colSpan="5"
                       className="p-20 text-center text-slate-400 font-medium"
                     >
                       Synced with Compliance Calendar...
@@ -222,7 +240,7 @@ const Training = () => {
                 ) : filteredTrainings.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="4"
+                      colSpan="5"
                       className="p-20 text-center text-slate-400 font-medium"
                     >
                       No training events found in calendar
@@ -239,15 +257,15 @@ const Training = () => {
                           <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                             <GraduationCap size={20} />
                           </div>
-                          <div>
-                            <p className="font-bold text-slate-800">
-                              {training.title}
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              Scheduled by: {training.assignedTo}
-                            </p>
-                          </div>
+                          <p className="font-bold text-slate-800">
+                            {training.title}
+                          </p>
                         </div>
+                      </td>
+                      <td className="px-8 py-5 text-center">
+                        <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                          {training.assignedTo}
+                        </span>
                       </td>
                       <td className="px-8 py-5 text-center">
                         <span className="text-sm font-bold text-slate-700">
@@ -264,7 +282,9 @@ const Training = () => {
                               ? "bg-emerald-50 text-emerald-600"
                               : training.status === "in-progress"
                                 ? "bg-blue-50 text-blue-600"
-                                : "bg-amber-50 text-amber-600"
+                                : training.status === "overdue"
+                                  ? "bg-rose-50 text-rose-600"
+                                  : "bg-amber-50 text-amber-600"
                           }`}
                         >
                           {training.status}
@@ -283,10 +303,8 @@ const Training = () => {
           </div>
         </div>
 
-        {/* Competency Matrix */}
-        <div className="xl:col-span-1">
-          {/* <TrainingMatrix />
-           */}
+        {/* Competency Matrix / Calendar */}
+        <div className="col-span-12 xl:col-span-4 space-y-8">
           <CustomCalendar
             date={date}
             setDate={setDate}

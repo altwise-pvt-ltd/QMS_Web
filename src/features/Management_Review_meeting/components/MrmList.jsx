@@ -40,10 +40,10 @@ const MrmList = ({
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
             Management Reviews
           </h1>
           <p className="text-gray-500 mt-1">
@@ -52,7 +52,7 @@ const MrmList = ({
         </div>
         <button
           onClick={onCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-gray-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
+          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-gray-600 rounded-lg hover:bg-blue-700 transition-all shadow-md font-semibold text-sm lg:text-base active:scale-95"
         >
           <Plus size={20} />
           New Meeting
@@ -81,7 +81,7 @@ const MrmList = ({
             <div className="flex items-center gap-4">
               <span
                 className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(
-                  meeting.status
+                  meeting.status,
                 )}`}
               >
                 {meeting.status}

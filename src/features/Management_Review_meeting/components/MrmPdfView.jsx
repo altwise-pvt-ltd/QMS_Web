@@ -158,8 +158,28 @@ const MrmPdfView = ({ meeting, actionItems = [], minutes = null, onBack }) => {
                   </table>
 
                   {/* ATTENDEES */}
-                  {meeting.invitedAttendees &&
-                    meeting.invitedAttendees.length > 0 && (
+                  {(() => {
+                    const rawAttendees =
+                      meeting.invitedAttendees || meeting.invites || [];
+                    const attendeesList = Array.isArray(rawAttendees)
+                      ? rawAttendees.map((att) =>
+                          typeof att === "string"
+                            ? { username: att, role: "" }
+                            : {
+                                username: att.username || att.name || "Unknown",
+                                role: att.role || att.department || "Attendee",
+                              },
+                        )
+                      : typeof rawAttendees === "string"
+                        ? rawAttendees
+                            .split(",")
+                            .map((s) => ({ username: s.trim(), role: "" }))
+                            .filter((a) => a.username)
+                        : [];
+
+                    if (attendeesList.length === 0) return null;
+
+                    return (
                       <div className="mb-6 break-inside-avoid">
                         <h4 className="font-bold uppercase border-b border-black text-sm mb-2">
                           Attendees
@@ -179,7 +199,7 @@ const MrmPdfView = ({ meeting, actionItems = [], minutes = null, onBack }) => {
                             </tr>
                           </thead>
                           <tbody>
-                            {meeting.invitedAttendees.map((attendee, i) => (
+                            {attendeesList.map((attendee, i) => (
                               <tr key={i}>
                                 <td className="border border-black p-2 text-center">
                                   {i + 1}
@@ -195,7 +215,8 @@ const MrmPdfView = ({ meeting, actionItems = [], minutes = null, onBack }) => {
                           </tbody>
                         </table>
                       </div>
-                    )}
+                    );
+                  })()}
 
                   {/* AGENDA ITEMS / MINUTES */}
                   {minutes?.agendaItems && minutes.agendaItems.length > 0 && (
@@ -330,17 +351,69 @@ const MrmPdfView = ({ meeting, actionItems = [], minutes = null, onBack }) => {
                         <td className="border border-black p-2">
                           <b>Prepared By</b>
                           <br />
-                          Quality Manager
+                          {(() => {
+                            const raw =
+                              meeting.invitedAttendees || meeting.invites || [];
+                            const list = Array.isArray(raw)
+                              ? raw.map(
+                                  (a) =>
+                                    `${a.username || a.name} (${
+                                      a.role || a.department
+                                    })`,
+                                )
+                              : [];
+                            return (
+                              list.find((a) =>
+                                a.toLowerCase().includes("quality manager"),
+                              ) || "Quality Manager"
+                            );
+                          })()}
                         </td>
                         <td className="border border-black p-2">
                           <b>Reviewed By</b>
                           <br />
-                          Management Rep
+                          {(() => {
+                            const raw =
+                              meeting.invitedAttendees || meeting.invites || [];
+                            const list = Array.isArray(raw)
+                              ? raw.map(
+                                  (a) =>
+                                    `${a.username || a.name} (${
+                                      a.role || a.department
+                                    })`,
+                                )
+                              : [];
+                            return (
+                              list.find((a) =>
+                                a
+                                  .toLowerCase()
+                                  .includes("management representative"),
+                              ) || "Management Representative"
+                            );
+                          })()}
                         </td>
                         <td className="border border-black p-2" colSpan={2}>
                           <b>Approved By</b>
                           <br />
-                          CEO
+                          {(() => {
+                            const raw =
+                              meeting.invitedAttendees || meeting.invites || [];
+                            const list = Array.isArray(raw)
+                              ? raw.map(
+                                  (a) =>
+                                    `${a.username || a.name} (${
+                                      a.role || a.department
+                                    })`,
+                                )
+                              : [];
+                            return (
+                              list.find(
+                                (a) =>
+                                  a.toLowerCase().includes("ceo") ||
+                                  a.toLowerCase().includes("director"),
+                              ) || "CEO"
+                            );
+                          })()}
                         </td>
                       </tr>
                     </tbody>

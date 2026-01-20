@@ -161,6 +161,33 @@ This document summarizes all development work completed on the QMS Web project f
   - Optimized project build by adding Vite pre-bundled dependencies
   - Reviewed and refined WebSocket flow for chat functionality *(Conversation: 990dc0cc)*
 
+### January 20, 2026
+
+- **Training Calendar Tailoring & Integration**
+
+  - Resolved dependency issues by installing `react-calendar`, `framer-motion`, and `prop-types`
+  - Fixed `TypeError` crash in calendar `Actions` component through defensive state handling
+  - Implemented bidirectional data filtering between Calendar and Training table
+  - Added visual status indicators (colored dots) for training entries on calendar tiles
+  - Customized primitive `react-calendar` components with premium QMS-themed CSS
+  - Enhanced "Schedule Training" workflow by pre-filling selected dates from the calendar
+
+- **Staff Module Enhancements**
+
+  - Implemented a comprehensive `PermissionsPage` for managing staff access rights
+  - Added user directory with search and status tracking
+  - Created granular permission controls for Document Control, CAPA, and User Management modules
+  - Integrated defensive UI states and micro-animations for the permissions drawer
+
+- **MRM Documentation & Workflow Integration**
+  - Refactored MRM PDF and Preview components to use dynamic meeting invites/attendees
+  - Implemented robust data transformation for attendees from multiple formats (Array, String)
+  - Integrated dynamic sign-offs for Quality Manager, MR, and CEO in document footers
+  - Standardized attendee display across Meeting View Modal and all PDF documentation
+
+- **Git Configuration**
+  - Updated `.gitignore` to exclude temporary development artifacts and local work logs (`WORK_LOG_*.md`)
+
 ---
 
 ## Key Features Implemented
@@ -250,6 +277,7 @@ This document summarizes all development work completed on the QMS Web project f
 
 **Total Commits**: 50+ commits
 **Key Contributors**:
+
 - shallowAwe
 - rudrainduk
 - Harsh (harsh_main branch)
@@ -264,11 +292,11 @@ This document summarizes all development work completed on the QMS Web project f
 
 ## Next Steps & Ongoing Work
 
-1. Continue refining WebSocket chat functionality
-2. Enhance document management features
-3. Improve compliance calendar integration
-4. Add more comprehensive testing
-5. Optimize performance and user experience
+1. Integrate granular permission checks across all QMS modules based on the new `PermissionsPage`
+2. Continue refining WebSocket chat functionality and notification system
+3. Enhance document management features with version control indicators
+4. Expand automated testing for critical workflows (CAPA, Training)
+5. Optimize production bundle size and initial load performance
 
 ---
 

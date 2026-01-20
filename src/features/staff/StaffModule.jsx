@@ -1,11 +1,18 @@
 import React, { useState } from "react";
-import { ArrowLeft, UserCheck, FileText, Briefcase } from "lucide-react";
+import {
+  ArrowLeft,
+  UserCheck,
+  FileText,
+  Briefcase,
+  Shield,
+} from "lucide-react";
 
 // Import sub-components
 import StaffList from "./components/StaffList";
 import CreateStaffForm from "./components/CreateStaffForm";
 import CompetenceForm from "./components/CompetenceForm";
 import StaffDocuments from "./components/StaffDocuments";
+import PermissionsForm from "./components/PermissionsPage";
 import EmployeeDocumentsForm from "./components/EmployeeDocumentsForm";
 
 const StaffModule = () => {
@@ -38,6 +45,13 @@ const StaffModule = () => {
     setSelectedStaff(null);
   };
 
+  // 5. Handle "Permissions" - Shows the permissions form
+  const handlePermissions = (staff) => {
+    setSelectedStaff(staff);
+    setActiveTab("permissions");
+    setView("details");
+  };
+
   // --- RENDER: LIST VIEW ---
   if (view === "list") {
     return (
@@ -46,6 +60,7 @@ const StaffModule = () => {
           onAddNew={handleStartCreate}
           onEdit={handleEditBasic}
           onCompetence={handleCompetence}
+          onPermissions={handlePermissions}
         />
       </div>
     );
@@ -148,6 +163,18 @@ const StaffModule = () => {
             <Briefcase size={14} />
             Staff Details
           </button>
+
+          <button
+            onClick={() => setActiveTab("permissions")}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all ${
+              activeTab === "permissions"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <Shield size={14} />
+            Permissions
+          </button>
         </div>
       </div>
 
@@ -165,6 +192,10 @@ const StaffModule = () => {
 
         {activeTab === "staffDetails" && (
           <EmployeeDocumentsForm initialData={selectedStaff} />
+        )}
+
+        {activeTab === "permissions" && (
+          <PermissionsForm staff={selectedStaff} standalone={false} />
         )}
       </div>
     </div>
