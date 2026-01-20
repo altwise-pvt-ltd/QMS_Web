@@ -6,40 +6,27 @@ import { CAPA_QUESTIONS } from '../quedata.js';
 
 const SUBCATEGORY_MAP = {
   "Pre-Analytical": [
-    "Sample rejection rate",
-    "Patient identification errors",
-    "Improper sample container / additive",
-    "Sample integrity loss (hemolysis, clotting, leakage)",
-    "Inadequate sample quantity",
-    "Improper sample handling and transport",
-    "Improper request / incomplete documentation"
+    "Vein puncture failure",
+    "Typographic error",
+    "Wrong sample identification",
+    "Incomplete form",
+    "Sample labeling error"
   ],
-
   "Analytical": [
-    "Internal Quality Control (IQC) failure",
-    "Coefficient of Variation (CV%) outside limits",
-    "External Quality Assessment (EQA / PT) failure",
-    "Analyzer downtime",
-    "Calibration overdue or failure",
-    "Reagent lot-to-lot variation",
-    "Repeat testing rate",
-    "Delta check failures"
+    "Wrong sample processed",
+    "Random error",
+    "Systematic error",
+    "IQC failure",
+    "EQAS failure"
   ],
-
   "Post-Analytical": [
-    "Turnaround Time (TAT) breach",
-    "Critical value reporting delay",
-    "Incorrect report issued",
-    "Report amendments / corrections",
-    "Transcription / data entry errors",
-    "Report delivery delay",
-    "Customer complaints",
-    "Recall / corrective reports"
+    "Printing error",
+    "Urgent sample report",
+    "Critical value reporting",
+    "Turnaround time (TAT)",
+    "Improper report dispatch"
   ],
-  "others": [
-
-  ]
-
+  "others": []
 };
 
 
@@ -59,16 +46,41 @@ const DEPARTMENTS = [
 
 const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCustomQuestion }) => {
   const [localAnswers, setLocalAnswers] = useState({});
+  const [selectedSuggestions, setSelectedSuggestions] = useState({});
   const [newQuestionText, setNewQuestionText] = useState("");
 
   useEffect(() => {
     setLocalAnswers(answers || {});
-  }, [answers, isOpen]);
+    // Initialize suggestions selection: if an answer is present, enable its suggestions by default
+    const initialSugg = {};
+    if (answers) {
+      Object.keys(answers).forEach(idx => {
+        initialSugg[idx] = { rc: true, ca: true, pa: true };
+      });
+    }
+    setSelectedSuggestions(initialSugg);
+  }, [answers, isOpen, questions]);
 
   const handleAnswer = (index, value) => {
     setLocalAnswers(prev => ({
       ...prev,
       [index]: value
+    }));
+
+    // Always enable suggestions when an answer is selected (Yes or No)
+    setSelectedSuggestions(prev => ({
+      ...prev,
+      [index]: { rc: true, ca: true, pa: true }
+    }));
+  };
+
+  const toggleSuggestion = (index, type) => {
+    setSelectedSuggestions(prev => ({
+      ...prev,
+      [index]: {
+        ...prev[index],
+        [type]: !prev[index]?.[type]
+      }
     }));
   };
 
@@ -80,7 +92,7 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
   };
 
   const handleSave = () => {
-    onSave(localAnswers);
+    onSave(localAnswers, selectedSuggestions);
     onClose();
   };
 
@@ -95,7 +107,7 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div>
-            <h2 className="text-xl font-bold text-slate-800">Add more questions</h2>
+            <h2 className="text-xl font-bold text-slate-800">Audit Questionnaire</h2>
             <p className="text-sm text-slate-500 mt-0.5">
               Progress: {answeredCount} / {totalQuestions} answered
             </p>
@@ -109,47 +121,87 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
         </div>
 
         {/* Questions List */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {questions.map((question, index) => (
-            <div key={index} className="p-4 border rounded-lg bg-slate-50/50">
-              <p className="text-slate-700 font-semibold mb-3">{index + 1}. {question}</p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => handleAnswer(index, 'yes')}
-                  className={`flex-1 py-2 rounded-md text-sm font-bold transition-all border ${localAnswers[index] === 'yes'
-                    ? 'bg-emerald-600 text-black border-emerald-600'
-                    : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-500'
-                    }`}
-                >
-                  Yes
-                </button>
-                <button
-                  onClick={() => handleAnswer(index, 'no')}
-                  className={`flex-1 py-2 rounded-md text-sm font-bold transition-all border ${localAnswers[index] === 'no'
-                    ? 'bg-rose-600 text-black border-rose-600'
-                    : 'bg-white border-slate-200 text-slate-600 hover:border-rose-500'
-                    }`}
-                >
-                  No
-                </button>
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {questions.map((question, index) => {
+            const answer = localAnswers[index];
+            const suggs = selectedSuggestions[index];
+            const activeSuggestions = answer === 'yes' ? question.suggestionsYes : (answer === 'no' ? question.suggestionsNo : null);
+
+            return (
+              <div key={index} className="p-4 border rounded-xl bg-white shadow-sm border-slate-200">
+                <p className="text-slate-800 font-bold mb-4">{index + 1}. {question.question || question}</p>
+                <div className="flex gap-3 mb-4">
+                  <button
+                    onClick={() => handleAnswer(index, 'yes')}
+                    className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${answer === 'yes'
+                      ? 'bg-emerald-600 text-black border-emerald-600'
+                      : 'bg-white border-slate-100 text-slate-500 hover:border-emerald-500/30'
+                      }`}
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() => handleAnswer(index, 'no')}
+                    className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${answer === 'no'
+                      ? 'bg-rose-600 text-black border-rose-600'
+                      : 'bg-white border-slate-100 text-slate-500 hover:border-rose-500/30'
+                      }`}
+                  >
+                    No
+                  </button>
+                </div>
+
+                {/* Dynamic Suggestion Section */}
+                {answer && activeSuggestions && (
+                  <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-center gap-2 text-amber-800 mb-1">
+                      <Info className="w-4 h-4" />
+                      <span className="text-xs font-black uppercase tracking-wider">Suggested CAPA Actions for "{answer.toUpperCase()}"</span>
+                    </div>
+
+                    {[
+                      { type: 'rc', label: 'Root Cause', text: activeSuggestions.rootCause },
+                      { type: 'ca', label: 'Corrective Action', text: activeSuggestions.correctiveAction },
+                      { type: 'pa', label: 'Preventive Action', text: activeSuggestions.preventiveAction }
+                    ].map(item => (
+                      <div
+                        key={item.type}
+                        onClick={() => toggleSuggestion(index, item.type)}
+                        className={`p-3 rounded-md border cursor-pointer transition-all ${suggs?.[item.type]
+                            ? 'bg-white border-amber-300 shadow-sm'
+                            : 'bg-slate-50/50 border-transparent opacity-60'
+                          }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] font-black uppercase text-amber-600">{item.label}</span>
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${suggs?.[item.type] ? 'bg-amber-500 border-amber-500 text-black' : 'border-slate-300'
+                            }`}>
+                            {suggs?.[item.type] && <CheckCircle2 className="w-3 h-3" />}
+                          </div>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed italic">"{item.text}"</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Add Question Input */}
-          <div className="border border-dashed border-slate-300 rounded-lg p-4 bg-slate-50/30">
-            <label className="text-xs font-bold text-slate-500 uppercase block mb-2">Add custom question</label>
+          <div className="border border-dashed border-slate-300 rounded-xl p-6 bg-slate-50/30">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-3">Add supplementary audit query</label>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={newQuestionText}
                 onChange={(e) => setNewQuestionText(e.target.value)}
-                placeholder="Type question here..."
-                className="flex-1 px-3 py-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:border-indigo-500"
+                placeholder="Type additional question here..."
+                className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 font-medium"
               />
               <button
                 onClick={handleAddQuestionLocal}
-                className="px-4 py-2 bg-indigo-600 text-black rounded-md text-sm font-bold hover:bg-indigo-700 transition-colors"
+                className="px-6 py-2 bg-indigo-600 text-black rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors shadow-sm active:scale-95"
               >
                 Add
               </button>
@@ -158,19 +210,24 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t bg-slate-50 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-6 py-2 bg-slate-900 text-black rounded-md text-sm font-bold hover:bg-black transition-colors"
-          >
-            Save Changes
-          </button>
+        <div className="px-6 py-4 border-t bg-slate-50 flex justify-between items-center">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight italic">
+            Suggestions will automatically be applied to the CAPA form upon saving.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="px-5 py-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-8 py-2 bg-slate-900 text-black rounded-lg text-sm font-black hover:bg-black transition-all shadow-lg active:scale-95"
+            >
+              Apply to Form
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -221,6 +278,41 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
     setQuestions(prev => [...prev, text]);
   };
 
+  const handleSaveAudit = (ans, suggConfig) => {
+    setQuestionAnswers(ans);
+
+    // Detailed Suggestion Flow Logic
+    const finalSuggestions = {
+      rc: [],
+      ca: [],
+      pa: []
+    };
+
+    questions.forEach((q, idx) => {
+      const userAns = ans[idx];
+      const userChoices = suggConfig[idx]; // { rc: bool, ca: bool, pa: bool }
+      const activeSuggestions = userAns === 'yes' ? q.suggestionsYes : (userAns === 'no' ? q.suggestionsNo : null);
+
+      if (userAns && activeSuggestions && userChoices) {
+        if (userChoices.rc && activeSuggestions.rootCause) finalSuggestions.rc.push(activeSuggestions.rootCause);
+        if (userChoices.ca && activeSuggestions.correctiveAction) finalSuggestions.ca.push(activeSuggestions.correctiveAction);
+        if (userChoices.pa && activeSuggestions.preventiveAction) finalSuggestions.pa.push(activeSuggestions.preventiveAction);
+      }
+    });
+
+    // Smart merge: Append only unique suggestions to current form fields
+    const merge = (current, additions) => {
+      if (additions.length === 0) return current;
+      const existing = current ? current.split('\n') : [];
+      const combined = [...new Set([...existing, ...additions])].filter(Boolean);
+      return combined.join('\n');
+    };
+
+    setRootCause(prev => merge(prev, finalSuggestions.rc));
+    setCorrectiveAction(prev => merge(prev, finalSuggestions.ca));
+    setPreventiveAction(prev => merge(prev, finalSuggestions.pa));
+  };
+
   const handleSubmit = () => {
     if (!category || (!subCategory && !customSubCategory) || !department || !responsibility) {
       alert('Please fill in all required fields');
@@ -229,7 +321,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
     const formData = {
       category,
       subCategory: category === "Other" ? customSubCategory : subCategory,
-      questions,
+      questions: questions.map(q => q.question || q), // Keep backward compatibility for storage
       questionAnswers,
       date,
       targetDate,
@@ -479,7 +571,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
         isOpen={showQuestionPopup}
         onClose={() => setShowQuestionPopup(false)}
         questions={questions}
-        onSave={(ans) => setQuestionAnswers(ans)}
+        onSave={handleSaveAudit}
         answers={questionAnswers}
         onAddCustomQuestion={handleAddCustomQuestion}
       />
