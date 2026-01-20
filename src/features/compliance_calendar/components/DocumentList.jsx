@@ -59,7 +59,7 @@ const DocumentList = () => {
       const expiryDate = new Date(doc.expiryDate);
       const today = new Date();
       const daysUntilExpiry = Math.ceil(
-        (expiryDate - today) / (1000 * 60 * 60 * 24)
+        (expiryDate - today) / (1000 * 60 * 60 * 24),
       );
 
       if (daysUntilExpiry < 0) {
@@ -87,7 +87,7 @@ const DocumentList = () => {
         <h2 className="text-2xl font-bold text-gray-900">Document Library</h2>
         <button
           onClick={() => navigate("/documents/upload")}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
         >
           <Plus size={20} />
           Add Document
@@ -172,12 +172,12 @@ const DocumentList = () => {
 
                 {doc.expiryDate && status.label === "Expiring Soon" && (
                   <div className="mt-4 p-2 bg-orange-50 border border-orange-200 rounded-lg flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-orange-600 flex-shrink-0" />
+                    <AlertTriangle className="w-4 h-4 text-orange-600 shrink-0" />
                     <span className="text-xs text-orange-700">
                       Expires in{" "}
                       {Math.ceil(
                         (new Date(doc.expiryDate) - new Date()) /
-                        (1000 * 60 * 60 * 24)
+                          (1000 * 60 * 60 * 24),
                       )}{" "}
                       days
                     </span>
@@ -187,7 +187,7 @@ const DocumentList = () => {
                 <div className="mt-4 flex items-center gap-2">
                   <button
                     onClick={() => handleView(doc)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-600 hover:text-white transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-600 hover:text-gray-600 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
                   >
                     <Eye size={16} />
                     View

@@ -8,6 +8,24 @@ import MinutesOfMeetingPdf from "../pdf Creations/MinutesOfMeetingPdf";
  * Transform IndexedDB meeting data to PDF format
  */
 export const transformMeetingDataForPDF = (meeting, actionItems, minutes) => {
+  // Extract attendees from various possible properties (invitedAttendees or invites)
+  const rawAttendees = meeting.invitedAttendees || meeting.invites || [];
+
+  const attendeesList = Array.isArray(rawAttendees)
+    ? rawAttendees.map((att) =>
+        typeof att === "string"
+          ? att
+          : `${att.username || att.name || "Unknown"} (${
+              att.role || att.department || "Attendee"
+            })`,
+      )
+    : typeof rawAttendees === "string"
+      ? rawAttendees
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+
   return {
     header: {
       address: "Your Company Name, Address Line 1, City, State, ZIP",
@@ -20,25 +38,34 @@ export const transformMeetingDataForPDF = (meeting, actionItems, minutes) => {
       time: meeting.time,
       venue: meeting.location || "Not specified",
     },
-    attendees:
-      meeting.invitedAttendees?.map((att) => `${att.username} (${att.role})`) ||
-      [],
+    attendees: attendeesList,
     inputs:
-      minutes?.agendaItems?.slice(0, 3).map((item, index) => ({
+      minutes?.agendaItems?.map((item, index) => ({
         no: index + 1,
         category: item.input || item.topic || "Review Item",
         discussion: item.activity || item.discussion || "—",
       })) || [],
     outputs:
-      actionItems?.slice(0, 3).map((item, index) => ({
+      actionItems?.map((item, index) => ({
         no: index + 1,
         category: "Action Item",
         action: item.task || "—",
       })) || [],
     signOff: {
-      preparedBy: "Quality Manager",
-      reviewedBy: "Management Representative",
-      approvedBy: "CEO",
+      preparedBy:
+        attendeesList.find((a) =>
+          a.toLowerCase().includes("quality manager"),
+        ) || "Quality Manager",
+      reviewedBy:
+        attendeesList.find((a) =>
+          a.toLowerCase().includes("management representative"),
+        ) || "Management Representative",
+      approvedBy:
+        attendeesList.find(
+          (a) =>
+            a.toLowerCase().includes("ceo") ||
+            a.toLowerCase().includes("director"),
+        ) || "CEO",
     },
   };
 };
@@ -52,7 +79,7 @@ export const generateMRMPdf = async (meeting, actionItems, minutes) => {
     const blob = await pdf(<MRMPdf data={data} />).toBlob();
     saveAs(
       blob,
-      `MRM_${meeting.title.replace(/\s+/g, "_")}_${meeting.date}.pdf`
+      `MRM_${meeting.title.replace(/\s+/g, "_")}_${meeting.date}.pdf`,
     );
     return true;
   } catch (error) {
@@ -70,7 +97,7 @@ export const generateMinutesPdf = async (meeting, actionItems, minutes) => {
     const blob = await pdf(<MinutesOfMeetingPdf data={data} />).toBlob();
     saveAs(
       blob,
-      `Minutes_${meeting.title.replace(/\s+/g, "_")}_${meeting.date}.pdf`
+      `Minutes_${meeting.title.replace(/\s+/g, "_")}_${meeting.date}.pdf`,
     );
     return true;
   } catch (error) {

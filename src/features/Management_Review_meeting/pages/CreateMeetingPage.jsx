@@ -21,11 +21,11 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
       location: "",
       agenda: "",
       invitedAttendees: [],
-    }
+    },
   );
 
   const [selectedUsers, setSelectedUsers] = useState(
-    initialData?.invitedAttendees || []
+    initialData?.invitedAttendees || [],
   );
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -61,7 +61,7 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
     (user) =>
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.department.toLowerCase().includes(searchTerm.toLowerCase())
+      user.department.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -95,9 +95,9 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
               Meeting Details
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
               {/* Meeting Title */}
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 xl:col-span-3">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Meeting Title *
                 </label>
@@ -107,14 +107,14 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
                   value={formData.title}
                   onChange={(e) => handleChange("title", e.target.value)}
                   placeholder="e.g., Q1 2026 Management Review"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-xs"
                 />
               </div>
 
               {/* Date */}
               <div>
                 <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <Calendar size={16} />
+                  <Calendar size={16} className="text-indigo-500" />
                   Date *
                 </label>
                 <input
@@ -122,14 +122,14 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
                   required
                   value={formData.date}
                   onChange={(e) => handleChange("date", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-xs"
                 />
               </div>
 
               {/* Time */}
               <div>
                 <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <Clock size={16} />
+                  <Clock size={16} className="text-indigo-500" />
                   Time *
                 </label>
                 <input
@@ -137,38 +137,38 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
                   required
                   value={formData.time}
                   onChange={(e) => handleChange("time", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-xs"
                 />
               </div>
 
               {/* Location */}
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 xl:col-span-1">
                 <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <MapPin size={16} />
+                  <MapPin size={16} className="text-indigo-500" />
                   Location
                 </label>
                 <input
                   type="text"
                   value={formData.location}
                   onChange={(e) => handleChange("location", e.target.value)}
-                  placeholder="e.g., Conference Room A, Virtual Meeting (Zoom)"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                  placeholder="e.g., Conference Room A..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-xs"
                 />
               </div>
 
               {/* Agenda */}
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 xl:col-span-3">
                 <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <FileText size={16} />
+                  <FileText size={16} className="text-indigo-500" />
                   Agenda *
                 </label>
                 <textarea
                   required
                   value={formData.agenda}
                   onChange={(e) => handleChange("agenda", e.target.value)}
-                  placeholder="Outline the key topics to be discussed in this management review..."
+                  placeholder="Outline the key topics to be discussed..."
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none shadow-xs"
                 />
               </div>
             </div>
@@ -248,7 +248,7 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
                 <tbody className="divide-y divide-gray-200">
                   {filteredUsers.map((user) => {
                     const isSelected = selectedUsers.some(
-                      (u) => u.id === user.id
+                      (u) => u.id === user.id,
                     );
                     return (
                       <tr

@@ -34,7 +34,7 @@ const MrmWorkflow = ({ initialData, onSave, onCancel }) => {
 
       // 4. Outputs (Action Items)
       actionItems: [],
-    }
+    },
   );
 
   const handleChange = (field, value) => {
@@ -246,80 +246,148 @@ const MrmWorkflow = ({ initialData, onSave, onCancel }) => {
   );
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col h-[600px]">
+    <div className="flex flex-col h-screen bg-slate-50 pt-6 lg:pt-10">
       {/* HEADER WITH STEPS */}
-      <div className="p-4 border-b bg-gray-50">
-        <div className="flex justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-800">MRM Workspace</h2>
-          <div className="space-x-2">
-            <button onClick={onCancel} className="px-4 py-2 text-gray-600">
+      <div className="bg-white border-b border-gray-200 shadow-sm px-6 py-5 lg:px-12 flex flex-col gap-8 shrink-0">
+        <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">
+              MRM Workspace
+            </h2>
+            <p className="text-gray-500 text-sm mt-1">
+              Management Review Meeting Lifecycle
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onCancel}
+              className="px-5 py-2.5 text-gray-500 font-semibold hover:text-gray-700 transition-colors"
+            >
               Close
             </button>
             <button
               onClick={() => onSave(formData)}
-              className="px-4 py-2 bg-blue-600 text-black rounded flex items-center gap-2"
+              className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all shadow-sm font-bold flex items-center gap-2 active:scale-95"
             >
-              <Save size={16} /> Save Progress
+              <Save size={18} /> Save Progress
             </button>
           </div>
         </div>
+
         {/* WIZARD STEPS */}
-        <div className="flex justify-between px-10 relative">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 z-0"></div>
-          {[
-            { id: 1, label: "Schedule", icon: Calendar },
-            { id: 2, label: "Gather Inputs", icon: FileBarChart },
-            { id: 3, label: "Meeting (MoM)", icon: Users },
-            { id: 4, label: "Outputs (Actions)", icon: CheckSquare },
-          ].map((step) => (
-            <button
-              key={step.id}
-              onClick={() => setActiveStep(step.id)}
-              className={`relative z-10 flex flex-col items-center gap-1 bg-white px-2 ${
-                activeStep === step.id
-                  ? "text-blue-600 font-bold"
-                  : "text-gray-400"
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
-                  activeStep === step.id
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-300"
-                }`}
-              >
-                <step.icon size={18} />
-              </div>
-              <span className="text-xs">{step.label}</span>
-            </button>
-          ))}
+        <div className="max-w-5xl mx-auto w-full relative pb-4">
+          <div className="absolute top-6 left-0 w-full h-1 bg-gray-100 z-0 rounded-full"></div>
+          <div className="flex justify-between relative px-2">
+            {[
+              { id: 1, label: "Schedule", icon: Calendar, color: "indigo" },
+              {
+                id: 2,
+                label: "Gather Inputs",
+                icon: FileBarChart,
+                color: "blue",
+              },
+              { id: 3, label: "Meeting (MoM)", icon: Users, color: "purple" },
+              {
+                id: 4,
+                label: "Outputs (Actions)",
+                icon: CheckSquare,
+                color: "emerald",
+              },
+            ].map((step) => {
+              const isActive = activeStep === step.id;
+              const isPast = activeStep > step.id;
+
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => setActiveStep(step.id)}
+                  className={`relative z-10 flex flex-col items-center gap-3 transition-all group ${
+                    isActive
+                      ? "scale-110"
+                      : "grayscale opacity-70 hover:opacity-100 hover:grayscale-0"
+                  }`}
+                >
+                  <div
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center border-2 transition-all shadow-md ${
+                      isActive
+                        ? "bg-indigo-600 border-indigo-600 text-white shadow-indigo-200"
+                        : isPast
+                          ? "bg-green-100 border-green-200 text-green-600"
+                          : "bg-white border-gray-200 text-gray-400"
+                    }`}
+                  >
+                    {isPast ? <Check size={22} /> : <step.icon size={22} />}
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-widest ${isActive ? "text-indigo-600" : "text-gray-400 group-hover:text-gray-600"}`}
+                    >
+                      Step {step.id}
+                    </span>
+                    <span
+                      className={`text-xs font-bold hidden md:block ${isActive ? "text-gray-900" : "text-gray-500"}`}
+                    >
+                      {step.label}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* CONTENT AREA */}
-      <div className="flex-1 overflow-y-auto p-8">
-        {activeStep === 1 && renderSchedule()}
-        {activeStep === 2 && renderInputs()}
-        {activeStep === 3 && renderExecution()}
-        {activeStep === 4 && renderOutputs()}
+      <div className="flex-1 overflow-y-auto bg-slate-50/50">
+        <div className="max-w-7xl mx-auto p-6 lg:p-12">
+          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden ring-1 ring-black/5">
+            {activeStep === 1 && renderSchedule()}
+            {activeStep === 2 && renderInputs()}
+            {activeStep === 3 && renderExecution()}
+            {activeStep === 4 && renderOutputs()}
+          </div>
+        </div>
       </div>
 
       {/* FOOTER NAV */}
-      <div className="p-4 border-t flex justify-between bg-gray-50">
-        <button
-          disabled={activeStep === 1}
-          onClick={() => setActiveStep((prev) => prev - 1)}
-          className="px-4 py-2 text-gray-600 disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <button
-          disabled={activeStep === 4}
-          onClick={() => setActiveStep((prev) => prev + 1)}
-          className="px-6 py-2 bg-indigo-600 text-black rounded hover:bg-indigo-700 disabled:opacity-50 disabled:bg-gray-400"
-        >
-          Next Step
-        </button>
+      <div className="bg-white border-t border-gray-200 px-6 py-5 lg:px-12 shrink-0 shadow-xs">
+        <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
+          <button
+            disabled={activeStep === 1}
+            onClick={() => setActiveStep((prev) => prev - 1)}
+            className="flex items-center gap-2 px-6 py-3 text-gray-500 font-bold hover:text-indigo-600 transition-colors disabled:opacity-30 disabled:hover:text-gray-500 group"
+          >
+            <Plus
+              size={20}
+              className="rotate-180 group-hover:-translate-x-1 transition-transform"
+            />
+            Previous Session
+          </button>
+
+          <div className="hidden md:flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Phase {activeStep} of 4
+            <div className="w-24 h-1.5 bg-gray-100 rounded-full ml-4 overflow-hidden">
+              <div
+                className="h-full bg-indigo-600 transition-all duration-500"
+                style={{ width: `${(activeStep / 4) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+
+          <button
+            disabled={activeStep === 4}
+            onClick={() => setActiveStep((prev) => prev + 1)}
+            className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-black rounded-2xl hover:bg-indigo-700 shadow-lg font-bold transition-all disabled:opacity-40 disabled:bg-gray-400 active:scale-95 group"
+          >
+            {activeStep === 4
+              ? "Review Final Document"
+              : "Continue to Next Phase"}
+            <ArrowRight
+              size={20}
+              className="group-hover:translate-x-1 transition-transform"
+            />
+          </button>
+        </div>
       </div>
     </div>
   );

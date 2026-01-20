@@ -24,10 +24,24 @@ const MinutesOfMeetingPreview = ({
         responsibility: item.responsibility || "—",
         status: item.status || "Completed",
       })) || [],
-    attendees:
-      meeting?.invitedAttendees?.map(
-        (att) => `${att.username} (${att.role})`
-      ) || [],
+    attendees: Array.isArray(meeting?.invitedAttendees || meeting?.invites)
+      ? (meeting?.invitedAttendees || meeting?.invites).map((att) =>
+          typeof att === "string"
+            ? att
+            : `${att.username || att.name || "Unknown"} (${
+                att.role || att.department || "Attendee"
+              })`,
+        )
+      : typeof (
+            meeting?.invitedAttendees ||
+            meeting?.invites ||
+            meeting?.attendees
+          ) === "string"
+        ? (meeting?.invitedAttendees || meeting?.invites || meeting?.attendees)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
   };
 
   const generatePDFContent = () => {
@@ -178,7 +192,7 @@ const MinutesOfMeetingPreview = ({
           <td class="responsibility">${item.responsibility}</td>
           <td class="status">${item.status}</td>
         </tr>
-      `
+      `,
         )
         .join("")}
     </tbody>

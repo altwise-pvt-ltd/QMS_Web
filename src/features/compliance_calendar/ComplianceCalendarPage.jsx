@@ -18,15 +18,6 @@ import { addExpiryDatesToDocuments } from "./utils/documentMigration";
 const ComplianceCalendarPage = () => {
   const [activeView, setActiveView] = useState("dashboard");
 
-  useEffect(() => {
-    const initializeData = async () => {
-      await initializeEventTypes();
-      await seedComplianceData();
-      await addExpiryDatesToDocuments();
-    };
-    initializeData();
-  }, []);
-
   const views = [
     { id: "dashboard", label: "Overview", icon: LayoutDashboard },
     { id: "calendar", label: "Compliance Calendar", icon: CalendarDays },

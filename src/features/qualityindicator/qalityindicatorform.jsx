@@ -8,9 +8,11 @@ import QIFormHeader from "./components/QIFormHeader";
 import QIFormSidebar from "./components/QIFormSidebar";
 import QIReportTable from "./components/QIReportTable";
 
-const QalityIndicatorForm = ({ onBack }) => {
+const QalityIndicatorForm = ({ onBack, indicators = QUALITY_INDICATORS }) => {
   const [selectedMonth, setSelectedMonth] = useState("NOV 2025");
-  const [selectedIndicators, setSelectedIndicators] = useState(QUALITY_INDICATORS.map(i => i.id));
+  const [selectedIndicators, setSelectedIndicators] = useState(
+    indicators.map((i) => i.id),
+  );
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [metadata, setMetadata] = useState({
     documentNo: "ADC--L--22",
@@ -20,13 +22,13 @@ const QalityIndicatorForm = ({ onBack }) => {
     status: "Controlled",
     page: "1 of 1",
     amendmentNo: "00",
-    amendmentDate: ""
+    amendmentDate: "",
   });
   const reportRef = useRef(null);
 
   const toggleIndicator = (id) => {
-    setSelectedIndicators(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    setSelectedIndicators((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
@@ -38,15 +40,17 @@ const QalityIndicatorForm = ({ onBack }) => {
     const element = reportRef.current;
     const opt = {
       margin: [10, 5, 10, 5],
-      filename: `Quality_Indicators_${selectedMonth.replace(' ', '_')}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
+      filename: `Quality_Indicators_${selectedMonth.replace(" ", "_")}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
     };
     html2pdf().set(opt).from(element).save();
   };
 
-  const displayedIndicators = QUALITY_INDICATORS.filter(i => selectedIndicators.includes(i.id));
+  const displayedIndicators = indicators.filter((i) =>
+    selectedIndicators.includes(i.id),
+  );
 
   return (
     <div className="space-y-6 animate-in slide-in-from-right duration-500 pb-20">
@@ -58,19 +62,26 @@ const QalityIndicatorForm = ({ onBack }) => {
       />
 
       <div className="flex flex-col lg:flex-row gap-6">
-        <div className={`transition-all duration-300 ${isSidebarCollapsed ? "w-0 overflow-hidden opacity-0" : "w-full lg:w-1/4"}`}>
+        <div
+          className={`transition-all duration-300 ${isSidebarCollapsed ? "w-0 overflow-hidden opacity-0" : "w-full lg:w-1/4"}`}
+        >
           <QIFormSidebar
             selectedMonth={selectedMonth}
             setSelectedMonth={setSelectedMonth}
             selectedIndicators={selectedIndicators}
+            indicators={indicators}
             toggleIndicator={toggleIndicator}
-            onSelectAll={() => setSelectedIndicators(QUALITY_INDICATORS.map(i => i.id))}
+            onSelectAll={() =>
+              setSelectedIndicators(indicators.map((i) => i.id))
+            }
             isCollapsed={isSidebarCollapsed}
             onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           />
         </div>
 
-        <div className={`transition-all duration-300 ${isSidebarCollapsed ? "w-full" : "w-full lg:w-3/4"}`}>
+        <div
+          className={`transition-all duration-300 ${isSidebarCollapsed ? "w-full" : "w-full lg:w-3/4"}`}
+        >
           {isSidebarCollapsed && (
             <button
               onClick={() => setIsSidebarCollapsed(false)}
@@ -89,8 +100,9 @@ const QalityIndicatorForm = ({ onBack }) => {
         </div>
       </div>
 
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
         }
@@ -104,9 +116,12 @@ const QalityIndicatorForm = ({ onBack }) => {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #cbd5e1;
         }
-      `}} />
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      `,
+        }}
+      />
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @media print {
           @page {
             size: A3 landscape !important;
@@ -161,7 +176,9 @@ const QalityIndicatorForm = ({ onBack }) => {
             page-break-after: auto !important;
           }
         }
-      `}} />
+      `,
+        }}
+      />
     </div>
   );
 };

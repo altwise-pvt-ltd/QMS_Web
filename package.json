@@ -23,10 +23,13 @@
     "dexie-cloud-addon": "^4.2.4",
     "dexie-react-hooks": "^4.2.0",
     "file-saver": "^2.0.5",
+    "framer-motion": "^12.27.1",
     "html2pdf.js": "^0.14.0",
     "lucide-react": "^0.562.0",
+    "prop-types": "^15.8.1",
     "react": "^19.2.0",
     "react-big-calendar": "^1.19.4",
+    "react-calendar": "^6.0.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.11.0",
     "tailwindcss": "^4.1.18"
