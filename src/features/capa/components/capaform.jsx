@@ -6,28 +6,42 @@ import { CAPA_QUESTIONS } from '../quedata.js';
 
 const SUBCATEGORY_MAP = {
   "Pre-Analytical": [
-    "Vein puncture failure",
-    "Typographic error",
-    "Wrong sample identification",
-    "Incomplete form",
-    "Sample labeling error"
+    "Sample rejection rate",
+    "Patient identification errors",
+    "Improper sample container / additive",
+    "Sample integrity loss (hemolysis, clotting, leakage)",
+    "Inadequate sample quantity",
+    "Improper sample handling and transport",
+    "Improper request / incomplete documentation"
   ],
+
   "Analytical": [
-    "Wrong sample processed",
-    "Random error",
-    "Systematic error",
-    "IQC failure",
-    "EQAS failure"
+    "Internal Quality Control (IQC) failure",
+    "Coefficient of Variation (CV%) outside limits",
+    "External Quality Assessment (EQA / PT) failure",
+    "Analyzer downtime",
+    "Calibration overdue or failure",
+    "Reagent lot-to-lot variation",
+    "Repeat testing rate",
+    "Delta check failures"
   ],
+
   "Post-Analytical": [
-    "Printing error",
-    "Urgent sample report",
-    "Critical value reporting",
-    "Turnaround time (TAT)",
-    "Improper report dispatch"
+    "Turnaround Time (TAT) breach",
+    "Critical value reporting delay",
+    "Incorrect report issued",
+    "Report amendments / corrections",
+    "Transcription / data entry errors",
+    "Report delivery delay",
+    "Customer complaints",
+    "Recall / corrective reports"
   ],
-  "Other": []
+  "others": [
+
+  ]
+
 };
+
 
 const DEPARTMENTS = [
   "Quality Assurance",
