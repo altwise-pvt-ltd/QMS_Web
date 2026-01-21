@@ -2,7 +2,13 @@ import React from "react";
 import { ArrowLeft, Printer, Download, Share2 } from "lucide-react";
 import html2pdf from "html2pdf.js";
 
-const MrmPdfView = ({ meeting, actionItems = [], minutes = null, onBack }) => {
+const MrmPdfView = ({
+  meeting,
+  actionItems = [],
+  minutes = null,
+  attendance = [],
+  onBack,
+}) => {
   if (!meeting) return null;
 
   const show = (v) => v || "—";
@@ -159,23 +165,28 @@ const MrmPdfView = ({ meeting, actionItems = [], minutes = null, onBack }) => {
 
                   {/* ATTENDEES */}
                   {(() => {
-                    const rawAttendees =
-                      meeting.invitedAttendees || meeting.invites || [];
+                    const hasConfirmedAttendance =
+                      attendance && attendance.length > 0;
+
+                    const rawAttendees = hasConfirmedAttendance
+                      ? attendance
+                      : meeting.invitedAttendees || meeting.invites || [];
+
                     const attendeesList = Array.isArray(rawAttendees)
-                      ? rawAttendees.map((att) =>
-                          typeof att === "string"
-                            ? { username: att, role: "" }
-                            : {
-                                username: att.username || att.name || "Unknown",
-                                role: att.role || att.department || "Attendee",
-                              },
-                        )
-                      : typeof rawAttendees === "string"
-                        ? rawAttendees
-                            .split(",")
-                            .map((s) => ({ username: s.trim(), role: "" }))
-                            .filter((a) => a.username)
-                        : [];
+                      ? rawAttendees
+                          .map((att) =>
+                            typeof att === "string"
+                              ? { username: att, role: "", status: "Present" }
+                              : {
+                                  username:
+                                    att.username || att.name || "Unknown",
+                                  role:
+                                    att.role || att.department || "Attendee",
+                                  status: att.status || "Present",
+                                },
+                          )
+                          .filter((att) => att.status === "Present")
+                      : [];
 
                     if (attendeesList.length === 0) return null;
 
@@ -201,10 +212,10 @@ const MrmPdfView = ({ meeting, actionItems = [], minutes = null, onBack }) => {
                           <tbody>
                             {attendeesList.map((attendee, i) => (
                               <tr key={i}>
-                                <td className="border border-black p-2 text-center">
+                                <td className="border border-black p-2 text-center text-[10px]">
                                   {i + 1}
                                 </td>
-                                <td className="border border-black p-2">
+                                <td className="border border-black p-2 font-bold">
                                   {attendee.username}
                                 </td>
                                 <td className="border border-black p-2">

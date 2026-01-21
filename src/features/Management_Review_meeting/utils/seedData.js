@@ -30,10 +30,30 @@ export const seedMrmData = async () => {
       agenda:
         "Review Q1 performance, quality objectives, customer feedback, and strategic initiatives",
       invitedAttendees: [
-        { username: "John Doe", role: "CEO" },
-        { username: "Jane Smith", role: "Quality Manager" },
-        { username: "Bob Johnson", role: "Operations Manager" },
-        { username: "Alice Williams", role: "HR Manager" },
+        {
+          id: 101,
+          username: "John Doe",
+          role: "CEO",
+          department: "Management",
+        },
+        {
+          id: 102,
+          username: "Jane Smith",
+          role: "Quality Manager",
+          department: "Quality",
+        },
+        {
+          id: 103,
+          username: "Bob Johnson",
+          role: "Operations Manager",
+          department: "Operations",
+        },
+        {
+          id: 104,
+          username: "Alice Williams",
+          role: "HR Manager",
+          department: "Human Resources",
+        },
       ],
       status: "Completed",
       createdAt: new Date().toISOString(),

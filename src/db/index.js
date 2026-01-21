@@ -4,7 +4,7 @@ import Dexie from "dexie";
 export const db = new Dexie("QMS_Web_DB");
 
 // UPDATE VERSION: Bump version to apply schema changes (e.g., 6 -> 7)
-db.version(7).stores({
+db.version(8).stores({
   // Persistent storage for documents metadata
   documents:
     "id, name, level, category, subCategory, status, department, author, version, createdDate, expiryDate",
@@ -21,6 +21,8 @@ db.version(7).stores({
   mrm_meetings: "++id, title, date, status, createdAt",
   mrm_action_items: "++id, meetingId, task, dueDate, createdAt",
   mrm_minutes: "++id, meetingId, agendaItems, createdAt",
+  mrm_attendance:
+    "++id, meetingId, userId, username, role, department, status, createdAt",
 
   // Compliance Calendar tables
   compliance_event_types: "++id, name, category, color, icon, defaultFrequency",

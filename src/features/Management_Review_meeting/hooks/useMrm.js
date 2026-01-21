@@ -37,7 +37,7 @@ export const useMrm = () => {
     try {
       const updated = await mrmService.updateMeeting(id, updatedFields);
       setMeetings((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, ...updatedFields } : m))
+        prev.map((m) => (m.id === id ? { ...m, ...updatedFields } : m)),
       );
       return updated;
     } catch (error) {
@@ -94,6 +94,25 @@ export const useMrm = () => {
     }
   };
 
+  // Attendance methods
+  const saveAttendance = async (meetingId, attendanceData) => {
+    try {
+      return await mrmService.saveAttendance(meetingId, attendanceData);
+    } catch (error) {
+      console.error("Error saving attendance:", error);
+      throw error;
+    }
+  };
+
+  const getAttendance = async (meetingId) => {
+    try {
+      return await mrmService.getAttendance(meetingId);
+    } catch (error) {
+      console.error("Error getting attendance:", error);
+      return [];
+    }
+  };
+
   // Get complete meeting data
   const getCompleteMeetingData = async (meetingId) => {
     try {
@@ -114,6 +133,8 @@ export const useMrm = () => {
     getActionItems,
     saveMinutes,
     getMinutes,
+    saveAttendance,
+    getAttendance,
     getCompleteMeetingData,
     refreshMeetings: loadMeetings,
   };

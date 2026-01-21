@@ -7,6 +7,7 @@ import {
   User,
   CheckCircle,
   ArrowLeft,
+  UserCheck,
 } from "lucide-react";
 
 const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
@@ -42,7 +43,7 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
 
   const handleSave = () => {
     const formData = { agendaItems: items };
-    console.log("Saving Minutes:", formData);
+    console.log("Proceeding to attendance with minutes:", formData);
     if (onSave) onSave(formData);
   };
 
@@ -78,7 +79,7 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
             onClick={handleSave}
             className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-black rounded-xl hover:bg-indigo-700 shadow-lg font-bold transition-all active:scale-95"
           >
-            <Save size={20} /> Finish & Save Minutes
+            <UserCheck size={20} /> Next: Attendance Selection
           </button>
         </div>
 
