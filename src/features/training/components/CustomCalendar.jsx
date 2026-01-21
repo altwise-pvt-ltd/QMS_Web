@@ -8,31 +8,27 @@ const CustomCalendar = (props) => {
   const { setDate, date, selectRange, setSelectRange, trainings } = props;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-      {/* Card Container */}
-      <div className="bg-white p-8 rounded-3xl shadow-2xl shadow-indigo-100 max-w-lg w-full border border-slate-100">
-        {/* 1. Title */}
-        <Title title="Schedule" />
+    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm w-full">
+      <Title title="Training Calendar" />
 
-        {/* 2. Calendar */}
-        <div className="my-6">
-          <CalendarComponent
-            setDate={setDate}
-            date={date}
-            selectRange={selectRange}
-            trainings={trainings}
-          />
-        </div>
-
-        {/* 3. Actions (Date display & Toggle) */}
-        <Actions
+      {/* 2. Calendar */}
+      <div className="my-4">
+        <CalendarComponent
           setDate={setDate}
           date={date}
           selectRange={selectRange}
-          setSelectRange={setSelectRange}
           trainings={trainings}
         />
       </div>
+
+      {/* 3. Actions (Date display & Toggle) */}
+      <Actions
+        setDate={setDate}
+        date={date}
+        selectRange={selectRange}
+        setSelectRange={setSelectRange}
+        trainings={trainings}
+      />
     </div>
   );
 };

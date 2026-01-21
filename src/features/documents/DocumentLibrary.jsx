@@ -16,6 +16,11 @@ const DocumentLibrary = () => {
   const [activeLevelId, setActiveLevelId] = useState("level-1");
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Sync state with data.js changes
+  React.useEffect(() => {
+    setLevels(DOC_LEVELS);
+  }, []);
+
   const navigate = useNavigate();
   const activeData = levels.find((l) => l.id === activeLevelId);
 
@@ -37,11 +42,11 @@ const DocumentLibrary = () => {
       prevLevels.map((level) =>
         level.id === activeLevelId
           ? {
-            ...level,
-            items: [...(level.items || []), { name }],
-          }
-          : level
-      )
+              ...level,
+              items: [...(level.items || []), { name }],
+            }
+          : level,
+      ),
     );
   };
 
@@ -53,19 +58,19 @@ const DocumentLibrary = () => {
       prevLevels.map((level) =>
         level.id === activeLevelId
           ? {
-            ...level,
-            items: level.items.map((item, idx) =>
-              idx === index ? { ...item, name: newName } : item
-            ),
-          }
-          : level
-      )
+              ...level,
+              items: level.items.map((item, idx) =>
+                idx === index ? { ...item, name: newName } : item,
+              ),
+            }
+          : level,
+      ),
     );
   };
 
   const handleDeleteItem = (index, name) => {
     const confirmDelete = window.confirm(
-      `⚠️ Delete "${name}"?\n\nThis will permanently delete the entire folder and all its data. This action cannot be undone.`
+      `⚠️ Delete "${name}"?\n\nThis will permanently delete the entire folder and all its data. This action cannot be undone.`,
     );
     if (!confirmDelete) return;
 
@@ -73,11 +78,11 @@ const DocumentLibrary = () => {
       prevLevels.map((level) =>
         level.id === activeLevelId
           ? {
-            ...level,
-            items: level.items.filter((_, idx) => idx !== index),
-          }
-          : level
-      )
+              ...level,
+              items: level.items.filter((_, idx) => idx !== index),
+            }
+          : level,
+      ),
     );
   };
 
@@ -125,13 +130,12 @@ const DocumentLibrary = () => {
             <Plus className="w-4 h-4" />
             Upload Document
           </button>
-
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Navigation Sidebar (The Pyramid) */}
-        <div className="lg:w-1/3 space-y-3">
+        {/* Navigation Sidebar (The Pyramid) - Sticky on Desktop */}
+        <div className="lg:w-1/3 lg:sticky lg:top-6 h-fit space-y-3">
           {DOC_LEVELS.map((level) => {
             const Icon = level.icon;
             const isActive = activeLevelId === level.id;
@@ -139,48 +143,53 @@ const DocumentLibrary = () => {
               <button
                 key={level.id}
                 onClick={() => setActiveLevelId(level.id)}
-                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center gap-4 group ${isActive
-                  ? "bg-indigo-50/40 border-indigo-600 shadow-md ring-1 ring-indigo-600/20"
-                  : "bg-white border-slate-200 hover:border-indigo-400 hover:bg-slate-50/80 hover:shadow-sm"
-                  }`}
+                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center gap-4 group ${
+                  isActive
+                    ? "bg-indigo-50/40 border-indigo-600 shadow-md ring-1 ring-indigo-600/20"
+                    : "bg-white border-slate-200 hover:border-indigo-400 hover:bg-slate-50/80 hover:shadow-sm"
+                }`}
               >
                 <div className={`p-3 rounded-lg shadow-sm ${level.color}`}>
                   <Icon className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
                   <span
-                    className={`text-xs font-bold uppercase tracking-wider ${isActive ? "text-indigo-700/70" : "text-slate-500"
-                      }`}
+                    className={`text-xs font-bold uppercase tracking-wider ${
+                      isActive ? "text-indigo-700/70" : "text-slate-500"
+                    }`}
                   >
                     Level {level.level}
                   </span>
                   <h3
-                    className={`font-semibold ${isActive ? "text-indigo-800" : "text-slate-800"
-                      }`}
+                    className={`font-semibold ${
+                      isActive ? "text-indigo-800" : "text-slate-800"
+                    }`}
                   >
                     {level.title}
                   </h3>
                   <p
-                    className={`text-xs mt-1 ${isActive ? "text-indigo-700/70" : "text-slate-500"
-                      }`}
+                    className={`text-xs mt-1 ${
+                      isActive ? "text-indigo-700/70" : "text-slate-500"
+                    }`}
                   >
                     {level.description}
                   </p>
                 </div>
                 <ChevronRight
-                  className={`w-5 h-5 transition-transform ${isActive
-                    ? "text-indigo-600 rotate-90 lg:rotate-0"
-                    : "text-slate-400 group-hover:text-indigo-400"
-                    }`}
+                  className={`w-5 h-5 transition-transform ${
+                    isActive
+                      ? "text-indigo-600 rotate-90 lg:rotate-0"
+                      : "text-slate-400 group-hover:text-indigo-400"
+                  }`}
                 />
               </button>
             );
           })}
         </div>
 
-        {/* Content Area */}
-        <div className="lg:w-2/3 bg-gray-50 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40 flex flex-col h-fit overflow-hidden">
-          <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+        {/* Content Area - Scrollable with fixed max height */}
+        <div className="lg:w-2/3 bg-gray-50 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40 flex flex-col h-[calc(100vh-200px)] lg:h-[calc(100vh-160px)] min-h-[500px] overflow-hidden">
+          <div className="p-6 border-b border-slate-100 bg-linear-to-r from-slate-50 to-white">
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <FolderOpen className="w-6 h-6 text-indigo-600" />
               {activeData.title}
@@ -190,7 +199,7 @@ const DocumentLibrary = () => {
             </p>
           </div>
 
-          <div className="p-6 bg-white">
+          <div className="p-6 bg-white overflow-y-auto custom-scrollbar flex-1">
             {/* Handle levels with direct items (Level 1, 2) */}
             {activeData.items && (
               <div className="grid grid-cols-1 gap-3">
@@ -214,105 +223,6 @@ const DocumentLibrary = () => {
                 >
                   <span className="text-xl font-bold">ADD FOLDER</span>
                 </button>
-              </div>
-            )}
-
-            {/* Handle levels with sections (Level 3, 4, 5, 6) */}
-            {activeData.sections && (
-              <div className="space-y-6">
-                {activeData.sections.map((section, sectionIdx) => (
-                  <div key={sectionIdx} className="space-y-3">
-                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider px-2">
-                      {section.title}
-                    </h3>
-                    <div className="grid grid-cols-1 gap-3">
-                      {section.items.map((itemName, itemIdx) => (
-                        <DocumentRow
-                          key={`${sectionIdx}-${itemIdx}`}
-                          index={itemIdx}
-                          name={itemName}
-                          section={section.title}
-                          onView={handleViewClick}
-                          onUpload={(name) => handleUploadClick(name, section.title)}
-                          onEdit={(idx, name) => {
-                            const newName = prompt("Edit Name", name);
-                            if (!newName || newName === name) return;
-                            
-                            setLevels((prevLevels) =>
-                              prevLevels.map((level) =>
-                                level.id === activeLevelId
-                                  ? {
-                                    ...level,
-                                    sections: level.sections.map((sec, sIdx) =>
-                                      sIdx === sectionIdx
-                                        ? {
-                                          ...sec,
-                                          items: sec.items.map((item, iIdx) =>
-                                            iIdx === idx ? newName : item
-                                          ),
-                                        }
-                                        : sec
-                                    ),
-                                  }
-                                  : level
-                              )
-                            );
-                          }}
-                          onDelete={(idx, name) => {
-                            const confirmDelete = window.confirm(
-                              `⚠️ Delete "${name}"?\n\nThis will permanently delete the entire folder and all its data. This action cannot be undone.`
-                            );
-                            if (!confirmDelete) return;
-
-                            setLevels((prevLevels) =>
-                              prevLevels.map((level) =>
-                                level.id === activeLevelId
-                                  ? {
-                                    ...level,
-                                    sections: level.sections.map((sec, sIdx) =>
-                                      sIdx === sectionIdx
-                                        ? {
-                                          ...sec,
-                                          items: sec.items.filter((_, iIdx) => iIdx !== idx),
-                                        }
-                                        : sec
-                                    ),
-                                  }
-                                  : level
-                              )
-                            );
-                          }}
-                        />
-                      ))}
-
-                      {/* ADD ITEM BUTTON for this section */}
-                      <button
-                        onClick={() => {
-                          const name = prompt("Enter Name");
-                          if (!name) return;
-
-                          setLevels((prevLevels) =>
-                            prevLevels.map((level) =>
-                              level.id === activeLevelId
-                                ? {
-                                  ...level,
-                                  sections: level.sections.map((sec, sIdx) =>
-                                    sIdx === sectionIdx
-                                      ? { ...sec, items: [...sec.items, name] }
-                                      : sec
-                                  ),
-                                }
-                                : level
-                            )
-                          );
-                        }}
-                        className="flex items-center justify-center h-[56px] border-2 border-dashed border-indigo-400 rounded-xl text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 transition-all"
-                      >
-                        <span className="text-xl font-bold">ADD FOLDER</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
               </div>
             )}
           </div>
@@ -359,8 +269,18 @@ const DocumentRow = ({ index, name, onView, onUpload, onEdit, onDelete }) => (
         className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-100 rounded-md transition-all opacity-0 group-hover:opacity-100"
         title="Edit Name"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+          />
         </svg>
       </button>
       <button
@@ -371,8 +291,18 @@ const DocumentRow = ({ index, name, onView, onUpload, onEdit, onDelete }) => (
         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-100 rounded-md transition-all opacity-0 group-hover:opacity-100"
         title="Delete Folder"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+          />
         </svg>
       </button>
       <ArrowRight className="w-4 h-4 text-indigo-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />

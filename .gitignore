@@ -1,4 +1,7 @@
 node_modules/
 dist/   
 .env
-WORK_LOG_JAN_2026.md
+WORK_LOG_*.md
+*.txt
+*.key
+dexie-cloud.json
