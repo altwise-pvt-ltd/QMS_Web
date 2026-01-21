@@ -199,6 +199,30 @@ This document summarizes all development work completed on the QMS Web project f
 - **Git Configuration**
   - Updated `.gitignore` to exclude temporary development artifacts and local work logs (`WORK_LOG_*.md`)
 
+### January 21, 2026
+
+- **Document Library Data Flattening**
+  - Refactored `data.js` to convert nested `sections` into a flat `items` structure across all levels
+  - Simplified `DocumentLibrary.jsx` by removing obsolete grouped section rendering logic
+  - Modernized Tailwind CSS gradient syntax in the document library header
+
+- **Git & Environment Management**
+  - Updated `.gitignore` with wildcard patterns (`WORK_LOG_*.md`, `*.key`, `*.txt`) to keep the repository clean of local dev artifacts
+
+- **Schedule Training Modal Optimization**
+  - Expanded modal layout to `max-w-4xl` and increased information density with `p-6` and `py-2.5` inputs
+  - Enhanced audit-safety in personnel selection by displaying `Name — Role (Department)`
+  - Highlighted "All Staff" group assignment as a high-impact option
+  - Added compliance helper text for auto-generated recurrence instances
+  - Fixed contrast issues on primary action buttons and implemented defensive loading states
+
+- **Training Dashboard Optimization**
+  - Refined stats hierarchy to prioritize "Overdue" risk signals with high-contrast borders and rings
+  - Implemented high-density table layout (`py-3` rows) with subtle risk-state background tinting
+  - Fixed primary button contrast (text-gray-600) and improved row action intentionality with "View" labels
+  - Robust grid layout adjustments for consistent display across 1024px-1440px widths
+  - Strengthened status badge legibility with borders and bold typography
+
 ---
 
 ## Key Features Implemented
@@ -247,13 +271,7 @@ This document summarizes all development work completed on the QMS Web project f
 - Action item tracking
 - PDF generation for meetings and minutes
 
-### 7. Communication
 
-- Chat feature integration
-- WebSocket flow for real-time messaging
-- Team member chat interface
-
----
 
 ## Technical Improvements
 

@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { motion } from "framer-motion";
 import Calendar from "react-calendar";
 
 // Note: Do NOT import 'react-calendar/dist/Calendar.css'.
@@ -44,12 +43,7 @@ const CalendarComponent = ({ setDate, date, selectRange, trainings = [] }) => {
   };
 
   return (
-    <motion.div
-      initial={{ scale: 0.95, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="p-6 bg-white rounded-2xl shadow-xl border border-slate-100 max-w-md mx-auto"
-    >
+    <div className="p-4 bg-white rounded-xl border border-slate-200 max-w-md mx-auto">
       <Calendar
         onChange={setDate}
         value={date}
@@ -57,7 +51,7 @@ const CalendarComponent = ({ setDate, date, selectRange, trainings = [] }) => {
         className="custom-calendar"
         tileContent={getTileContent}
       />
-    </motion.div>
+    </div>
   );
 };
 

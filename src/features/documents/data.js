@@ -46,42 +46,23 @@ export const DOC_LEVELS = [
     icon: FileText,
     color: "bg-teal-100 text-teal-600",
     // Sub-categories handling
-    sections: [
-      {
-        title: "Pre-Examination",
-        items: [
-          "Patient Info & Consent",
-          "Sample Collection (Phlebotomy)",
-          "Sample Transport & Reception",
-          "Acceptance & Rejection Criteria",
-        ],
-      },
-      {
-        title: "Examination (Analytical)",
-        items: [
-          "Haematology SOPs",
-          "Biochemistry SOPs",
-          "Microbiology SOPs",
-          "Method Verification & Validation",
-          "IQC & EQA Procedures",
-        ],
-      },
-      {
-        title: "Post-Examination",
-        items: [
-          "Result Review & Authorization",
-          "Critical Results Reporting",
-          "Report Issue & Amendment",
-        ],
-      },
-      {
-        title: "Support",
-        items: [
-          "Biosafety & PPE",
-          "Waste Disposal",
-          "Environmental Monitoring",
-        ],
-      },
+    // Sub-categories handling
+    items: [
+      { name: "Patient Info & Consent" },
+      { name: "Sample Collection (Phlebotomy)" },
+      { name: "Sample Transport & Reception" },
+      { name: "Acceptance & Rejection Criteria" },
+      { name: "Haematology SOPs" },
+      { name: "Biochemistry SOPs" },
+      { name: "Microbiology SOPs" },
+      { name: "Method Verification & Validation" },
+      { name: "IQC & EQA Procedures" },
+      { name: "Result Review & Authorization" },
+      { name: "Critical Results Reporting" },
+      { name: "Report Issue & Amendment" },
+      { name: "Biosafety & PPE" },
+      { name: "Waste Disposal" },
+      { name: "Environmental Monitoring" },
     ],
   },
   {
@@ -91,29 +72,18 @@ export const DOC_LEVELS = [
     description: "Logs, checklists, and raw data.",
     icon: ClipboardList,
     color: "bg-slate-100 text-slate-600",
-    sections: [
-      {
-        title: "Quality & Governance",
-        items: [
-          "CAPA Form",
-          "Risk Register",
-          "Audit Checklist",
-          "Complaint Form",
-        ],
-      },
-      {
-        title: "HR & Competence",
-        items: ["Job Descriptions", "Training Logs", "Competency Assessments"],
-      },
-      {
-        title: "Operational",
-        items: [
-          "Test Requisition Forms",
-          "Temperature Logs",
-          "Maintenance Logs",
-          "Calibration Certificates",
-        ],
-      },
+    items: [
+      { name: "CAPA Form" },
+      { name: "Risk Register" },
+      { name: "Audit Checklist" },
+      { name: "Complaint Form" },
+      { name: "Job Descriptions" },
+      { name: "Training Logs" },
+      { name: "Competency Assessments" },
+      { name: "Test Requisition Forms" },
+      { name: "Temperature Logs" },
+      { name: "Maintenance Logs" },
+      { name: "Calibration Certificates" },
     ],
   },
   {
@@ -124,88 +94,38 @@ export const DOC_LEVELS = [
     icon: ClipboardList,
     color: "bg-purple-100 text-purple-600",
 
-    sections: [
-      {
-        title: "Important Legal & Organizational Documents",
-        items: [
-          "Certificate of Incorporation",
-          "LLP Deed with Addendum",
-          "Partnership / Ownership Declaration",
-          "Shop / Partnership Registration Document",
-          "Shop and Establishment Licence",
-          "Maharashtra Pollution Control Board Authorization (BMW)",
-        ],
-      },
-      {
-        title: "Business Operation & Establishment Licenses",
-        items: [
-          "Clinical Establishment Act Registration Certificate",
-          "Trade / Municipal Licence (if applicable)",
-        ],
-      },
-      {
-        title: "Pollution Control & Environmental Compliance",
-        items: [
-          "Biomedical Waste Disposal Agency Agreement",
-          "Biomedical Waste Collection & Disposal Records",
-        ],
-      },
-      {
-        title: "Professional Responsibility & Authorization",
-        items: [
-          "Appointment Letter of Laboratory Director",
-          "Qualification Certificates of Laboratory Director",
-          "Medical Council / NMC Registration Certificate",
-        ],
-      },
-      {
-        title: "Taxation & Financial Identity",
-        items: [
-          "PAN Card of Organization",
-          "GST Registration Certificate (if applicable)",
-        ],
-      },
-      {
-        title: "Infrastructure & Safety Compliance",
-        items: [
-          "Premises Ownership / Rent Agreement",
-          "Fire Safety Certificate / Fire Extinguisher AMC",
-          "Electrical Safety Certificate (if applicable)",
-          "Laboratory Layout Plan",
-        ],
-      },
-      {
-        title: "Equipment & Technical Compliance",
-        items: [
-          "Equipment Purchase Invoices / Installation Certificates",
-          "Annual Maintenance Contract (AMC / CMC)",
-          "Calibration Certificates & Calibration Agency Details",
-        ],
-      },
-      {
-        title: "External Services & Quality Assurance",
-        items: [
-          "EQAS / Proficiency Testing Enrollment Certificates",
-          "Outsourced Test Agreements (if applicable)",
-          "Laboratory Information System (LIS) / Software Agreement",
-        ],
-      },
-      {
-        title: "Insurance & Risk Management",
-        items: [
-          "Professional Indemnity Insurance",
-          "Public Liability Insurance",
-          "Employee Insurance (ESI / Workmen Compensation, if applicable)",
-        ],
-      },
-      {
-        title: "Statutory Monitoring & Control",
-        items: [
-          "Statutory Compliance Register",
-          "License & Authorization Renewal Tracking Record",
-          "Legal & Regulatory Requirement Identification List",
-        ],
-      },
+    items: [
+      { name: "Certificate of Incorporation" },
+      { name: "LLP Deed with Addendum" },
+      { name: "Partnership / Ownership Declaration" },
+      { name: "Shop / Partnership Registration Document" },
+      { name: "Shop and Establishment Licence" },
+      { name: "MPCB Authorization (BMW)" },
+      { name: "Clinical Establishment Act Certificate" },
+      { name: "Trade / Municipal Licence" },
+      { name: "BMW Disposal Agreement" },
+      { name: "BMW Collection Records" },
+      { name: "Director Appointment Letter" },
+      { name: "Director Qualification Certs" },
+      { name: "Medical Council / NMC Reg" },
+      { name: "Organization PAN Card" },
+      { name: "GST Registration Certificate" },
+      { name: "Premises Ownership/Rent Agreement" },
+      { name: "Fire Safety / Extinguisher AMC" },
+      { name: "Electrical Safety Certificate" },
+      { name: "Laboratory Layout Plan" },
+      { name: "Equipment Purchase Invoices" },
+      { name: "AMC / CMC Contracts" },
+      { name: "Calibration Certificates" },
+      { name: "EQAS / PT Certificates" },
+      { name: "Outsourced Test Agreements" },
+      { name: "LIS / Software Agreement" },
+      { name: "Professional Indemnity Insurance" },
+      { name: "Public Liability Insurance" },
+      { name: "ESI / Workmen Insurance" },
+      { name: "Statutory Compliance Register" },
+      { name: "License Renewal Tracker" },
+      { name: "Legal Requirement List" },
     ],
   },
   {
@@ -215,12 +135,6 @@ export const DOC_LEVELS = [
     description: "Add the necessary documents as per ISO 15189 / NABL.",
     icon: ClipboardList,
     color: "bg-purple-100 text-purple-600",
-
-    sections: [
-      {
-        title: "Documents",
-        items: [],
-      },
-    ],
+    items: [],
   },
 ];

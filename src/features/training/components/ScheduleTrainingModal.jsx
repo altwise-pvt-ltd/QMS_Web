@@ -15,6 +15,7 @@ import {
 
 const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
   const [loading, setLoading] = useState(false);
+  const [staffLoading, setStaffLoading] = useState(true);
   const [staff, setStaff] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -38,10 +39,13 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
 
   const loadStaff = async () => {
     try {
+      setStaffLoading(true);
       const data = await db.staff.toArray();
       setStaff(data);
     } catch (error) {
       console.error("Error loading staff:", error);
+    } finally {
+      setStaffLoading(false);
     }
   };
 
@@ -169,9 +173,9 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in zoom-in-95 duration-300">
         {/* Header */}
-        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-indigo-50/30">
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-indigo-50/20">
           <div>
             <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
               Schedule New Training
@@ -188,8 +192,8 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-8">
-          <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
             {/* Title - Full Width in Grid */}
             <div className="col-span-2 space-y-2">
               <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
@@ -204,7 +208,7 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
-                className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700"
+                className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700"
               />
             </div>
 
@@ -221,7 +225,7 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, dueDate: e.target.value })
                 }
-                className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700"
+                className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700"
               />
             </div>
 
@@ -236,13 +240,17 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, recurrence: e.target.value })
                 }
-                className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700 appearance-none cursor-pointer"
+                className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700 appearance-none cursor-pointer"
               >
                 <option value="one-time">One-time</option>
                 <option value="monthly">Monthly</option>
                 <option value="quarterly">Quarterly</option>
                 <option value="yearly">Yearly</option>
               </select>
+              <p className="text-[10px] text-slate-400 mt-1 font-medium italic">
+                * Future instances will be auto-generated for compliance
+                visibility.
+              </p>
             </div>
 
             {/* Assigned To */}
@@ -253,19 +261,34 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
               </label>
               <select
                 required
+                disabled={staffLoading}
                 value={formData.assignedTo}
                 onChange={(e) =>
                   setFormData({ ...formData, assignedTo: e.target.value })
                 }
-                className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700 appearance-none cursor-pointer"
+                className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700 appearance-none cursor-pointer disabled:opacity-50"
               >
-                <option value="">Select Personnel</option>
-                {staff.map((person) => (
-                  <option key={person.id} value={person.name}>
-                    {person.name} — {person.role}
-                  </option>
-                ))}
-                <option value="All Staff">All Staff</option>
+                {staffLoading ? (
+                  <option>Loading staff data...</option>
+                ) : (
+                  <>
+                    <option value="">Select Personnel...</option>
+                    <option
+                      value="All Staff"
+                      className="font-black text-indigo-700"
+                    >
+                      ALL STAFF (Group Assignment)
+                    </option>
+                    <option disabled className="text-slate-300">
+                      ──────────────────
+                    </option>
+                    {staff.map((person) => (
+                      <option key={person.id} value={person.name}>
+                        {person.name} — {person.role} ({person.department})
+                      </option>
+                    ))}
+                  </>
+                )}
               </select>
             </div>
 
@@ -281,7 +304,7 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
-                className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium text-slate-700 resize-none"
+                className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium text-slate-700 resize-none"
               ></textarea>
             </div>
           </div>
@@ -298,7 +321,7 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
             <button
               disabled={loading}
               type="submit"
-              className="flex-1 px-8 py-4 bg-indigo-600 text-gray-600 rounded-2xl font-black shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-3 disabled:opacity-50"
+              className="flex-1 px-8 py-4 bg-indigo-600 text-gray-600 rounded-xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-[0.98] transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-3 disabled:opacity-50"
             >
               {loading ? (
                 "Scheduling..."

@@ -105,18 +105,38 @@ const Training = () => {
     overdue: trainings.filter((t) => t.status === "overdue").length,
   };
 
-  const StatCard = ({ title, value, icon: Icon, color }) => (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+  const StatCard = ({ title, value, icon: Icon, color, isRisk }) => (
+    <div
+      className={`bg-white p-5 rounded-2xl border ${
+        isRisk
+          ? "border-rose-200 bg-rose-50/10 shadow-rose-100"
+          : "border-slate-100 shadow-slate-100"
+      } shadow-lg transition-all group overflow-hidden relative`}
+    >
       <div
         className={`absolute top-0 right-0 w-20 h-20 -mr-8 -mt-8 rounded-full opacity-5 group-hover:scale-110 transition-transform ${color}`}
       ></div>
       <div className="flex justify-between items-start relative z-10">
         <div>
-          <p className="text-slate-500 text-sm font-medium mb-1">{title}</p>
-          <h3 className="text-3xl font-bold text-slate-800">{value}</h3>
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">
+            {title}
+          </p>
+          <h3
+            className={`text-3xl font-black ${
+              isRisk ? "text-rose-600" : "text-slate-800"
+            }`}
+          >
+            {value}
+          </h3>
         </div>
-        <div className={`p-3 rounded-xl ${color} bg-opacity-10`}>
-          <Icon className={`w-6 h-6 ${color.replace("bg-", "text-")}`} />
+        <div
+          className={`p-3 rounded-xl ${color} bg-opacity-10 ${
+            isRisk ? "ring-2 ring-rose-500 ring-offset-2" : ""
+          }`}
+        >
+          <Icon
+            className={`w-6 h-6 ${isRisk ? "text-rose-600" : color.replace("bg-", "text-")}`}
+          />
         </div>
       </div>
     </div>
@@ -137,15 +157,16 @@ const Training = () => {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-gray-600 rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all outline-none"
+          className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-gray-600
+           rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] transition-all outline-none border-2 border-indigo-700"
         >
           <Plus size={20} />
           Schedule Training
         </button>
       </div>
 
-      {/* Stats Grid - Fixed 4 column for desktop */}
-      <div className="grid grid-cols-4 gap-6">
+      {/* Stats Grid - Robust for 1024px+ */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <StatCard
           title="Total Modules"
           value={stats.total}
@@ -159,6 +180,7 @@ const Training = () => {
           color="bg-blue-500"
         />
         <StatCard
+          isRisk={stats.overdue > 0}
           title="Overdue"
           value={stats.overdue}
           icon={AlertCircle}
@@ -209,21 +231,21 @@ const Training = () => {
           <div className="overflow-x-auto flex-1">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-50/50">
-                  <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <tr className="bg-slate-50/50 border-b border-slate-100">
+                  <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
                     Training Requirement
                   </th>
-                  <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                  <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
                     Assignee / Target
                   </th>
-                  <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center text-nowrap">
+                  <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center text-nowrap">
                     Due Date
                   </th>
-                  <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                  <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
                     Status
                   </th>
-                  <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">
-                    Actions
+                  <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                    Action
                   </th>
                 </tr>
               </thead>
@@ -250,49 +272,75 @@ const Training = () => {
                   filteredTrainings.map((training) => (
                     <tr
                       key={training.id}
-                      className="hover:bg-slate-50/50 transition-colors group"
+                      className={`hover:bg-slate-50 transition-colors group ${
+                        training.status === "overdue" ? "bg-rose-50/20" : ""
+                      }`}
                     >
-                      <td className="px-8 py-5">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                            <GraduationCap size={20} />
+                      <td className="px-6 py-3">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                              training.status === "overdue"
+                                ? "bg-rose-100 text-rose-600"
+                                : "bg-indigo-50 text-indigo-600"
+                            }`}
+                          >
+                            <GraduationCap size={16} />
                           </div>
-                          <p className="font-bold text-slate-800">
+                          <p
+                            className={`text-sm font-bold ${
+                              training.status === "overdue"
+                                ? "text-rose-700"
+                                : "text-slate-800"
+                            }`}
+                          >
                             {training.title}
                           </p>
                         </div>
                       </td>
-                      <td className="px-8 py-5 text-center">
-                        <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                      <td className="px-6 py-3 text-center">
+                        <span className="text-[11px] font-black text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-md shadow-sm">
                           {training.assignedTo}
                         </span>
                       </td>
-                      <td className="px-8 py-5 text-center">
-                        <span className="text-sm font-bold text-slate-700">
+                      <td className="px-6 py-3 text-center">
+                        <span
+                          className={`text-sm font-bold ${
+                            training.status === "overdue"
+                              ? "text-rose-600"
+                              : "text-slate-700"
+                          }`}
+                        >
                           {new Date(training.dueDate).toLocaleDateString(
                             "en-GB",
                             { day: "numeric", month: "short" },
                           )}
                         </span>
                       </td>
-                      <td className="px-8 py-5 text-center">
+                      <td className="px-6 py-3 text-center">
                         <span
-                          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                          className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
                             training.status === "completed"
-                              ? "bg-emerald-50 text-emerald-600"
+                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
                               : training.status === "in-progress"
-                                ? "bg-blue-50 text-blue-600"
+                                ? "bg-blue-50 text-blue-600 border-blue-100"
                                 : training.status === "overdue"
-                                  ? "bg-rose-50 text-rose-600"
-                                  : "bg-amber-50 text-amber-600"
+                                  ? "bg-rose-100 text-rose-700 border-rose-200 shadow-sm"
+                                  : "bg-amber-50 text-amber-600 border-amber-100"
                           }`}
                         >
                           {training.status}
                         </span>
                       </td>
-                      <td className="px-8 py-5 text-right">
-                        <button className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:bg-indigo-600 hover:text-gray-600 transition-all shadow-sm">
-                          <ChevronRight size={18} />
+                      <td className="px-6 py-3 text-center">
+                        <button
+                          title="View Details"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-indigo-600 hover:text-gray-600 transition-all shadow-sm border border-slate-200"
+                        >
+                          <span className="text-[10px] font-black uppercase tracking-tight">
+                            View
+                          </span>
+                          <ChevronRight size={14} />
                         </button>
                       </td>
                     </tr>

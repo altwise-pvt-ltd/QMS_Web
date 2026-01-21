@@ -16,6 +16,11 @@ const DocumentLibrary = () => {
   const [activeLevelId, setActiveLevelId] = useState("level-1");
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Sync state with data.js changes
+  React.useEffect(() => {
+    setLevels(DOC_LEVELS);
+  }, []);
+
   const navigate = useNavigate();
   const activeData = levels.find((l) => l.id === activeLevelId);
 
@@ -184,7 +189,7 @@ const DocumentLibrary = () => {
 
         {/* Content Area - Scrollable with fixed max height */}
         <div className="lg:w-2/3 bg-gray-50 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40 flex flex-col h-[calc(100vh-200px)] lg:h-[calc(100vh-160px)] min-h-[500px] overflow-hidden">
-          <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+          <div className="p-6 border-b border-slate-100 bg-linear-to-r from-slate-50 to-white">
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <FolderOpen className="w-6 h-6 text-indigo-600" />
               {activeData.title}
@@ -218,117 +223,6 @@ const DocumentLibrary = () => {
                 >
                   <span className="text-xl font-bold">ADD FOLDER</span>
                 </button>
-              </div>
-            )}
-
-            {/* Handle levels with sections (Level 3, 4, 5, 6) */}
-            {activeData.sections && (
-              <div className="space-y-6">
-                {activeData.sections.map((section, sectionIdx) => (
-                  <div key={sectionIdx} className="space-y-3">
-                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider px-2">
-                      {section.title}
-                    </h3>
-                    <div className="grid grid-cols-1 gap-3">
-                      {section.items.map((itemName, itemIdx) => (
-                        <DocumentRow
-                          key={`${sectionIdx}-${itemIdx}`}
-                          index={itemIdx}
-                          name={itemName}
-                          section={section.title}
-                          onView={handleViewClick}
-                          onUpload={(name) =>
-                            handleUploadClick(name, section.title)
-                          }
-                          onEdit={(idx, name) => {
-                            const newName = prompt("Edit Name", name);
-                            if (!newName || newName === name) return;
-
-                            setLevels((prevLevels) =>
-                              prevLevels.map((level) =>
-                                level.id === activeLevelId
-                                  ? {
-                                      ...level,
-                                      sections: level.sections.map(
-                                        (sec, sIdx) =>
-                                          sIdx === sectionIdx
-                                            ? {
-                                                ...sec,
-                                                items: sec.items.map(
-                                                  (item, iIdx) =>
-                                                    iIdx === idx
-                                                      ? newName
-                                                      : item,
-                                                ),
-                                              }
-                                            : sec,
-                                      ),
-                                    }
-                                  : level,
-                              ),
-                            );
-                          }}
-                          onDelete={(idx, name) => {
-                            const confirmDelete = window.confirm(
-                              `⚠️ Delete "${name}"?\n\nThis will permanently delete the entire folder and all its data. This action cannot be undone.`,
-                            );
-                            if (!confirmDelete) return;
-
-                            setLevels((prevLevels) =>
-                              prevLevels.map((level) =>
-                                level.id === activeLevelId
-                                  ? {
-                                      ...level,
-                                      sections: level.sections.map(
-                                        (sec, sIdx) =>
-                                          sIdx === sectionIdx
-                                            ? {
-                                                ...sec,
-                                                items: sec.items.filter(
-                                                  (_, iIdx) => iIdx !== idx,
-                                                ),
-                                              }
-                                            : sec,
-                                      ),
-                                    }
-                                  : level,
-                              ),
-                            );
-                          }}
-                        />
-                      ))}
-
-                      {/* ADD ITEM BUTTON for this section */}
-                      <button
-                        onClick={() => {
-                          const name = prompt("Enter Name");
-                          if (!name) return;
-
-                          setLevels((prevLevels) =>
-                            prevLevels.map((level) =>
-                              level.id === activeLevelId
-                                ? {
-                                    ...level,
-                                    sections: level.sections.map((sec, sIdx) =>
-                                      sIdx === sectionIdx
-                                        ? {
-                                            ...sec,
-                                            items: [...sec.items, name],
-                                          }
-                                        : sec,
-                                    ),
-                                  }
-                                : level,
-                            ),
-                          );
-                        }}
-                        className="flex items-center justify-center h-[56px] border-2 border-dashed border-indigo-400 rounded-xl text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 transition-all"
-                      >
-                        <span className="text-xl font-bold">ADD FOLDER</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
               </div>
             )}
           </div>
