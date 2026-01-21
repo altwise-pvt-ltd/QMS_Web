@@ -153,18 +153,32 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew, onVie
                             <Eye className="w-5 h-5" />
                           </button>
 
-                          {/* VIEW ATTACHED PDF */}
-                          {item.uploadedFile?.fileUrl && (
-                            <a
-                              href={item.uploadedFile.fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                              title="View Attached PDF"
-                            >
-                              <Download className="w-5 h-5" />
-                            </a>
-                          )}
+                          {/* VIEW ATTACHED PDFS */}
+                          <div className="flex items-center gap-1">
+                            {item.uploadedFiles?.map((file, fIdx) => (
+                              <a
+                                key={fIdx}
+                                href={file.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                                title={`View Attachment ${fIdx + 1}: ${file.fileName}`}
+                              >
+                                <Download className="w-4 h-4" />
+                              </a>
+                            ))}
+                            {!item.uploadedFiles && item.uploadedFile?.fileUrl && (
+                              <a
+                                href={item.uploadedFile.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                                title="View Attached PDF"
+                              >
+                                <Download className="w-5 h-5" />
+                              </a>
+                            )}
+                          </div>
 
                         </div>
                       )}

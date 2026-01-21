@@ -1,11 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { NC_OPTIONS } from "../data/NcCategories";
-import { Image as ImageIcon, UploadCloud, Eye, Trash2 } from "lucide-react";
+import { Image as ImageIcon, UploadCloud, Eye, Trash2, Users, UserPlus, X } from "lucide-react";
+import { db } from "../../../db";
 import UploadPreviewModal from "../../documents/component/UploadPreviewModal";
 
 const NCEntry = ({ entry, onUpdate }) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [availableSubcategories, setAvailableSubcategories] = useState([]);
+  const [staffList, setStaffList] = useState([]);
+  const [showStaffDropdown, setShowStaffDropdown] = useState(false);
+  const [staffSearch, setStaffSearch] = useState("");
+
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const staff = await db.staff.toArray();
+        setStaffList(staff);
+      } catch (error) {
+        console.error("Error fetching staff:", error);
+      }
+    };
+    fetchStaff();
+  }, []);
 
   useEffect(() => {
     if (!entry.category) {
@@ -207,6 +223,80 @@ const NCEntry = ({ entry, onUpdate }) => {
               className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
               required
             />
+          </div>
+
+          {/* Tag Staff */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <Users className="w-4 h-4" /> Tag Staff involved in incident
+            </label>
+            <div className="relative">
+              <div className="min-h-[42px] w-full px-3 py-1.5 border rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white flex flex-wrap gap-2 items-center">
+                {(entry.taggedStaff || []).map(staff => (
+                  <span key={staff.id} className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-semibold border border-blue-100">
+                    {staff.name}
+                    <button
+                      onClick={() => onUpdate(entry.id, "taggedStaff", entry.taggedStaff.filter(s => s.id !== staff.id))}
+                      className="hover:text-rose-500 transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+                <input
+                  type="text"
+                  placeholder={(entry.taggedStaff || []).length === 0 ? "Search staff to tag..." : ""}
+                  className="flex-1 min-w-[120px] outline-none text-sm bg-transparent"
+                  value={staffSearch}
+                  onChange={(e) => {
+                    setStaffSearch(e.target.value);
+                    setShowStaffDropdown(true);
+                  }}
+                  onFocus={() => setShowStaffDropdown(true)}
+                />
+              </div>
+
+              {showStaffDropdown && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowStaffDropdown(false)}
+                  ></div>
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-xl z-20 max-h-48 overflow-y-auto">
+                    {staffList
+                      .filter(s =>
+                        s.name.toLowerCase().includes(staffSearch.toLowerCase()) &&
+                        !(entry.taggedStaff || []).some(ts => ts.id === s.id)
+                      )
+                      .map(staff => (
+                        <button
+                          key={staff.id}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50 flex items-center justify-between group transition-colors"
+                          onClick={() => {
+                            onUpdate(entry.id, "taggedStaff", [...(entry.taggedStaff || []), staff]);
+                            setStaffSearch("");
+                            setShowStaffDropdown(false);
+                          }}
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-gray-800">{staff.name}</span>
+                            <span className="text-[10px] text-gray-500 uppercase">{staff.role} • {staff.dept}</span>
+                          </div>
+                          <UserPlus className="w-4 h-4 text-gray-300 group-hover:text-blue-600 transition-colors" />
+                        </button>
+                      ))}
+                    {staffList.filter(s =>
+                      s.name.toLowerCase().includes(staffSearch.toLowerCase()) &&
+                      !(entry.taggedStaff || []).some(ts => ts.id === s.id)
+                    ).length === 0 && (
+                        <div className="px-4 py-6 text-center text-gray-400 text-sm italic">
+                          No matching staff found
+                        </div>
+                      )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Responsibility */}
