@@ -179,6 +179,17 @@ This document summarizes all development work completed on the QMS Web project f
   - Created granular permission controls for Document Control, CAPA, and User Management modules
   - Integrated defensive UI states and micro-animations for the permissions drawer
 
+- **Training Module Desktop Optimization (1024px+)**
+  - Optimized Training Dashboard with a fixed single-row stats grid and wide schedule table
+  - Expanded "Schedule Training" modal with a multi-column desktop-first layout
+  - Implemented high-density "Competency Matrix" with sticky headers and vertical module names for audit scannability
+  - Integrated "Assignee/Target" column in training lists for immediate operational visibility
+
+- **UI & UX Refinements**
+  - Resolved Sidebar horizontal overflow issue by implementing `overflow-x-hidden` and dynamic spacing for collapsed state
+  - Optimized "Document Library" layout with a sticky navigation sidebar and independently scrollable content pane
+  - Enhanced Information Density across core modules to suit large office/lab monitors (1280px-1440px+)
+
 - **MRM Documentation & Workflow Integration**
   - Refactored MRM PDF and Preview components to use dynamic meeting invites/attendees
   - Implemented robust data transformation for attendees from multiple formats (Array, String)
