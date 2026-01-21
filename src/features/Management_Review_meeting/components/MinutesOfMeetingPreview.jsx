@@ -5,6 +5,7 @@ const MinutesOfMeetingPreview = ({
   meeting,
   actionItems = [],
   minutes = null,
+  attendance = [],
   onBack,
 }) => {
   const [showPreview, setShowPreview] = useState(true); // Auto-show preview
@@ -24,24 +25,36 @@ const MinutesOfMeetingPreview = ({
         responsibility: item.responsibility || "—",
         status: item.status || "Completed",
       })) || [],
-    attendees: Array.isArray(meeting?.invitedAttendees || meeting?.invites)
-      ? (meeting?.invitedAttendees || meeting?.invites).map((att) =>
-          typeof att === "string"
-            ? att
-            : `${att.username || att.name || "Unknown"} (${
-                att.role || att.department || "Attendee"
-              })`,
-        )
-      : typeof (
-            meeting?.invitedAttendees ||
-            meeting?.invites ||
-            meeting?.attendees
-          ) === "string"
-        ? (meeting?.invitedAttendees || meeting?.invites || meeting?.attendees)
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : [],
+    attendees:
+      attendance && attendance.length > 0
+        ? attendance
+            .filter((att) => att.status === "Present")
+            .map((att) => {
+              const roleInfo = att.role || att.department;
+              return roleInfo ? `${att.username} (${roleInfo})` : att.username;
+            })
+        : Array.isArray(meeting?.invitedAttendees || meeting?.invites)
+          ? (meeting?.invitedAttendees || meeting?.invites).map((att) =>
+              typeof att === "string"
+                ? att
+                : `${att.username || att.name || "Unknown"} (${
+                    att.role || att.department || "Attendee"
+                  })`,
+            )
+          : typeof (
+                meeting?.invitedAttendees ||
+                meeting?.invites ||
+                meeting?.attendees
+              ) === "string"
+            ? (
+                meeting?.invitedAttendees ||
+                meeting?.invites ||
+                meeting?.attendees
+              )
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : [],
   };
 
   const generatePDFContent = () => {

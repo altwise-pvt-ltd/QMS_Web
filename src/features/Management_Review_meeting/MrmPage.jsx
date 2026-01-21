@@ -5,6 +5,7 @@ import MrmList from "./components/MrmList";
 import CreateMeetingPage from "./pages/CreateMeetingPage";
 import ActionItemsPage from "./pages/ActionItemsPage";
 import MinutesOfMeeting from "./components/MinutesOfMeeting";
+import AttendanceSelection from "./components/AttendanceSelection";
 import MrmPdfView from "./components/MrmPdfView";
 import MinutesOfMeetingPreview from "./components/MinutesOfMeetingPreview";
 import { seedMrmData } from "./utils/seedData";
@@ -18,19 +19,24 @@ const MrmPage = () => {
     getActionItems,
     saveMinutes,
     getMinutes,
+    saveAttendance,
+    getAttendance,
   } = useMrm();
 
-  const [view, setView] = useState("LIST"); // 'LIST', 'CREATE', 'ACTIONS', 'MINUTES', 'PDF_VIEW', 'MINUTES_PREVIEW'
+  const [view, setView] = useState("LIST"); // 'LIST', 'CREATE', 'ACTIONS', 'MINUTES', 'ATTENDANCE', 'PDF_VIEW', 'MINUTES_PREVIEW'
   const [selectedMeeting, setSelectedMeeting] = useState(null);
+  const [tempMinutes, setTempMinutes] = useState(null); // To store minutes before attendance is finalized
   const [pdfData, setPdfData] = useState({
     meeting: null,
     actionItems: [],
     minutes: null,
+    attendance: [],
   });
   const [previewData, setPreviewData] = useState({
     meeting: null,
     actionItems: [],
     minutes: null,
+    attendance: [],
   });
 
   // Seed sample data on first mount
@@ -60,30 +66,34 @@ const MrmPage = () => {
 
   const handleViewPdf = async (meeting) => {
     // Load complete meeting data
-    const [actions, mins] = await Promise.all([
+    const [actions, mins, att] = await Promise.all([
       getActionItems(meeting.id),
       getMinutes(meeting.id),
+      getAttendance(meeting.id),
     ]);
 
     setPdfData({
       meeting,
       actionItems: actions || [],
       minutes: mins,
+      attendance: att || [],
     });
     setView("PDF_VIEW");
   };
 
   const handleViewMinutesPreview = async (meeting) => {
     // Load complete meeting data for preview
-    const [actions, mins] = await Promise.all([
+    const [actions, mins, att] = await Promise.all([
       getActionItems(meeting.id),
       getMinutes(meeting.id),
+      getAttendance(meeting.id),
     ]);
 
     setPreviewData({
       meeting,
       actionItems: actions || [],
       minutes: mins,
+      attendance: att || [],
     });
     setView("MINUTES_PREVIEW");
   };
@@ -129,19 +139,36 @@ const MrmPage = () => {
   };
 
   const handleSaveMinutes = async (minutesData) => {
-    try {
-      // Save the minutes data to IndexedDB
-      await saveMinutes(selectedMeeting.id, minutesData);
+    // We don't save to DB yet, we just hold it and move to attendance
+    setTempMinutes(minutesData);
 
-      // Update meeting status to completed
+    // Load existing attendance if any for initial state
+    const existingAttendance = await getAttendance(selectedMeeting.id);
+    setSelectedMeeting({
+      ...selectedMeeting,
+      attendance: existingAttendance,
+    });
+
+    setView("ATTENDANCE");
+  };
+
+  const handleFinalizeMeeting = async (attendanceData) => {
+    try {
+      // 1. Save Minutes
+      await saveMinutes(selectedMeeting.id, tempMinutes);
+
+      // 2. Save Attendance
+      await saveAttendance(selectedMeeting.id, attendanceData);
+
+      // 3. Complete Meeting
       await updateMeeting(selectedMeeting.id, {
         status: "Completed",
       });
 
-      console.log("Minutes saved successfully");
+      console.log("Meeting finalized successfully");
       setView("LIST");
     } catch (error) {
-      console.error("Error saving minutes:", error);
+      console.error("Error finalizing meeting:", error);
     }
   };
 
@@ -182,11 +209,21 @@ const MrmPage = () => {
         />
       )}
 
+      {view === "ATTENDANCE" && selectedMeeting && (
+        <AttendanceSelection
+          meeting={selectedMeeting}
+          initialAttendance={selectedMeeting.attendance}
+          onSave={handleFinalizeMeeting}
+          onBack={() => setView("MINUTES")}
+        />
+      )}
+
       {view === "PDF_VIEW" && (
         <MrmPdfView
           meeting={pdfData.meeting}
           actionItems={pdfData.actionItems}
           minutes={pdfData.minutes}
+          attendance={pdfData.attendance}
           onBack={() => setView("LIST")}
         />
       )}
@@ -196,6 +233,7 @@ const MrmPage = () => {
           meeting={previewData.meeting}
           actionItems={previewData.actionItems}
           minutes={previewData.minutes}
+          attendance={previewData.attendance}
           onBack={() => setView("LIST")}
         />
       )}
