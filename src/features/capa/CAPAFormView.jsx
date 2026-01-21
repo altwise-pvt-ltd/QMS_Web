@@ -169,6 +169,22 @@ const CAPAFormView = ({ capa, onBack }) => {
                           {show(capa.responsibility)}
                         </td>
                       </tr>
+                      {capa.taggedStaff && capa.taggedStaff.length > 0 && (
+                        <tr>
+                          <td className="border border-black p-2 font-bold bg-slate-50">
+                            Tagged Staff
+                          </td>
+                          <td className="border border-black p-2" colSpan={3}>
+                            <div className="flex flex-wrap gap-1">
+                              {capa.taggedStaff.map((s, idx) => (
+                                <span key={s.id} className="inline-block px-1.5 py-0.5 bg-slate-100 rounded text-[11px] border border-slate-200">
+                                  {s.name} ({s.role}) {idx < capa.taggedStaff.length - 1 ? "" : ""}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
 
@@ -244,8 +260,35 @@ const CAPAFormView = ({ capa, onBack }) => {
                         {show(capa.closureVerification)}
                       </p>
 
-                      {/* PROOF LINK */}
-                      {capa.uploadedFile && (
+                      {/* PROOF LINKS */}
+                      {capa.uploadedFiles && capa.uploadedFiles.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-dotted border-black">
+                          <p className="text-xs font-bold mb-2">
+                            Attached Supporting Proofs:
+                          </p>
+                          <div className="space-y-2">
+                            {capa.uploadedFiles.map((file, idx) => (
+                              <div key={idx} className="flex items-center gap-2 text-xs text-blue-700">
+                                <ExternalLink className="w-3 h-3" />
+                                <a
+                                  href={file.fileUrl || "#"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="underline font-bold"
+                                >
+                                  {file.fileName || `Attachment ${idx + 1}`}
+                                </a>
+                                <span className="text-black/50 ml-1">
+                                  ({file.fileSizeMB} MB)
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Original uploadedFile fallback for backward compatibility */}
+                      {!capa.uploadedFiles && capa.uploadedFile && (
                         <div className="mt-4 pt-4 border-t border-dotted border-black">
                           <p className="text-xs font-bold mb-1">
                             Attached Proof:

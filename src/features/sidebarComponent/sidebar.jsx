@@ -14,6 +14,12 @@ import {
   Presentation,
   Calendar,
   GraduationCap,
+  TrendingUp,
+  BarChart3,
+  Building2,
+  Activity,
+  ClipboardList,
+  Briefcase,
 } from "lucide-react";
 
 /**
@@ -52,10 +58,9 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
    * @returns {string} Tailwind CSS class string.
    */
   const menuItemClass = (path) =>
-    `flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 relative overflow-hidden ${
-      isActive(path)
-        ? "bg-indigo-100 text-indigo-700 shadow-sm"
-        : "text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 hover:shadow-sm hover:scale-[1.02]"
+    `flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 relative overflow-hidden ${isActive(path)
+      ? "bg-indigo-100 text-indigo-700 shadow-sm"
+      : "text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 hover:shadow-sm hover:scale-[1.02]"
     }`;
 
   return (
@@ -79,9 +84,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             Q
           </div>
           <span
-            className={`text-2xl font-bold bg-indigo-600 bg-clip-text text-transparent whitespace-nowrap overflow-hidden transition-all duration-300 ${
-              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-            }`}
+            className={`text-2xl font-bold bg-indigo-600 bg-clip-text text-transparent whitespace-nowrap overflow-hidden transition-all duration-300 ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+              }`}
           >
             QualiFlow
           </span>
@@ -97,9 +101,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <LayoutDashboard className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                }`}
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                  }`}
               >
                 Dashboard
               </span>
@@ -114,9 +117,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <FileText className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                }`}
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                  }`}
               >
                 Documents
               </span>
@@ -126,11 +128,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           {/* 3. CAPA & Incidents */}
           <li>
             <Link to="/capa" className={menuItemClass("/capa")}>
-              <AlertTriangle className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <ClipboardList className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                }`}
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                  }`}
               >
                 CAPA & Incidents
               </span>
@@ -142,9 +143,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             <Link to="/compliance" className={menuItemClass("/compliance")}>
               <Calendar className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                }`}
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                  }`}
               >
                 Compliance Calendar
               </span>
@@ -159,9 +159,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                }`}
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                  }`}
               >
                 Management Review
               </span>
@@ -176,9 +175,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               )}
               <Users className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                }`}
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                  }`}
               >
                 Staff
               </span>
@@ -190,11 +188,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               to="/quality-indicators"
               className={menuItemClass("/quality-indicators")}
             >
-              <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <BarChart3 className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                }`}
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                  }`}
               >
                 Quality Indicators
               </span>
@@ -206,9 +203,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             <Link to="/training" className={menuItemClass("/training")}>
               <GraduationCap className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                }`}
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                  }`}
               >
                 Training
               </span>
@@ -218,11 +214,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           {/* 9. Department */}
           <li>
             <Link to="/department" className={menuItemClass("/department")}>
-              <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <Building2 className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                }`}
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                  }`}
               >
                 Department
               </span>
@@ -232,11 +227,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           {/* 10. Instrument Calibration */}
           <li>
             <Link to="/intrusment" className={menuItemClass("/intrusment")}>
-              <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <Activity className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
               <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                  isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                }`}
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                  }`}
               >
                 Instrument Calibration
               </span>
@@ -272,11 +266,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               <Link to="/settings" className={menuItemClass("/settings")}>
                 <Settings className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
                 <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                    isCollapsed
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
                       ? "w-0 opacity-0 ml-0"
                       : "w-auto opacity-100 ms-3"
-                  }`}
+                    }`}
                 >
                   Settings
                 </span>
@@ -289,11 +282,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               >
                 <LogOut className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:-translate-x-1" />
                 <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                    isCollapsed
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
                       ? "w-0 opacity-0 ml-0"
                       : "w-auto opacity-100 ms-3"
-                  }`}
+                    }`}
                 >
                   Sign Out
                 </span>

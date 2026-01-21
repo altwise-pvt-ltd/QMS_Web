@@ -182,10 +182,9 @@ const NCDetailsModal = ({ report, onClose, onUpdate }) => {
               setEditableEntry((prev) => ({ ...prev, [key]: e.target.value }))
             }
             className={`w-full px-4 py-3 border rounded-xl text-sm transition-all outline-none 
-              ${
-                isUnlocked
-                  ? "border-blue-300 ring-4 ring-blue-50/50 bg-white text-slate-800 shadow-sm"
-                  : "border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed resize-none hover:bg-slate-100 transition-colors"
+              ${isUnlocked
+                ? "border-blue-300 ring-4 ring-blue-50/50 bg-white text-slate-800 shadow-sm"
+                : "border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed resize-none hover:bg-slate-100 transition-colors"
               }
             `}
           />
@@ -248,9 +247,8 @@ const NCDetailsModal = ({ report, onClose, onUpdate }) => {
             <div className="relative">
               <input
                 disabled
-                value={`${editableEntry?.category || "Uncategorized"}  •  ${
-                  editableEntry?.ncDetails || ""
-                }`}
+                value={`${editableEntry?.category || "Uncategorized"}  •  ${editableEntry?.ncDetails || ""
+                  }`}
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium select-none cursor-not-allowed"
               />
               <Lock
@@ -259,6 +257,22 @@ const NCDetailsModal = ({ report, onClose, onUpdate }) => {
               />
             </div>
           </div>
+
+          {/* Tagged Staff (Read-only) */}
+          {editableEntry.taggedStaff && editableEntry.taggedStaff.length > 0 && (
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5 tracking-wider">
+                Tagged Staff involved
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {editableEntry.taggedStaff.map(staff => (
+                  <span key={staff.id} className="inline-flex items-center px-2.5 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold border border-slate-200">
+                    {staff.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Editable Fields using helper function */}
           <div className="md:col-span-2">
@@ -323,8 +337,8 @@ const NCDetailsModal = ({ report, onClose, onUpdate }) => {
               : "Save Changes"}
           </button>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 

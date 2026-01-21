@@ -166,13 +166,12 @@ const QualityIndicator = () => {
         <div>
           <div className="flex justify-between items-start mb-4">
             <span
-              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                indicator.category === "Pre-Analytical"
+              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${indicator.category === "Pre-Analytical"
                   ? "bg-amber-50 text-amber-600"
                   : indicator.category === "Analytical"
                     ? "bg-indigo-50 text-indigo-600"
                     : "bg-emerald-50 text-emerald-600"
-              }`}
+                }`}
             >
               {indicator.category}
             </span>
@@ -211,15 +210,15 @@ const QualityIndicator = () => {
             )}
             {(indicator.minValue !== undefined ||
               indicator.maxValue !== undefined) && (
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                  Range
-                </p>
-                <p className="text-xs font-black text-slate-700">
-                  {indicator.minValue ?? 0} - {indicator.maxValue ?? "∞"}
-                </p>
-              </div>
-            )}
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                    Range
+                  </p>
+                  <p className="text-xs font-black text-slate-700">
+                    {indicator.minValue ?? 0} - {indicator.maxValue ?? "∞"}
+                  </p>
+                </div>
+              )}
           </div>
         </div>
 
@@ -409,11 +408,10 @@ const QualityIndicator = () => {
                       <button
                         key={cat}
                         onClick={() => setNewCategory(cat)}
-                        className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
-                          newCategory === cat
+                        className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${newCategory === cat
                             ? "border-indigo-600 bg-indigo-50/50 text-indigo-700"
                             : "border-slate-100 hover:border-slate-200 text-slate-600"
-                        }`}
+                          }`}
                       >
                         <span className="font-bold">{cat}</span>
                         {newCategory === cat && <CheckCircle2 size={18} />}

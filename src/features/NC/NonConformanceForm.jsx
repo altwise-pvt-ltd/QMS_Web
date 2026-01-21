@@ -27,6 +27,7 @@ const INITIAL_FORM_DATA = {
     preventiveAction: "",
     correctiveAction: "",
     responsibility: "",
+    taggedStaff: [],
     closureVerification: "",
     evidenceImage: null,
   },

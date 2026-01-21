@@ -227,12 +227,12 @@ const PermissionsPage = ({ staff = null, standalone = true }) => {
                   </div>
                 </div>
               </div>
-              <button
+              {/* <button
                 onClick={() => setSelectedUser(null)}
                 className="text-slate-400 hover:text-slate-600"
               >
                 <XCircle size={20} />
-              </button>
+              </button> */}
             </div>
 
             <div className="flex gap-2">
