@@ -21,6 +21,7 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
     title: "",
     dueDate: new Date().toISOString().split("T")[0],
     assignedTo: "",
+    givenBy: "",
     recurrence: "one-time",
     notes: "",
   });
@@ -67,6 +68,7 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
         dueDate: formData.dueDate,
         status: "pending",
         assignedTo: formData.assignedTo,
+        givenBy: formData.givenBy,
         recurrence: formData.recurrence,
         notes: formData.notes,
       };
@@ -158,6 +160,7 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
         title: "",
         dueDate: new Date().toISOString().split("T")[0],
         assignedTo: "",
+        givenBy: "",
         recurrence: "one-time",
         notes: "",
       });
@@ -253,11 +256,29 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
               </p>
             </div>
 
-            {/* Assigned To */}
-            <div className="col-span-2 space-y-2">
+            {/* Given By */}
+            <div className="col-span-2 md:col-span-1 space-y-2">
               <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
                 <User size={14} className="text-indigo-500" />
-                Assigned To / Target Personnel
+                Given By (Speaker/Trainer)
+              </label>
+              <input
+                required
+                type="text"
+                placeholder="e.g. Quality Manager"
+                value={formData.givenBy}
+                onChange={(e) =>
+                  setFormData({ ...formData, givenBy: e.target.value })
+                }
+                className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700"
+              />
+            </div>
+
+            {/* Assigned To */}
+            <div className="col-span-2 md:col-span-1 space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                <User size={14} className="text-indigo-500" />
+                Assigned To / Target
               </label>
               <select
                 required
@@ -277,14 +298,11 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
                       value="All Staff"
                       className="font-black text-indigo-700"
                     >
-                      ALL STAFF (Group Assignment)
-                    </option>
-                    <option disabled className="text-slate-300">
-                      ──────────────────
+                      ALL STAFF
                     </option>
                     {staff.map((person) => (
                       <option key={person.id} value={person.name}>
-                        {person.name} — {person.role} ({person.department})
+                        {person.name} — {person.role}
                       </option>
                     ))}
                   </>

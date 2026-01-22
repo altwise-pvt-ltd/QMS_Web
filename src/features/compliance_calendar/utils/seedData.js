@@ -74,6 +74,7 @@ export const seedComplianceData = async () => {
         assignedTo: "HR Manager",
         recurrence: "yearly",
         reminderDays: 21,
+        givenBy: "Quality Manager",
         notes:
           "Mandatory safety and compliance training for all laboratory staff",
       },
@@ -85,6 +86,7 @@ export const seedComplianceData = async () => {
         assignedTo: "HR Manager",
         recurrence: "one-time",
         reminderDays: 5,
+        givenBy: "HR Manager",
         notes: "Orientation and induction for new laboratory joins",
       },
       {
@@ -95,6 +97,7 @@ export const seedComplianceData = async () => {
         assignedTo: "Technical Lead",
         recurrence: "half-yearly",
         reminderDays: 7,
+        givenBy: "External Auditor",
         notes: "Hands-on workshop for precision pipetting techniques",
       },
       {
@@ -105,6 +108,7 @@ export const seedComplianceData = async () => {
         assignedTo: "Quality Manager",
         recurrence: "yearly",
         reminderDays: 14,
+        givenBy: "Quality Assurance Team",
         notes: "Annual refresher on QMS policies and procedures",
       },
       {
