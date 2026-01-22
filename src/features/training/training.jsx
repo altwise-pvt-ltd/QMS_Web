@@ -10,12 +10,13 @@ import {
   Clock,
   ChevronRight,
   AlertCircle,
+  FileText,
 } from "lucide-react";
 import { getAllEvents } from "../compliance_calendar/services/complianceService";
 import { db } from "../../db";
-// import TrainingMatrix from "./components/TrainingMatrix";
 import CustomCalendar from "./components/CustomCalendar";
 import ScheduleTrainingModal from "./components/ScheduleTrainingModal";
+import YearlyTrainingPdfView from "./components/YearlyTrainingPdfView";
 
 const Training = () => {
   const [trainings, setTrainings] = useState([]);
@@ -23,6 +24,7 @@ const Training = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [date, setDate] = useState(new Date());
   const [selectRange, setSelectRange] = useState(false);
 
@@ -42,6 +44,12 @@ const Training = () => {
         const trainingEvents = allEvents
           .filter((e) => e.eventTypeId === trainingType.id)
           .map((e) => {
+            // Migration: Add givenBy if missing
+            if (!e.givenBy) {
+              e.givenBy = "Quality Manager"; // Default for existing data
+              db.compliance_events.update(e.id, { givenBy: "Quality Manager" });
+            }
+
             // Derived Status Logic: Overdue check
             if (e.status !== "completed" && e.dueDate < today) {
               return { ...e, status: "overdue" };
@@ -142,6 +150,15 @@ const Training = () => {
     </div>
   );
 
+  if (isPreviewOpen) {
+    return (
+      <YearlyTrainingPdfView
+        trainings={trainings}
+        onBack={() => setIsPreviewOpen(false)}
+      />
+    );
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Header */}
@@ -155,14 +172,24 @@ const Training = () => {
             Personnel competency and training schedules
           </p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-gray-600
-           rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] transition-all outline-none border-2 border-indigo-700"
-        >
-          <Plus size={20} />
-          Schedule Training
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsPreviewOpen(true)}
+            className="flex items-center gap-2 px-6 py-2.5 bg-white text-indigo-600
+             rounded-xl font-bold shadow-lg shadow-slate-100 hover:bg-slate-50 active:scale-[0.98] transition-all outline-none border-2 border-slate-200"
+          >
+            <FileText size={20} />
+            Yearly Schedule Preview
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-gray-600
+             rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] transition-all outline-none border-2 border-indigo-700"
+          >
+            <Plus size={20} />
+            Schedule Training
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid - Robust for 1024px+ */}
@@ -236,6 +263,9 @@ const Training = () => {
                     Training Requirement
                   </th>
                   <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                    Given By
+                  </th>
+                  <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
                     Assignee / Target
                   </th>
                   <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center text-nowrap">
@@ -297,6 +327,11 @@ const Training = () => {
                             {training.title}
                           </p>
                         </div>
+                      </td>
+                      <td className="px-6 py-3 text-center">
+                        <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md shadow-sm border border-indigo-100">
+                          {training.givenBy || "—"}
+                        </span>
                       </td>
                       <td className="px-6 py-3 text-center">
                         <span className="text-[11px] font-black text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-md shadow-sm">
@@ -362,6 +397,8 @@ const Training = () => {
           />
         </div>
       </div>
+
+      {/* Yearly Preview is now handled at the top level of the component */}
 
       {/* Schedule Modal */}
       <ScheduleTrainingModal

@@ -25,6 +25,7 @@ import ComplianceCalendarPage from "./features/compliance_calendar/ComplianceCal
 import Department from "./features/department/department.jsx";
 import Instrument from "./features/Instrument/Instrument.jsx";
 import Training from "./features/training/training.jsx";
+import RiskAssessmentPage from "./features/risk_assessment/RiskAssessmentPage.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -83,6 +84,7 @@ function App() {
               <Route path="/department" element={<Department />} />
               <Route path="/intrusment" element={<Instrument />} />
               <Route path="/training" element={<Training />} />
+              <Route path="/risk-assessment" element={<RiskAssessmentPage />} />
 
               {/* Documents Routes */}
               <Route path="/documents" element={<DocumentLibrary />} />
