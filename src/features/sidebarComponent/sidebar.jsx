@@ -72,13 +72,11 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   ${isCollapsed ? "w-20" : "w-72"}`}
       aria-label="Sidebar"
     >
-      <div
-        className={`h-full py-6 overflow-y-auto overflow-x-hidden flex flex-col transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}
-      >
+      <div className="h-full flex flex-col transition-all duration-300">
         {/* --- Logo Area with Animation --- */}
         <div
           onClick={toggleSidebar}
-          className={`flex items-center mb-8 px-2 cursor-pointer group/logo transition-all duration-300 ${isCollapsed ? "gap-0" : "gap-3"}`}
+          className={`flex items-center pt-6 mb-8 px-4 cursor-pointer group/logo transition-all duration-300 ${isCollapsed ? "gap-0" : "gap-3"}`}
           title="Click to toggle sidebar"
         >
           <div className="min-w-10 w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-500/50 group-hover/logo:shadow-indigo-500/80 group-hover/logo:scale-110 transition-all duration-300">
@@ -92,155 +90,170 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           </span>
         </div>
 
-        {/* --- Main Navigation --- */}
-        <ul className="space-y-2 font-medium flex-1">
-          {/* 1. Dashboard */}
-          <li>
-            <Link to="/dashboard" className={menuItemClass("/dashboard")}>
-              {isActive("/dashboard") && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-              )}
-              <LayoutDashboard className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-              <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                  }`}
-              >
-                Dashboard
-              </span>
-            </Link>
-          </li>
+        {/* --- Scrollable Main Navigation --- */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 custom-scrollbar">
+          <ul className="space-y-2 font-medium pb-4">
+            {/* 1. Dashboard */}
+            <li>
+              <Link to="/dashboard" className={menuItemClass("/dashboard")}>
+                {isActive("/dashboard") && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
+                )}
+                <LayoutDashboard className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                    }`}
+                >
+                  Dashboard
+                </span>
+              </Link>
+            </li>
 
-          {/* 2. Documents */}
-          <li>
-            <Link to="/documents" className={menuItemClass("/documents")}>
-              {isActive("/documents") && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-              )}
-              <FileText className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-              <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                  }`}
-              >
-                Documents
-              </span>
-            </Link>
-          </li>
+            {/* 2. Documents */}
+            <li>
+              <Link to="/documents" className={menuItemClass("/documents")}>
+                {isActive("/documents") && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
+                )}
+                <FileText className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                    }`}
+                >
+                  Documents
+                </span>
+              </Link>
+            </li>
 
-          {/* 3. CAPA & Incidents */}
-          <li>
-            <Link to="/capa" className={menuItemClass("/capa")}>
-              <ClipboardList className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-              <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                  }`}
-              >
-                CAPA & Incidents
-              </span>
-            </Link>
-          </li>
+            {/* 3. CAPA & Incidents */}
+            <li>
+              <Link to="/capa" className={menuItemClass("/capa")}>
+                <ClipboardList className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                    }`}
+                >
+                  CAPA & Incidents
+                </span>
+              </Link>
+            </li>
 
-          {/* 4. Compliance Calendar */}
-          <li>
-            <Link to="/compliance" className={menuItemClass("/compliance")}>
-              <Calendar className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-              <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                  }`}
-              >
-                Compliance Calendar
-              </span>
-            </Link>
-          </li>
+            {/* 4. Compliance Calendar */}
+            <li>
+              <Link to="/compliance" className={menuItemClass("/compliance")}>
+                <Calendar className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                    }`}
+                >
+                  Compliance Calendar
+                </span>
+              </Link>
+            </li>
 
-          {/* 5. Management Review */}
-          <li>
-            <Link to="/mrm" className={menuItemClass("/mrm")}>
-              {isActive("/mrm") && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-              )}
-              <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-              <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                  }`}
-              >
-                Management Review
-              </span>
-            </Link>
-          </li>
+            {/* 5. Management Review */}
+            <li>
+              <Link to="/mrm" className={menuItemClass("/mrm")}>
+                {isActive("/mrm") && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
+                )}
+                <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                    }`}
+                >
+                  Management Review
+                </span>
+              </Link>
+            </li>
 
-          {/* 6. Staff */}
-          <li>
-            <Link to="/staff" className={menuItemClass("/staff")}>
-              {isActive("/staff") && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-              )}
-              <Users className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-              <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                  }`}
-              >
-                Staff
-              </span>
-            </Link>
-          </li>
+            {/* 6. Staff */}
+            <li>
+              <Link to="/staff" className={menuItemClass("/staff")}>
+                {isActive("/staff") && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
+                )}
+                <Users className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                    }`}
+                >
+                  Staff
+                </span>
+              </Link>
+            </li>
 
-          <li>
-            <Link
-              to="/quality-indicators"
-              className={menuItemClass("/quality-indicators")}
-            >
-              <BarChart3 className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-              <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                  }`}
+            <li>
+              <Link
+                to="/quality-indicators"
+                className={menuItemClass("/quality-indicators")}
               >
-                Quality Indicators
-              </span>
-            </Link>
-          </li>
+                <BarChart3 className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                    }`}
+                >
+                  Quality Indicators
+                </span>
+              </Link>
+            </li>
 
-          {/* 8. Training */}
-          <li>
-            <Link to="/training" className={menuItemClass("/training")}>
-              <GraduationCap className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-              <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                  }`}
-              >
-                Training
-              </span>
-            </Link>
-          </li>
+            {/* 8. Training */}
+            <li>
+              <Link to="/training" className={menuItemClass("/training")}>
+                <GraduationCap className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                    }`}
+                >
+                  Training
+                </span>
+              </Link>
+            </li>
 
-          {/* 9. Department */}
-          <li>
-            <Link to="/department" className={menuItemClass("/department")}>
-              <Building2 className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-              <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                  }`}
-              >
-                Department
-              </span>
-            </Link>
-          </li>
+            {/* 9. Department */}
+            <li>
+              <Link to="/department" className={menuItemClass("/department")}>
+                <Building2 className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                    }`}
+                >
+                  Department
+                </span>
+              </Link>
+            </li>
 
-          {/* 10. Instrument Calibration */}
-          <li>
-            <Link to="/intrusment" className={menuItemClass("/intrusment")}>
-              <Activity className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-              <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
-                  }`}
-              >
-                Instrument Calibration
-              </span>
-            </Link>
-          </li>
-        </ul>
+            {/* 10. Instrument Calibration */}
+            <li>
+              <Link to="/intrusment" className={menuItemClass("/intrusment")}>
+                <Activity className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                    }`}
+                >
+                  Instrument Calibration
+                </span>
+              </Link>
+            </li>
 
-        {/* --- Bottom Section with User Profile and Divider --- */}
-        <div className="pt-4 mt-4 border-t-2 border-indigo-100 space-y-4">
+            {/* 11. Vendor Management */}
+            <li>
+              <Link to="/vendor" className={menuItemClass("/vendor")}>
+                <Truck className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                    }`}
+                >
+                  Vendor Management
+                </span>
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        {/* --- Static Bottom Section --- */}
+        <div className="p-4 border-t-2 border-indigo-100 space-y-4 bg-white">
           {/* User Profile Card */}
           {!isCollapsed && user && (
             <div className="px-2 py-3 bg-indigo-50 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
