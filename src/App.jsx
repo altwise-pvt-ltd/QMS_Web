@@ -25,6 +25,7 @@ import ComplianceCalendarPage from "./features/compliance_calendar/ComplianceCal
 import Department from "./features/department/department.jsx";
 import Instrument from "./features/Instrument/Instrument.jsx";
 import Training from "./features/training/training.jsx";
+import VendorModule from "./features/vendor/vendor.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -83,6 +84,7 @@ function App() {
               <Route path="/department" element={<Department />} />
               <Route path="/intrusment" element={<Instrument />} />
               <Route path="/training" element={<Training />} />
+              <Route path="/vendor" element={<VendorModule />} />
 
               {/* Documents Routes */}
               <Route path="/documents" element={<DocumentLibrary />} />

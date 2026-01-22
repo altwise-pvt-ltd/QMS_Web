@@ -20,6 +20,7 @@ import {
   Activity,
   ClipboardList,
   Briefcase,
+  Truck,
 } from "lucide-react";
 
 /**
@@ -236,6 +237,19 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               </span>
             </Link>
           </li>
+
+          {/* 11. Vendor Management */}
+          <li>
+            <Link to="/vendor" className={menuItemClass("/vendor")}>
+              <Truck className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+              <span
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                  }`}
+              >
+                Vendor Management
+              </span>
+            </Link>
+          </li>
         </ul>
 
         {/* --- Bottom Section with User Profile and Divider --- */}
@@ -267,8 +281,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <Settings className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Settings
@@ -283,8 +297,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <LogOut className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:-translate-x-1" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Sign Out
@@ -294,7 +308,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           </ul>
         </div>
       </div>
-    </aside>
+    </aside >
   );
 };
 

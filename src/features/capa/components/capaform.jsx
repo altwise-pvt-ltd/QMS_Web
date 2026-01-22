@@ -49,6 +49,7 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
   const [localAnswers, setLocalAnswers] = useState({});
   const [selectedSuggestions, setSelectedSuggestions] = useState({});
   const [newQuestionText, setNewQuestionText] = useState("");
+  const [newQuestionSuggestions, setNewQuestionSuggestions] = useState({ rootCause: '', correctiveAction: '', preventiveAction: '' });
 
   useEffect(() => {
     setLocalAnswers(answers || {});
@@ -87,8 +88,16 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
 
   const handleAddQuestionLocal = () => {
     if (newQuestionText.trim()) {
-      onAddCustomQuestion(newQuestionText.trim());
+      onAddCustomQuestion({
+        question: newQuestionText.trim(),
+        suggestionsNo: {
+          rootCause: newQuestionSuggestions.rootCause.trim(),
+          correctiveAction: newQuestionSuggestions.correctiveAction.trim(),
+          preventiveAction: newQuestionSuggestions.preventiveAction.trim()
+        }
+      });
       setNewQuestionText("");
+      setNewQuestionSuggestions({ rootCause: '', correctiveAction: '', preventiveAction: '' });
     }
   };
 
@@ -192,20 +201,55 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
           {/* Add Question Input */}
           <div className="border border-dashed border-slate-300 rounded-xl p-6 bg-slate-50/30">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-3">Add supplementary audit query</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newQuestionText}
-                onChange={(e) => setNewQuestionText(e.target.value)}
-                placeholder="Type additional question here..."
-                className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 font-medium"
-              />
-              <button
-                onClick={handleAddQuestionLocal}
-                className="px-6 py-2 bg-indigo-600 text-black rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors shadow-sm active:scale-95"
-              >
-                Add
-              </button>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newQuestionText}
+                  onChange={(e) => setNewQuestionText(e.target.value)}
+                  placeholder="Type additional question here..."
+                  className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 font-medium"
+                />
+                <button
+                  onClick={handleAddQuestionLocal}
+                  className="px-6 py-2 bg-indigo-600 text-black rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors shadow-sm active:scale-95"
+                >
+                  Add
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Suggest Root Cause (Optional)</span>
+                  <textarea
+                    value={newQuestionSuggestions.rootCause}
+                    onChange={(e) => setNewQuestionSuggestions(prev => ({ ...prev, rootCause: e.target.value }))}
+                    placeholder="e.g., Training gap..."
+                    rows={2}
+                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-indigo-500 font-medium resize-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Suggest Corrective Action</span>
+                  <textarea
+                    value={newQuestionSuggestions.correctiveAction}
+                    onChange={(e) => setNewQuestionSuggestions(prev => ({ ...prev, correctiveAction: e.target.value }))}
+                    placeholder="e.g., Immediate retrain..."
+                    rows={2}
+                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-indigo-500 font-medium resize-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Suggest Preventive Action</span>
+                  <textarea
+                    value={newQuestionSuggestions.preventiveAction}
+                    onChange={(e) => setNewQuestionSuggestions(prev => ({ ...prev, preventiveAction: e.target.value }))}
+                    placeholder="e.g., Update SOP..."
+                    rows={2}
+                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-indigo-500 font-medium resize-none"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -292,8 +336,8 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
     }
   }, [category, subCategory]);
 
-  const handleAddCustomQuestion = (text) => {
-    setQuestions(prev => [...prev, text]);
+  const handleAddCustomQuestion = (questionObj) => {
+    setQuestions(prev => [...prev, questionObj]);
   };
 
   const handleSaveAudit = (ans, suggConfig) => {
