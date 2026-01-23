@@ -27,6 +27,7 @@ import Instrument from "./features/Instrument/Instrument.jsx";
 import Training from "./features/training/training.jsx";
 import VendorModule from "./features/vendor/vendor.jsx";
 import RiskAssessmentPage from "./features/risk_assessment/RiskAssessmentPage.jsx";
+import RiskIndicator from "./features/risk_indicator/risk_indicator.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -87,6 +88,7 @@ function App() {
               <Route path="/training" element={<Training />} />
               <Route path="/vendor" element={<VendorModule />} />
               <Route path="/risk-assessment" element={<RiskAssessmentPage />} />
+              <Route path="/risk-indicators" element={<RiskIndicator />} />
 
               {/* Documents Routes */}
               <Route path="/documents" element={<DocumentLibrary />} />

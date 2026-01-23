@@ -4,7 +4,7 @@ import Dexie from "dexie";
 export const db = new Dexie("QMS_Web_DB");
 
 // UPDATE VERSION: Bump version to apply schema changes (e.g., 6 -> 7)
-db.version(8).stores({
+db.version(9).stores({
   // Persistent storage for documents metadata
   documents:
     "id, name, level, category, subCategory, status, department, author, version, createdDate, expiryDate",
@@ -35,6 +35,10 @@ db.version(8).stores({
 
   // Quality Indicators storage (Persistent QMS metrics)
   quality_indicators:
+    "id, name, category, count, threshold, severity, minValue, maxValue",
+
+  // Risk Indicators storage
+  risk_indicators:
     "id, name, category, count, threshold, severity, minValue, maxValue",
 
   // Training & Competency tracking
