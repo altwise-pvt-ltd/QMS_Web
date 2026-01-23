@@ -2,6 +2,7 @@ node_modules/
 dist/   
 .env
 WORK_LOG_*.md
+january_2026_log.md
 *.txt
 *.key
 dexie-cloud.json
