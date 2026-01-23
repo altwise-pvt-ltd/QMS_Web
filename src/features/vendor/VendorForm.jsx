@@ -66,6 +66,10 @@ const VendorForm = ({ vendor, onSave, onCancel, mode }) => {
                             <input name="name" value={formData.name} onChange={handleChange} required placeholder="Enter vendor name" />
                         </div>
                         <div className="form-group">
+                            <label>Assessment Date</label>
+                            <input name="assessmentDate" type="date" value={formData.assessmentDate || ""} onChange={handleChange} required />
+                        </div>
+                        <div className="form-group">
                             <label>Phone Number</label>
                             <input name="phone" value={formData.phone} onChange={handleChange} required placeholder="Enter phone number" />
                         </div>
