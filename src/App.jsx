@@ -26,6 +26,7 @@ import Department from "./features/department/department.jsx";
 import Instrument from "./features/Instrument/Instrument.jsx";
 import Training from "./features/training/training.jsx";
 import VendorModule from "./features/vendor/vendor.jsx";
+import RiskAssessmentPage from "./features/risk_assessment/RiskAssessmentPage.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -85,6 +86,7 @@ function App() {
               <Route path="/intrusment" element={<Instrument />} />
               <Route path="/training" element={<Training />} />
               <Route path="/vendor" element={<VendorModule />} />
+              <Route path="/risk-assessment" element={<RiskAssessmentPage />} />
 
               {/* Documents Routes */}
               <Route path="/documents" element={<DocumentLibrary />} />

@@ -21,6 +21,7 @@ import {
   ClipboardList,
   Briefcase,
   Truck,
+  ShieldAlert,
 } from "lucide-react";
 
 /**
@@ -246,6 +247,19 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                     }`}
                 >
                   Vendor Management
+                </span>
+              </Link>
+            </li>
+
+            {/* 12. Risk Assessment */}
+            <li>
+              <Link to="/risk-assessment" className={menuItemClass("/risk-assessment")}>
+                <ShieldAlert className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <span
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100 ms-3"
+                    }`}
+                >
+                  Risk Assessment
                 </span>
               </Link>
             </li>
