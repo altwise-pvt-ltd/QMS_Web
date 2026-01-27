@@ -20,11 +20,13 @@ export const getRisks = async () => {
       title: "Delayed calibration of equipment",
       description:
         "Critical testing equipment not calibrated within scheduled intervals, leading to potential result inaccuracy",
+      indicator: "Equipment Calibration Compliance",
       category: "Equipment",
       severity: 4,
       likelihood: 3,
       owner: "Quality Manager",
       capaStatus: "Open",
+      date: "2025-11-15",
     },
     {
       id: "R-002",
@@ -32,11 +34,13 @@ export const getRisks = async () => {
       title: "Staff competency gap",
       description:
         "Laboratory personnel lack documented competency for specific test procedures",
+      indicator: "Staff Training & Competency",
       category: "Human Resource",
       severity: 3,
       likelihood: 4,
       owner: "Lab Manager",
       capaStatus: "In Progress",
+      date: "2025-12-05",
     },
     {
       id: "R-003",
@@ -44,11 +48,13 @@ export const getRisks = async () => {
       title: "Document control lapse",
       description:
         "Obsolete SOPs accessible in work areas, risk of using outdated procedures",
+      indicator: "Document Control Accuracy",
       category: "Documentation",
       severity: 2,
       likelihood: 2,
       owner: "QA",
       capaStatus: "Closed",
+      date: "2025-12-20",
     },
     {
       id: "R-004",
@@ -56,11 +62,13 @@ export const getRisks = async () => {
       title: "Reagent expiry oversight",
       description:
         "Expired reagents used in testing due to inadequate inventory management",
+      indicator: "Inventory Management & Expiry",
       category: "Pre-analytical",
       severity: 5,
       likelihood: 2,
       owner: "Technical Manager",
       capaStatus: "Open",
+      date: "2026-01-02",
     },
     {
       id: "R-005",
@@ -68,11 +76,13 @@ export const getRisks = async () => {
       title: "Sample mix-up",
       description:
         "Patient samples incorrectly labeled or swapped during processing",
+      indicator: "Sample identification error",
       category: "Pre-analytical",
       severity: 5,
       likelihood: 1,
       owner: "Lab Supervisor",
       capaStatus: "In Progress",
+      date: "2026-01-10",
     },
     {
       id: "R-006",
@@ -80,11 +90,13 @@ export const getRisks = async () => {
       title: "Result reporting delay",
       description:
         "Critical results not communicated to clinicians within turnaround time",
+      indicator: "Turnaround time (TAT)",
       category: "Post-analytical",
       severity: 4,
       likelihood: 2,
       owner: "Operations Manager",
       capaStatus: "Open",
+      date: "2026-01-15",
     },
     {
       id: "R-007",
@@ -92,11 +104,13 @@ export const getRisks = async () => {
       title: "IT system downtime",
       description:
         "Laboratory Information System (LIS) failure causing workflow disruption",
+      indicator: "Information Management System uptime",
       category: "Information Management",
       severity: 3,
       likelihood: 3,
       owner: "IT Manager",
       capaStatus: "Closed",
+      date: "2026-01-20",
     },
     {
       id: "R-008",
@@ -104,11 +118,13 @@ export const getRisks = async () => {
       title: "External quality control failure",
       description:
         "Failure to meet proficiency testing requirements for critical tests",
+      indicator: "EQAS Performance",
       category: "Quality Control",
       severity: 4,
       likelihood: 2,
       owner: "Quality Manager",
       capaStatus: "In Progress",
+      date: "2026-01-22",
     },
   ].map(enrichRisk);
 };

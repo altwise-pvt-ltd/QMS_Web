@@ -42,15 +42,18 @@ const RiskTable = ({ risks, onRowClick, selectedRiskId }) => {
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
+            <tr className="bg-linear-to-r from-slate-50 to-slate-100 border-b border-slate-200">
               <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wide">
                 Risk ID
+              </th>
+              <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                Date
               </th>
               <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wide">
                 Clause
               </th>
               <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                Description
+                Quality Indicator
               </th>
               <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wide text-center">
                 Severity
@@ -84,6 +87,9 @@ const RiskTable = ({ risks, onRowClick, selectedRiskId }) => {
               >
                 <td className="px-6 py-4 text-sm font-semibold text-indigo-600">
                   {risk.id}
+                </td>
+                <td className="px-6 py-4 text-sm text-slate-500">
+                  {risk.date}
                 </td>
                 <td className="px-6 py-4 text-sm text-slate-500 italic">
                   {risk.clause}
@@ -128,7 +134,7 @@ const RiskTable = ({ risks, onRowClick, selectedRiskId }) => {
           <tfoot>
             <tr>
               <td
-                colSpan={8}
+                colSpan={9}
                 className="border-t border-slate-200 px-6 py-4 bg-slate-50"
               >
                 <TablePagination
