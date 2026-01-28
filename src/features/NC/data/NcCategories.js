@@ -38,44 +38,6 @@ export const NC_OPTIONS = [
     ],
   },
   {
-    category: "Pre-Analytical",
-    subcategories: [
-      "Improper sample collection",
-      "Patient misidentification",
-      "Pre-exam error",
-      "Sample integrity loss",
-      "Recollection needed",
-      "Degradation",
-      "Missing clinical info",
-    ],
-  },
-  {
-    category: "Analytical",
-    subcategories: [
-      "QC ignored",
-      "Imprecision",
-      "Method bias",
-      "Equipment failure",
-      "Calibration lapse",
-      "Lot shift",
-      "Analytical error",
-      "Result inconsistency",
-    ],
-  },
-  {
-    category: "Post-Analytical",
-    subcategories: [
-      "Reporting delay",
-      "Life-threatening delay",
-      "Wrong validation",
-      "Reporting error",
-      "Manual entry error",
-      "Communication delay",
-      "Dissatisfaction",
-      "Serious NC",
-    ],
-  },
-  {
     category: "Impartiality Ethics",
     subcategories: [
       "Conflict of interest influencing results",
@@ -124,15 +86,13 @@ export const NC_OPTIONS = [
   },
   {
     category: "Document Control",
-    subcategories: [
-      "Obsolete SOP in use",
-    ],
+    subcategories: ["Obsolete SOP in use"],
   },
 
   {
     category: "Nonconformity & CAPA",
     subcategories: ["Repeat nonconformities"],
-
+  },
   {
     category: "Management System",
     subcategories: ["Obsolete SOP in use", "Repeat nonconformities"],
