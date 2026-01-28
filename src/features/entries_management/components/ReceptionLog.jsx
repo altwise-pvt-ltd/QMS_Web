@@ -1,60 +1,7 @@
 import React, { useState, useRef } from "react";
 import html2pdf from "html2pdf.js";
 import { ChevronLeft, Download, Plus, Minus } from "lucide-react";
-
-// --- Configuration Data based on PDF Content ---
-const LOG_TYPES = {
-  REFRIGERATOR: {
-    id: "refrigerator",
-    title: "REFRIGERATOR TEMPERATURE LOG",
-    docNo: "ADC-L-04",
-    rows: ["Mor. Temp.", "Eve. Temp.", "Sign"],
-  },
-  ROOM_TEMP: {
-    id: "room_temp",
-    title: "ROOM TEMPERATURE & HUMIDITY LOG",
-    docNo: "ADC-L-01",
-    rows: [
-      "Temperature (Morning)",
-      "Humidity (Morning)",
-      "Time (Morning)",
-      "Sign",
-      "Temperature (Evening)",
-      "Humidity (Evening)",
-      "Time (Evening)",
-      "Sign",
-    ],
-  },
-  HYPOCHLORITE: {
-    id: "hypochlorite",
-    title: "1% HYPOCHLORITE PREPARATION LOG",
-    docNo: "ADC-L-03",
-    // Custom layout handled in render
-  },
-  MICROSCOPE: {
-    id: "microscope",
-    title: "DAILY MAINTENANCE LOG FOR MICROSCOPE",
-    docNo: "ADC-LOG-09",
-    tasks: [
-      "Cleaning objective lens",
-      "Cleaning external surface",
-      "Check microscope frame",
-      "Check optical axis",
-      "Check left/right axis",
-      "Check revolving axis",
-      "Check parfocality",
-      "Check Resolution",
-      "Initials",
-    ],
-  },
-  HOUSEKEEPING: {
-    id: "housekeeping",
-    title: "GENERAL HOUSE KEEPING LOG",
-    docNo: "ADC-L-06",
-    daily: ["Floor Cleaning", "Laboratory Bench", "Toilets", "Cupboards"],
-    weekly: ["Refrigerator", "Furniture"],
-  },
-};
+import { LOG_TYPES } from "../data/entriesData";
 
 const ReceptionLog = ({ entry, onBack }) => {
   // Map entry name to log type if possible, otherwise default to refrigerator
