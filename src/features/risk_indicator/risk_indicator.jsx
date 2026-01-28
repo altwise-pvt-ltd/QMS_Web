@@ -20,12 +20,64 @@ const RiskIndicator = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [indicators, setIndicators] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const [isAddingCategory, setIsAddingCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState("");
+
     useEffect(() => {
         loadIndicators();
+        loadCategories();
     }, []);
+
+    const loadCategories = async () => {
+        try {
+            let data = await db.risk_categories.toArray();
+            if (data.length === 0) {
+                // Initial seeding if empty
+                const initialCategories = CATEGORIES.map(cat => ({ name: cat }));
+                await db.risk_categories.bulkAdd(initialCategories);
+                data = await db.risk_categories.toArray();
+            }
+
+            // Deduplicate by name if any duplicates exist in DB
+            const seenNames = new Set();
+            const uniqueCategories = data.filter(cat => {
+                const name = cat.name.trim();
+                if (seenNames.has(name.toLowerCase())) return false;
+                seenNames.add(name.toLowerCase());
+                return true;
+            });
+
+            setCategories(uniqueCategories);
+        } catch (error) {
+            console.error("Error loading categories:", error);
+            setCategories(CATEGORIES.map((cat, i) => ({ id: i, name: cat })));
+        }
+    };
+
+    const handleAddCategory = async () => {
+        const trimmedName = newCategoryName.trim();
+        if (!trimmedName) return;
+
+        // Prevent duplicates in current state
+        if (categories.some(cat => cat.name.toLowerCase() === trimmedName.toLowerCase())) {
+            alert("This category already exists.");
+            return;
+        }
+
+        try {
+            const id = await db.risk_categories.add({ name: trimmedName });
+            const newCat = { id, name: trimmedName };
+            setCategories([...categories, newCat]);
+            setNewCategoryName("");
+            setIsAddingCategory(false);
+        } catch (error) {
+            console.error("Error adding category:", error);
+        }
+    };
 
     const loadIndicators = async () => {
         try {
@@ -151,11 +203,11 @@ const RiskIndicator = () => {
 
         const getSeverityStyles = (severity) => {
             const s = parseInt(severity);
-            if (s >= 5) return "bg-rose-500 text-white shadow-rose-100";
-            if (s >= 4) return "bg-orange-500 text-white shadow-orange-100";
-            if (s >= 3) return "bg-amber-500 text-white shadow-amber-100";
-            if (s >= 2) return "bg-blue-500 text-white shadow-blue-100";
-            return "bg-emerald-500 text-white shadow-emerald-100";
+            if (s >= 5) return "bg-rose-500 text-black shadow-rose-100";
+            if (s >= 4) return "bg-orange-500 text-black shadow-orange-100";
+            if (s >= 3) return "bg-amber-500 text-black shadow-amber-100";
+            if (s >= 2) return "bg-blue-500 text-black shadow-blue-100";
+            return "bg-emerald-500 text-black shadow-emerald-100";
         };
 
         return (
@@ -234,7 +286,7 @@ const RiskIndicator = () => {
                             )}
                         </div>
                     </div>
-                    <button className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+                    <button className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-black transition-all shadow-sm">
                         <ChevronRight size={20} />
                     </button>
                 </div>
@@ -307,33 +359,74 @@ const RiskIndicator = () => {
                     <div className="flex flex-wrap items-center bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 gap-1 w-full xl:w-auto">
                         <button
                             onClick={() => setSelectedCategory("All")}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === "All" ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === "All" ? "bg-indigo-600 text-black shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
                         >
                             All
                         </button>
-                        {CATEGORIES.map((cat) => (
+                        {categories.map((cat) => (
                             <button
-                                key={cat}
-                                onClick={() => setSelectedCategory(cat)}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === cat ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
+                                key={cat.id}
+                                onClick={() => setSelectedCategory(cat.name)}
+                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === cat.name ? "bg-indigo-600 text-black shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
                             >
-                                {cat}
+                                {cat.name}
                             </button>
                         ))}
                     </div>
 
-                    <div className="relative w-full xl:w-96">
-                        <Search
-                            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                            size={18}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Search risk factors..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-white rounded-2xl border border-slate-200 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-hidden transition-all text-xs font-medium"
-                        />
+                    <div className="flex flex-col gap-3 w-full xl:w-96">
+                        <div className="relative w-full">
+                            <Search
+                                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                                size={18}
+                            />
+                            <input
+                                type="text"
+                                placeholder="Search risk factors..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3 bg-white rounded-2xl border border-slate-200 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-hidden transition-all text-xs font-medium"
+                            />
+                        </div>
+
+                        <div className="w-full">
+                            {isAddingCategory ? (
+                                <div className="flex gap-2 animate-in slide-in-from-top-2 duration-300">
+                                    <input
+                                        type="text"
+                                        placeholder="Enter category name..."
+                                        value={newCategoryName}
+                                        onChange={(e) => setNewCategoryName(e.target.value)}
+                                        className="flex-1 px-4 py-2 bg-white rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-hidden transition-all"
+                                        autoFocus
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                                    />
+                                    <button
+                                        onClick={handleAddCategory}
+                                        className="px-4 py-2 bg-indigo-600 text-black text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm"
+                                    >
+                                        Add
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setIsAddingCategory(false);
+                                            setNewCategoryName("");
+                                        }}
+                                        className="px-4 py-2 bg-slate-100 text-slate-500 text-xs font-bold rounded-xl hover:bg-slate-200 transition-all border border-slate-200"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setIsAddingCategory(true)}
+                                    className="w-full py-2.5 bg-white text-slate-500 text-xs font-bold rounded-xl border border-dashed border-slate-300 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/30 transition-all flex items-center justify-center gap-2 group"
+                                >
+                                    <Plus size={14} className="group-hover:rotate-90 transition-transform duration-300" />
+                                    Add New Category
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -385,17 +478,17 @@ const RiskIndicator = () => {
                                         Select Risk Category
                                     </label>
                                     <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                                        {CATEGORIES.map((cat) => (
+                                        {categories.map((cat) => (
                                             <button
-                                                key={cat}
-                                                onClick={() => setNewCategory(cat)}
-                                                className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all text-left ${newCategory === cat
+                                                key={cat.id}
+                                                onClick={() => setNewCategory(cat.name)}
+                                                className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all text-left ${newCategory === cat.name
                                                     ? "border-indigo-600 bg-indigo-50/50 text-indigo-700"
                                                     : "border-slate-100 hover:border-slate-200 text-slate-600"
                                                     }`}
                                             >
-                                                <span className="font-bold text-xs">{cat}</span>
-                                                {newCategory === cat && <CheckCircle2 size={18} />}
+                                                <span className="font-bold text-xs">{cat.name}</span>
+                                                {newCategory === cat.name && <CheckCircle2 size={18} />}
                                             </button>
                                         ))}
                                     </div>
