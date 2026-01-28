@@ -3,12 +3,20 @@ import RiskSummary from "./components/RiskSummary";
 import RiskMatrix from "./components/RiskMatrix";
 import RiskTable from "./components/RiskTable";
 import RiskDetailPanel from "./components/RiskDetailPanel";
+import RiskDateFilter from "./components/RiskDateFilter";
 import {
   getRisks,
   getRiskSummary,
   getMatrixData,
 } from "./services/riskService";
 import { ShieldAlert, RefreshCcw } from "lucide-react";
+import {
+  format,
+  isWithinInterval,
+  parseISO,
+  startOfMonth,
+  endOfMonth,
+} from "date-fns";
 
 /**
  * RiskAssessmentPage Component
@@ -19,6 +27,8 @@ const RiskAssessmentPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedRisk, setSelectedRisk] = useState(null);
   const [selectedCell, setSelectedCell] = useState(null); // { severity, likelihood }
+  const [dateRange, setDateRange] = useState({ start: null, end: null });
+  const [selectedMonth, setSelectedMonth] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,15 +65,37 @@ const RiskAssessmentPage = () => {
     }
   };
 
-  // Filter risks based on matrix selection
+  // Filter risks based on matrix selection and date filters
   const filteredRisks = useMemo(() => {
-    if (!selectedCell) return risks;
-    return risks.filter(
-      (r) =>
-        r.severity === selectedCell.severity &&
-        r.likelihood === selectedCell.likelihood,
-    );
-  }, [risks, selectedCell]);
+    let result = risks;
+
+    // Matrix Filter
+    if (selectedCell) {
+      result = result.filter(
+        (r) =>
+          r.severity === selectedCell.severity &&
+          r.likelihood === selectedCell.likelihood,
+      );
+    }
+
+    // Date Filter
+    if (dateRange.start && dateRange.end) {
+      result = result.filter((r) => {
+        const riskDate = parseISO(r.date);
+        return isWithinInterval(riskDate, {
+          start: dateRange.start,
+          end: dateRange.end,
+        });
+      });
+    } else if (selectedMonth) {
+      result = result.filter((r) => {
+        const riskDate = parseISO(r.date);
+        return format(riskDate, "yyyy-MM") === selectedMonth;
+      });
+    }
+
+    return result;
+  }, [risks, selectedCell, dateRange, selectedMonth]);
 
   if (loading) {
     return (
@@ -89,7 +121,13 @@ const RiskAssessmentPage = () => {
             ISO 15189:2022 Compliant • Read-Only Auditor View
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-4">
+          <RiskDateFilter
+            dateRange={dateRange}
+            setDateRange={setDateRange}
+            selectedMonth={selectedMonth}
+            setSelectedMonth={setSelectedMonth}
+          />
           <div className="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-lg border border-emerald-100 uppercase tracking-wider">
             System Validated
           </div>

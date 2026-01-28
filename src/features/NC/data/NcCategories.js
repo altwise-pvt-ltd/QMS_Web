@@ -86,14 +86,16 @@ export const NC_OPTIONS = [
   },
   {
     category: "Document Control",
-    subcategories: [
-      "Obsolete SOP in use",
-    ],
+    subcategories: ["Obsolete SOP in use"],
   },
 
   {
     category: "Nonconformity & CAPA",
     subcategories: ["Repeat nonconformities"],
+  },
+  {
+    category: "Management System",
+    subcategories: ["Obsolete SOP in use", "Repeat nonconformities"],
   },
   {
     category: "Business Continuity",
