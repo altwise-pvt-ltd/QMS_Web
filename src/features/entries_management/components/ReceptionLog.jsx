@@ -79,7 +79,27 @@ const ReceptionLog = ({ entry, onBack }) => {
 
   const addMonth = () => {
     const lastMonth = months[months.length - 1];
-    setMonths([...months, { ...lastMonth }]); // For demo, just duplicate last month config
+    const monthNames = [
+      "JANUARY",
+      "FEBRUARY",
+      "MARCH",
+      "APRIL",
+      "MAY",
+      "JUNE",
+      "JULY",
+      "AUGUST",
+      "SEPTEMBER",
+      "OCTOBER",
+      "NOVEMBER",
+      "DECEMBER",
+    ];
+    let nextIdx = monthNames.indexOf(lastMonth.name) + 1;
+    let nextYear = lastMonth.year;
+    if (nextIdx > 11) {
+      nextIdx = 0;
+      nextYear++;
+    }
+    setMonths([...months, { name: monthNames[nextIdx], year: nextYear }]);
   };
 
   const removeMonth = () => {
@@ -89,13 +109,15 @@ const ReceptionLog = ({ entry, onBack }) => {
   const printRef = useRef();
 
   // Helper to generate dummy data for 31 days
-  const getDummyData = (type) => {
+  const getDummyData = (type, seed = "") => {
+    const seedVal = seed.split("").reduce((a, b) => a + b.charCodeAt(0), 0);
     return [...Array(31)].map((_, i) => {
       const day = i + 1;
-      if (day % 7 === 0) return "-"; // Weekend/off
+      const isOff = (day + seedVal) % 7 === 0;
+      if (isOff) return "-"; // Weekend/off
       if (type === "status" || type === "prepared")
-        return day % 3 === 0 ? "OK" : "Done";
-      if (type === "time") return `0${8 + (day % 2)}:00`;
+        return (day + seedVal) % 3 === 0 ? "OK" : "Done";
+      if (type === "time") return `0${8 + ((day + seedVal) % 2)}:00`;
       if (type === "sign") return "JS";
       if (type === "temp") return (2 + Math.random() * 4).toFixed(1) + "°C";
       if (type === "hum") return (40 + Math.random() * 20).toFixed(0) + "%";
@@ -155,12 +177,18 @@ const ReceptionLog = ({ entry, onBack }) => {
       backgroundColor: "#f0f0f0",
       textAlign: "center",
     },
-    td: { border: "1px solid black", height: "20px", textAlign: "center" },
+    td: {
+      border: "1px solid #333",
+      height: "24px",
+      textAlign: "center",
+      padding: "2px",
+    },
     tdLeft: {
-      border: "1px solid black",
-      height: "20px",
+      border: "1px solid #333",
+      height: "24px",
       textAlign: "left",
-      paddingLeft: "4px",
+      paddingLeft: "6px",
+      fontWeight: "500",
     },
     footer: {
       marginTop: "auto",
@@ -208,6 +236,7 @@ const ReceptionLog = ({ entry, onBack }) => {
                 : row.toLowerCase().includes("hum")
                   ? "hum"
                   : "status",
+              m.name,
             ).map((val, i) => (
               <td key={i} style={s.td}>
                 {val}
@@ -238,6 +267,7 @@ const ReceptionLog = ({ entry, onBack }) => {
             <td style={s.tdLeft}>{task}</td>
             {getDummyData(
               task.toLowerCase().includes("initials") ? "sign" : "status",
+              m.name,
             ).map((val, i) => (
               <td key={i} style={s.td}>
                 {val}
@@ -279,7 +309,7 @@ const ReceptionLog = ({ entry, onBack }) => {
               </td>
             )}
             <td style={s.tdLeft}>{row}</td>
-            {getDummyData(row.toLowerCase())
+            {getDummyData(row.toLowerCase(), m.name)
               .slice(0, 15)
               .map((val, i) => (
                 <td key={i} style={s.td}>
@@ -292,7 +322,7 @@ const ReceptionLog = ({ entry, onBack }) => {
               </td>
             )}
             <td style={s.tdLeft}>{row}</td>
-            {getDummyData(row.toLowerCase())
+            {getDummyData(row.toLowerCase(), m.name)
               .slice(15, 31)
               .map((val, i) => (
                 <td key={i} style={s.td}>
@@ -303,7 +333,7 @@ const ReceptionLog = ({ entry, onBack }) => {
         ))}
         <tr>
           <td
-            colSpan={34}
+            colSpan={35}
             style={{ ...s.td, textAlign: "left", padding: "5px" }}
           >
             <b>Preparation:</b> 1500ML of 4% Hypochlorite + 4500ML Tap Water =
@@ -343,7 +373,7 @@ const ReceptionLog = ({ entry, onBack }) => {
         {config.daily.map((item, idx) => (
           <tr key={`d-${idx}`}>
             <td style={s.tdLeft}>{item}</td>
-            {getDummyData("status").map((val, i) => (
+            {getDummyData("status", m.name).map((val, i) => (
               <td key={i} style={s.td}>
                 {val}
               </td>
@@ -380,7 +410,7 @@ const ReceptionLog = ({ entry, onBack }) => {
         ))}
         <tr>
           <td style={s.tdLeft}>Initials</td>
-          {getDummyData("sign").map((val, i) => (
+          {getDummyData("sign", m.name).map((val, i) => (
             <td key={i} style={s.td}>
               {val}
             </td>
@@ -462,7 +492,7 @@ const ReceptionLog = ({ entry, onBack }) => {
           className="shadow-2xl mb-12 shrink-0 bg-white origin-top"
         >
           <div style={s.header}>
-            <h1 style={s.h1}>ALPINE DIAGNOSTIC CENTRE</h1>
+            <h1 style={s.h1}>QMS DAILY ENTRIES LOG</h1>
             <p style={s.address}>
               PLOT NO: A232, ROAD NO: 21, Y-LANE, BEHIND CYBER TECH SOLUTION,
               <br />
@@ -470,6 +500,18 @@ const ReceptionLog = ({ entry, onBack }) => {
               MAHARASHTRA-400604
             </p>
             <div style={s.title}>{currentConfig.title}</div>
+            {entry?.name && (
+              <div
+                style={{
+                  fontSize: "11px",
+                  fontWeight: "bold",
+                  marginTop: "2px",
+                  color: "#555",
+                }}
+              >
+                PARAMETER/ENTITY: {entry.name.toUpperCase()}
+              </div>
+            )}
           </div>
 
           <div style={s.contentWrapper}>
