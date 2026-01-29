@@ -29,6 +29,7 @@ import VendorModule from "./features/vendor/vendor.jsx";
 import RiskAssessmentPage from "./features/risk_assessment/RiskAssessmentPage.jsx";
 import RiskIndicator from "./features/risk_indicator/risk_indicator.jsx";
 import EntriesManagement from "./features/entries_management/EntriesManagement.jsx";
+import OnboardingPage from "./features/onboarding/OnboardingPage.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -66,6 +67,7 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
 
             <Route
               element={

@@ -1,13 +1,14 @@
-import { pdf } from "@react-pdf/renderer";
-import { PDFViewer } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
-import MRMPdf from "../pdf Creations/MRMPdf";
-import MinutesOfMeetingPdf from "../pdf Creations/MinutesOfMeetingPdf";
+import { db } from "../../../db";
 
 /**
  * Transform IndexedDB meeting data to PDF format
  */
-export const transformMeetingDataForPDF = (meeting, actionItems, minutes) => {
+export const transformMeetingDataForPDF = (
+  meeting,
+  actionItems,
+  minutes,
+  companyInfo,
+) => {
   // Extract attendees from various possible properties (invitedAttendees or invites)
   const rawAttendees = meeting.invitedAttendees || meeting.invites || [];
 
@@ -28,7 +29,9 @@ export const transformMeetingDataForPDF = (meeting, actionItems, minutes) => {
 
   return {
     header: {
-      address: "Your Company Name, Address Line 1, City, State, ZIP",
+      address: companyInfo
+        ? `${companyInfo.name}\n${companyInfo.address}`
+        : "Your Company Name, Address Line 1, City, State, ZIP",
     },
     meeting: {
       title: meeting.title,
@@ -75,7 +78,13 @@ export const transformMeetingDataForPDF = (meeting, actionItems, minutes) => {
  */
 export const generateMRMPdf = async (meeting, actionItems, minutes) => {
   try {
-    const data = transformMeetingDataForPDF(meeting, actionItems, minutes);
+    const companyInfo = await db.company_info.toCollection().first();
+    const data = transformMeetingDataForPDF(
+      meeting,
+      actionItems,
+      minutes,
+      companyInfo,
+    );
     const blob = await pdf(<MRMPdf data={data} />).toBlob();
     saveAs(
       blob,
@@ -93,7 +102,13 @@ export const generateMRMPdf = async (meeting, actionItems, minutes) => {
  */
 export const generateMinutesPdf = async (meeting, actionItems, minutes) => {
   try {
-    const data = transformMeetingDataForPDF(meeting, actionItems, minutes);
+    const companyInfo = await db.company_info.toCollection().first();
+    const data = transformMeetingDataForPDF(
+      meeting,
+      actionItems,
+      minutes,
+      companyInfo,
+    );
     const blob = await pdf(<MinutesOfMeetingPdf data={data} />).toBlob();
     saveAs(
       blob,
@@ -108,8 +123,19 @@ export const generateMinutesPdf = async (meeting, actionItems, minutes) => {
 
 /**
  * Render PDF preview component (for inline viewing)
+ * Note: If using company info, this might need to be wrapped in a component that fetches data.
  */
-export const renderPdfPreview = (meeting, actionItems, minutes) => {
-  const data = transformMeetingDataForPDF(meeting, actionItems, minutes);
+export const renderPdfPreview = (
+  meeting,
+  actionItems,
+  minutes,
+  companyInfo,
+) => {
+  const data = transformMeetingDataForPDF(
+    meeting,
+    actionItems,
+    minutes,
+    companyInfo,
+  );
   return <MRMPdf data={data} />;
 };

@@ -46,6 +46,10 @@ db.version(9).stores({
 
   // Staff/Personnel directory
   staff: "++id, name, role, dept, status, joinDate",
+
+  // Company Information (Onboarding)
+  company_info:
+    "++id, name, address, websiteUrl, socialMediaUrl, logo, createdAt",
 });
 
 /**
