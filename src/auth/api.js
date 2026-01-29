@@ -1,4 +1,6 @@
 import axios from "axios";
+import { store } from "../store";
+import { updateToken, logout } from "../store/slices/authSlice";
 
 /**
  * Axios instance configured with a base URL and interceptors for token management.
@@ -10,10 +12,13 @@ const api = axios.create({
 /**
  * Request Interceptor:
  * Automatically attaches the Access Token to the Authorization header
- * for every outgoing request if it exists in LocalStorage.
+ * for every outgoing request if it exists in the Redux store.
  */
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+  // Pull token directly from Redux store state to avoid storage sync issues
+  const state = store.getState();
+  const token = state.auth.accessToken;
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -47,27 +52,30 @@ api.interceptors.response.use(
           "https://api.escuelajs.co/api/v1/auth/refresh-token",
           {
             refreshToken: refreshToken,
-          }
+          },
         );
 
-        // On success, save the new tokens
-        localStorage.setItem("accessToken", response.data.access_token);
-        localStorage.setItem("refreshToken", response.data.refresh_token);
+        // On success, save the new tokens in Redux (which also updates localStorage)
+        store.dispatch(
+          updateToken({
+            accessToken: response.data.access_token,
+            refreshToken: response.data.refresh_token,
+          }),
+        );
 
         // Update the header of the original request and retry it
-        api.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${response.data.access_token}`;
+        api.defaults.headers.common["Authorization"] =
+          `Bearer ${response.data.access_token}`;
         return api(originalRequest);
       } catch (refreshError) {
         // If the refresh call itself fails, the session is truly dead
         console.error("Session expired, logging out...", refreshError);
-        localStorage.clear();
+        store.dispatch(logout());
         window.location.href = "/login"; // Force the user back to login
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { loginUser, getProfile } from "./authService";
 import { useAuth } from "./AuthContext";
+import { setCredentials } from "../store/slices/authSlice";
 import "./login.css";
 
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { login } = useAuth();
   const [corporateId, setCorporateId] = useState("");
   const [password, setPassword] = useState("");
@@ -34,12 +37,21 @@ const Login = () => {
     try {
       // 1. Authenticate with credentials and store tokens in LocalStorage (handled inside loginUser)
       console.log(`Attempting login for: ${corporateId}`);
-      await loginUser(corporateId, password);
+      const loginResponse = await loginUser(corporateId, password);
 
       // 2. Use the fresh tokens to fetch the detailed user profile
       const profileResponse = await getProfile();
 
-      // 3. Update the global AuthContext with the fetched profile data
+      // 3. Update Redux State
+      dispatch(
+        setCredentials({
+          user: profileResponse.data,
+          accessToken: loginResponse.access_token,
+          refreshToken: loginResponse.refresh_token,
+        }),
+      );
+
+      // 4. Update the global AuthContext with the fetched profile data
       // This tells the rest of the app (like Sidbar and ProtectedRoute) that we are logged in.
       login(profileResponse.data);
 

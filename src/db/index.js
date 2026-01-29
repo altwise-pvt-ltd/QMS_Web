@@ -49,7 +49,7 @@ db.version(9).stores({
 
   // Company Information (Onboarding)
   company_info:
-    "++id, name, address, websiteUrl, socialMediaUrl, logo, createdAt",
+    "++id, name, industry, phone, address, websiteUrl, scope, logo, createdAt",
 });
 
 /**

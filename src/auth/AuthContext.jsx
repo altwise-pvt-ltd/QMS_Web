@@ -1,68 +1,66 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import api from "./api";
+import {
+  setCredentials,
+  logout as logoutAction,
+  selectCurrentUser,
+  selectIsAuthenticated,
+} from "../store/slices/authSlice";
 
 /**
  * AuthContext provides global authentication state and utility functions.
- * It manages the logged-in user, authentication status, and initial loading state.
+ * It now acts as a bridge to Redux state for backward compatibility.
  */
 const AuthContext = createContext(null);
 
-/**
- * AuthProvider wraps the application to provide authentication context.
- * On mount, it attempts to restore a session from localStorage tokens.
- *
- * @param {Object} props - Component props.
- * @param {React.ReactNode} props.children - The children components to be wrapped.
- * @returns {JSX.Element} The provider component.
- */
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const dispatch = useDispatch();
+  const user = useSelector(selectCurrentUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
   const [loading, setLoading] = useState(true);
 
   // Initial check on application mount
   useEffect(() => {
     const checkAuth = async () => {
-      // Look for an existing access token in LocalStorage
       const token = localStorage.getItem("accessToken");
 
-      if (token) {
+      if (token && !user) {
         try {
           // Attempt to fetch the user profile verify the token is still valid
           const response = await api.get("/auth/profile");
-          setUser(response.data);
-          setIsAuthenticated(true);
+          dispatch(
+            setCredentials({
+              user: response.data,
+              accessToken: token,
+              refreshToken: localStorage.getItem("refreshToken"),
+            }),
+          );
         } catch (error) {
           console.error("Auth initialization failed", error);
-          // If the profile call fails, the token is likely invalid or expired
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
+          dispatch(logoutAction());
         }
       }
-      // Set loading to false once the check is complete
       setLoading(false);
     };
 
     checkAuth();
-  }, []);
+  }, [dispatch, user]);
 
-  /**
-   * Updates the context state with user data after a successful login.
-   * @param {Object} userData - The profile data of the logged-in user.
-   */
   const login = (userData) => {
-    setUser(userData);
-    setIsAuthenticated(true);
+    // This is now primarily handled in login.jsx via dispatch(setCredentials)
+    // but kept here for compatibility if other components use it.
+    dispatch(
+      setCredentials({
+        user: userData,
+        accessToken: localStorage.getItem("accessToken"),
+        refreshToken: localStorage.getItem("refreshToken"),
+      }),
+    );
   };
 
-  /**
-   * Resets the authentication state and clears tokens from storage.
-   */
   const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    setUser(null);
-    setIsAuthenticated(false);
+    dispatch(logoutAction());
   };
 
   return (
