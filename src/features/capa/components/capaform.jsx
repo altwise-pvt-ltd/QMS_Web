@@ -144,7 +144,7 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
                   <button
                     onClick={() => handleAnswer(index, 'yes')}
                     className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${answer === 'yes'
-                      ? 'bg-emerald-600 text-black border-emerald-600'
+                      ? 'bg-emerald-100 text-emerald-700 border-emerald-500'
                       : 'bg-white border-slate-100 text-slate-500 hover:border-emerald-500/30'
                       }`}
                   >
@@ -153,7 +153,7 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
                   <button
                     onClick={() => handleAnswer(index, 'no')}
                     className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${answer === 'no'
-                      ? 'bg-rose-600 text-black border-rose-600'
+                      ? 'bg-rose-100 text-rose-700 border-rose-500'
                       : 'bg-white border-slate-100 text-slate-500 hover:border-rose-500/30'
                       }`}
                   >
@@ -163,8 +163,11 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
 
                 {/* Dynamic Suggestion Section */}
                 {answer && activeSuggestions && (
-                  <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="flex items-center gap-2 text-amber-800 mb-1">
+                  <div className={`mt-4 p-4 rounded-lg border space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 ${answer === 'yes'
+                    ? 'bg-emerald-50 border-emerald-200'
+                    : 'bg-rose-50 border-rose-200'
+                    }`}>
+                    <div className={`flex items-center gap-2 mb-1 ${answer === 'yes' ? 'text-emerald-800' : 'text-rose-800'}`}>
                       <Info className="w-4 h-4" />
                       <span className="text-xs font-black uppercase tracking-wider">Suggested CAPA Actions for "{answer.toUpperCase()}"</span>
                     </div>
@@ -178,13 +181,15 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
                         key={item.type}
                         onClick={() => toggleSuggestion(index, item.type)}
                         className={`p-3 rounded-md border cursor-pointer transition-all ${suggs?.[item.type]
-                          ? 'bg-white border-amber-300 shadow-sm'
+                          ? `bg-white shadow-sm ${answer === 'yes' ? 'border-emerald-300' : 'border-rose-300'}`
                           : 'bg-slate-50/50 border-transparent opacity-60'
                           }`}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] font-black uppercase text-amber-600">{item.label}</span>
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${suggs?.[item.type] ? 'bg-amber-500 border-amber-500 text-black' : 'border-slate-300'
+                          <span className={`text-[10px] font-black uppercase ${answer === 'yes' ? 'text-emerald-600' : 'text-rose-600'}`}>{item.label}</span>
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${suggs?.[item.type]
+                            ? `${answer === 'yes' ? 'bg-emerald-500 border-emerald-500' : 'bg-rose-500 border-rose-500'} text-white`
+                            : 'border-slate-300'
                             }`}>
                             {suggs?.[item.type] && <CheckCircle2 className="w-3 h-3" />}
                           </div>
@@ -290,6 +295,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   const [targetDate, setTargetDate] = useState('');
   const [department, setDepartment] = useState('');
   const [details, setDetails] = useState('');
+  const [effectiveness, setEffectiveness] = useState('');
   const [rootCause, setRootCause] = useState('');
   const [correctiveAction, setCorrectiveAction] = useState('');
   const [preventiveAction, setPreventiveAction] = useState('');
@@ -322,6 +328,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
       setDepartment(selectedNC.department || '');
       setResponsibility(selectedNC.reportedBy || '');
       setDetails(selectedNC.name || '');
+      setEffectiveness(selectedNC.effectiveness || '');
     }
   }, [selectedNC]);
 
@@ -389,6 +396,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
       targetDate,
       department,
       details,
+      effectiveness,
       rootCause,
       correctiveAction,
       preventiveAction,
@@ -526,6 +534,18 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
               onChange={(e) => setDetails(e.target.value)}
               rows={4}
               placeholder="Describe the non-conformance..."
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 resize-none transition-all"
+            />
+          </div>
+
+          {/* Effectiveness */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-slate-700 block">Effectiveness</label>
+            <textarea
+              value={effectiveness}
+              onChange={(e) => setEffectiveness(e.target.value)}
+              rows={4}
+              placeholder="Describe the effectiveness..."
               className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 resize-none transition-all"
             />
           </div>

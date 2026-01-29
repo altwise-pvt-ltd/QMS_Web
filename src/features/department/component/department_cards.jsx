@@ -69,14 +69,6 @@ const DepartmentCard = ({ dept, isSelected, onSelect }) => {
                 <div className={`p-4 rounded-2xl ${colors.bg} ${colors.text} transition-all group-hover:scale-110 shadow-sm ${isSelected ? "scale-110 ring-2 ring-white" : ""}`}>
                     <Icon className="w-6 h-6" />
                 </div>
-                {!isSelected && (
-                    <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Code</span>
-                        <span className={`px-2 py-1 rounded-lg text-[10px] font-black tracking-tighter border ${colors.border} ${colors.text}`}>
-                            {dept.code}
-                        </span>
-                    </div>
-                )}
             </div>
 
             <div className="flex-1">

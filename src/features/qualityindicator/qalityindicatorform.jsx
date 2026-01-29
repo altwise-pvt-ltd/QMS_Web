@@ -85,10 +85,10 @@ const QalityIndicatorForm = ({ onBack, indicators = QUALITY_INDICATORS }) => {
           {isSidebarCollapsed && (
             <button
               onClick={() => setIsSidebarCollapsed(false)}
-              className="mb-4 flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold text-indigo-600 shadow-sm hover:shadow-md transition-all no-print"
+              className="group mb-4 flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-indigo-600 shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 hover:border-indigo-200 transition-all duration-300 no-print"
             >
-              <ChevronRight size={14} />
-              Show Sidebar
+              <ChevronRight size={16} strokeWidth={3} className="group-hover:translate-x-0.5 transition-transform" />
+              Show Report Options
             </button>
           )}
           <QIReportTable

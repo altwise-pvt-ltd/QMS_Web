@@ -1,5 +1,5 @@
-import React from "react";
-import { Plus, X, CheckCircle2 } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, X, CheckCircle2, Trash2 } from "lucide-react";
 import { RECORDING_CYCLES } from "../data/entriesData";
 
 const EntryForm = ({ onSave, onCancel }) => {
@@ -79,11 +79,10 @@ const EntryForm = ({ onSave, onCancel }) => {
                 onClick={() =>
                   setFormData({ ...formData, cycle: option.value })
                 }
-                className={`py-2 px-1 rounded-lg text-[10px] font-bold border-2 transition-all ${
-                  formData.cycle === option.value
-                    ? "border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm"
-                    : "border-slate-100 bg-slate-50 text-slate-500"
-                }`}
+                className={`py-2 px-1 rounded-lg text-[10px] font-bold border-2 transition-all ${formData.cycle === option.value
+                  ? "border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm"
+                  : "border-slate-100 bg-slate-50 text-slate-500"
+                  }`}
               >
                 {option.label}
               </button>
@@ -140,7 +139,7 @@ const EntryForm = ({ onSave, onCancel }) => {
           </button>
           <button
             type="submit"
-            className="flex-1 py-3 bg-indigo-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center gap-2"
+            className="flex-1 py-3 bg-indigo-600 text-black font-bold text-sm rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center gap-2"
           >
             <CheckCircle2 size={16} />
             Save Entry

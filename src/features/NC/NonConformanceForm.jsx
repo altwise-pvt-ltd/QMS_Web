@@ -23,6 +23,7 @@ const INITIAL_FORM_DATA = {
     department: "",
     ncDetails: "",
     dailyNcDetails: "",
+    effectiveness: "",
     rootCause: "",
     preventiveAction: "",
     correctiveAction: "",

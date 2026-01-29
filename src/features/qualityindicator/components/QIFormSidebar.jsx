@@ -19,20 +19,24 @@ const QIFormSidebar = ({
   onToggleCollapse,
 }) => {
   return (
-    <div className="relative">
-      {/* Collapse Toggle */}
-      <button
-        onClick={onToggleCollapse}
-        className="absolute -right-3 top-10 z-10 w-6 h-6 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-indigo-600 shadow-sm transition-all no-print lg:flex hidden"
-      >
-        <ChevronRight
-          size={14}
-          className={`transition-transform duration-300 ${isCollapsed ? "" : "rotate-180"}`}
-        />
-      </button>
+    <div className="space-y-4">
+      {/* Sidebar Header with Toggle */}
+      <div className="flex justify-end pr-2">
+        <button
+          onClick={onToggleCollapse}
+          className="group flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-500 hover:text-indigo-600 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-100/50 transition-all duration-300 no-print"
+        >
+          <ChevronRight
+            size={16}
+            strokeWidth={3}
+            className={`transition-all duration-500 ease-in-out ${isCollapsed ? "" : "rotate-180"}`}
+          />
+          {isCollapsed ? "Show Options" : "Hide Options"}
+        </button>
+      </div>
 
       <div
-        className={`space-y-6 transition-all duration-300 ${isCollapsed ? "opacity-0 invisible scale-95" : "opacity-100 visible scale-100"}`}
+        className={`space-y-6 transition-all duration-300 ${isCollapsed ? "opacity-0 invisible h-0 scale-95" : "opacity-100 visible h-auto scale-100"}`}
       >
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
           <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
@@ -75,11 +79,10 @@ const QIFormSidebar = ({
                     <button
                       key={indicator.id}
                       onClick={() => toggleIndicator(indicator.id)}
-                      className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all text-left ${
-                        selectedIndicators.includes(indicator.id)
-                          ? "bg-indigo-50 text-indigo-700"
-                          : "text-slate-500 hover:bg-slate-50"
-                      }`}
+                      className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all text-left ${selectedIndicators.includes(indicator.id)
+                        ? "bg-indigo-50 text-indigo-700"
+                        : "text-slate-500 hover:bg-slate-50"
+                        }`}
                     >
                       {selectedIndicators.includes(indicator.id) ? (
                         <CheckSquare size={16} className="shrink-0" />

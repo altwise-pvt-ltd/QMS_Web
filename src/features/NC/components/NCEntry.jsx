@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NC_OPTIONS } from "../data/NcCategories";
-import { Image as ImageIcon, UploadCloud, Eye, Trash2, Users, UserPlus, X } from "lucide-react";
+import { FileText as FileIcon, UploadCloud, Eye, Trash2, Users, UserPlus, X } from "lucide-react";
 import { db } from "../../../db";
 import UploadPreviewModal from "../../documents/component/UploadPreviewModal";
 
@@ -35,7 +35,6 @@ const NCEntry = ({ entry, onUpdate }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) return;
     onUpdate(entry.id, "evidenceImage", file);
   };
 
@@ -120,10 +119,10 @@ const NCEntry = ({ entry, onUpdate }) => {
             </select>
           </div>
 
-          {/* Evidence Image */}
+          {/* Evidence Document */}
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Evidence Image (Optional)
+              Evidence Document (Optional)
             </label>
 
             {!entry.evidenceImage ? (
@@ -131,11 +130,10 @@ const NCEntry = ({ entry, onUpdate }) => {
                 <label className="cursor-pointer text-center">
                   <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
                   <span className="text-sm text-blue-600 font-medium">
-                    Upload an image
+                    Upload a file (PDF, Image, etc)
                   </span>
                   <input
                     type="file"
-                    accept="image/*"
                     className="sr-only"
                     onChange={handleFileChange}
                   />
@@ -145,7 +143,7 @@ const NCEntry = ({ entry, onUpdate }) => {
               <div className="flex justify-between items-center p-3 bg-blue-50 border rounded-md">
                 <div className="flex items-center gap-2 overflow-hidden">
                   <div className="p-2 bg-blue-100 rounded">
-                    <ImageIcon size={20} />
+                    <FileIcon size={20} />
                   </div>
                   <span className="text-sm truncate">
                     {entry.evidenceImage.name}
@@ -172,6 +170,22 @@ const NCEntry = ({ entry, onUpdate }) => {
               value={entry.dailyNcDetails}
               onChange={(e) =>
                 onUpdate(entry.id, "dailyNcDetails", e.target.value)
+              }
+              rows="2"
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          {/* Effectiveness */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Effectiveness
+            </label>
+            <textarea
+              value={entry.effectiveness}
+              onChange={(e) =>
+                onUpdate(entry.id, "effectiveness", e.target.value)
               }
               rows="2"
               className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"

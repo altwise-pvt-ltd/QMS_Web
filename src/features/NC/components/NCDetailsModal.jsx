@@ -277,6 +277,14 @@ const NCDetailsModal = ({ report, onClose, onUpdate }) => {
           {/* Editable Fields using helper function */}
           <div className="md:col-span-2">
             {renderEditableSection(
+              "Effectiveness",
+              "effectiveness",
+              "Describe effectiveness..."
+            )}
+          </div>
+
+          <div className="md:col-span-2">
+            {renderEditableSection(
               "Root Cause",
               "rootCause",
               "Describe root cause..."

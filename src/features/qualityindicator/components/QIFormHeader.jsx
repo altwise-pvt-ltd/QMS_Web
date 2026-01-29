@@ -7,9 +7,13 @@ const QIFormHeader = ({ onBack, onDownload, onPrint, title }) => {
       <div className="flex items-center gap-4">
         <button
           onClick={onBack}
-          className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-500"
+          className="group p-2.5 bg-white border border-slate-200 rounded-2xl transition-all duration-300 hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-100/50 active:scale-90 text-slate-400 hover:text-indigo-600 flex items-center justify-center"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft
+            size={22}
+            strokeWidth={3}
+            className="group-hover:-translate-x-0.5 transition-transform duration-300"
+          />
         </button>
         <h2 className="text-xl font-bold text-slate-800">{title}</h2>
       </div>

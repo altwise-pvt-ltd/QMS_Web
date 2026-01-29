@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { X, Plus, Box, Hash, UserCircle } from "lucide-react";
+import { db } from "../../../db";
+import { X, Box, UserCircle, ChevronDown } from "lucide-react";
 
 /**
  * AddDepartment component - A modal for defining a new department
@@ -12,13 +13,27 @@ import { X, Plus, Box, Hash, UserCircle } from "lucide-react";
 export const AddDepartment = ({ isOpen, onClose, onAdd }) => {
     const [formData, setFormData] = useState({
         name: "",
-        code: "",
         head: ""
     });
+    const [staffList, setStaffList] = useState([]);
+
+    React.useEffect(() => {
+        const fetchStaff = async () => {
+            try {
+                const staff = await db.staff.toArray();
+                setStaffList(staff);
+            } catch (error) {
+                console.error("Error fetching staff:", error);
+            }
+        };
+        if (isOpen) {
+            fetchStaff();
+        }
+    }, [isOpen]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!formData.name || !formData.code) return;
+        if (!formData.name) return;
 
         // Create new department object
         const newDept = {
@@ -30,7 +45,7 @@ export const AddDepartment = ({ isOpen, onClose, onAdd }) => {
         };
 
         onAdd(newDept);
-        setFormData({ name: "", code: "", head: "" }); // Reset form
+        setFormData({ name: "", head: "" }); // Reset form
         onClose();
     };
 
@@ -66,38 +81,26 @@ export const AddDepartment = ({ isOpen, onClose, onAdd }) => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-6">
                             <div>
                                 <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
-                                    Unique Code
+                                    Dept. Head (Optional)
                                 </label>
                                 <div className="relative">
-                                    <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                                    <input
-                                        type="text"
-                                        required
-                                        maxLength={4}
-                                        placeholder="PATH"
-                                        value={formData.code}
-                                        onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                                        className="w-full pl-12 pr-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
-                                    Dept. Head
-                                </label>
-                                <div className="relative">
-                                    <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                                    <input
-                                        type="text"
-                                        placeholder="Dr. Smith"
+                                    <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-10" size={18} />
+                                    <select
                                         value={formData.head}
                                         onChange={(e) => setFormData({ ...formData, head: e.target.value })}
-                                        className="w-full pl-12 pr-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800"
-                                    />
+                                        className="w-full pl-12 pr-10 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800 appearance-none cursor-pointer"
+                                    >
+                                        <option value="">Not Assigned</option>
+                                        {staffList.map((staff) => (
+                                            <option key={staff.id} value={staff.name}>
+                                                {staff.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
                                 </div>
                             </div>
                         </div>
@@ -112,7 +115,7 @@ export const AddDepartment = ({ isOpen, onClose, onAdd }) => {
                             </button>
                             <button
                                 type="submit"
-                                className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all"
+                                className="flex-1 py-4 bg-indigo-600 text-black font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all"
                             >
                                 Create Dept
                             </button>
