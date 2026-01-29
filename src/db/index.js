@@ -46,9 +46,6 @@ db.version(10).stores({
 
   // Staff/Personnel directory
   staff: "++id, name, role, dept, status, joinDate",
-
-  // Risk Categories storage
-  risk_categories: "++id, name",
 });
 
 /**

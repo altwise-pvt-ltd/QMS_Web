@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FileText, Download, Eye, ArrowLeft } from "lucide-react";
+import { db } from "../../../db";
 
 const MinutesOfMeetingPreview = ({
   meeting,
@@ -9,6 +10,21 @@ const MinutesOfMeetingPreview = ({
   onBack,
 }) => {
   const [showPreview, setShowPreview] = useState(true); // Auto-show preview
+  const [companyInfo, setCompanyInfo] = useState(null);
+
+  useEffect(() => {
+    const fetchCompanyInfo = async () => {
+      try {
+        const info = await db.company_info.orderBy("id").last();
+        if (info) {
+          setCompanyInfo(info);
+        }
+      } catch (error) {
+        console.error("Failed to fetch company info:", error);
+      }
+    };
+    fetchCompanyInfo();
+  }, []);
 
   // Transform Dexie data to match the preview format
   const meetingData = {
@@ -79,11 +95,26 @@ const MinutesOfMeetingPreview = ({
     }
     .letterhead {
       text-align: center;
-      font-weight: bold;
-      font-size: 14pt;
-      margin-bottom: 10px;
-      padding-bottom: 10px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
       border-bottom: 2px solid #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .letterhead img {
+      max-height: 80px;
+      margin-bottom: 10px;
+    }
+    .company-name {
+      font-weight: bold;
+      font-size: 16pt;
+      margin: 0;
+    }
+    .company-details {
+      font-size: 10pt;
+      color: #555;
+      margin: 5px 0 0 0;
     }
     h1 {
       text-align: center;
@@ -163,7 +194,22 @@ const MinutesOfMeetingPreview = ({
   </style>
 </head>
 <body>
-  <div class="letterhead">Your Company Name</div>
+  <div class="letterhead">
+    ${companyInfo?.logo ? `<img src="${companyInfo.logo}" alt="Logo">` : ""}
+    <p class="company-name">${companyInfo?.name || "Your Company Name"}</p>
+    ${companyInfo?.address ? `<p class="company-details">${companyInfo.address}</p>` : ""}
+    ${
+      companyInfo?.phone || companyInfo?.websiteUrl
+        ? `
+      <p class="company-details">
+        ${companyInfo.phone ? `Tel: ${companyInfo.phone}` : ""}
+        ${companyInfo.phone && companyInfo.websiteUrl ? " | " : ""}
+        ${companyInfo.websiteUrl ? `${companyInfo.websiteUrl}` : ""}
+      </p>
+    `
+        : ""
+    }
+  </div>
   
   <h1>Minutes of Management Review Meeting</h1>
   
@@ -290,8 +336,34 @@ const MinutesOfMeetingPreview = ({
           {showPreview && (
             <div className="border border-gray-300 rounded-lg p-8 bg-white mb-6 overflow-auto">
               <div className="max-w-4xl mx-auto">
-                <div className="text-center font-bold text-lg mb-4 pb-3 border-b-2 border-gray-800">
-                  Letter Head
+                <div className="flex flex-col items-center border-b-2 border-gray-800 pb-6 mb-6">
+                  {companyInfo?.logo && (
+                    <img
+                      src={companyInfo.logo}
+                      alt="Company Logo"
+                      className="h-20 mb-3 object-contain"
+                    />
+                  )}
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {companyInfo?.name || "Your Company Name"}
+                  </h2>
+                  {companyInfo?.address && (
+                    <p className="text-gray-600 text-sm mt-1 max-w-lg text-center">
+                      {companyInfo.address}
+                    </p>
+                  )}
+                  <div className="text-gray-500 text-xs mt-2 flex gap-3">
+                    {companyInfo?.phone && (
+                      <span>
+                        <strong>Tel:</strong> {companyInfo.phone}
+                      </span>
+                    )}
+                    {companyInfo?.websiteUrl && (
+                      <span>
+                        <strong>Web:</strong> {companyInfo.websiteUrl}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <h2 className="text-center text-xl font-bold mb-4">

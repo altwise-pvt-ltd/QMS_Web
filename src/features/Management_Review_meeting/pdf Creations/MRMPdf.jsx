@@ -1,8 +1,24 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   page: { padding: 24, fontSize: 11 },
   header: { textAlign: "center", fontSize: 9, marginBottom: 10 },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  logo: {
+    height: 48,
+    width: "auto",
+    objectFit: "contain",
+  },
   title: { fontSize: 16, textAlign: "center", fontWeight: "bold" },
   subtitle: { fontSize: 13, textAlign: "center", marginBottom: 10 },
   section: { marginBottom: 10 },
@@ -17,6 +33,13 @@ const styles = StyleSheet.create({
 const MRMPdf = ({ data }) => (
   <Document>
     <Page size="A4" style={styles.page}>
+      {/* Logo */}
+      {data.header.logo && (
+        <View style={styles.logoContainer}>
+          <Image src={data.header.logo} style={styles.logo} />
+        </View>
+      )}
+
       {/* Address */}
       <Text style={styles.header}>{data.header.address}</Text>
 

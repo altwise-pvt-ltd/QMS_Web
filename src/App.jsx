@@ -9,6 +9,12 @@ import {
 import { AuthProvider } from "./auth/AuthContext.jsx";
 import ProtectedRoute from "./auth/ProtectedRoute.jsx";
 import Login from "./auth/login.jsx";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  logout,
+  updateToken,
+  selectAccessToken,
+} from "./store/slices/authSlice";
 
 // Feature Imports
 import QMSDashboard from "./features/dashboard/dashboard.jsx";
@@ -29,6 +35,7 @@ import VendorModule from "./features/vendor/vendor.jsx";
 import RiskAssessmentPage from "./features/risk_assessment/RiskAssessmentPage.jsx";
 import RiskIndicator from "./features/risk_indicator/risk_indicator.jsx";
 import EntriesManagement from "./features/entries_management/EntriesManagement.jsx";
+import OnboardingPage from "./features/onboarding/OnboardingPage.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -41,6 +48,40 @@ import { addExpiryDatesToDocuments } from "./features/compliance_calendar/utils/
 import { useEffect } from "react";
 
 function App() {
+  const dispatch = useDispatch();
+  const accessTokenInRedux = useSelector(selectAccessToken);
+
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      // Synchronize logout across tabs
+      if (e.key === "accessToken" && !e.newValue) {
+        console.log("Token removed in another tab, logging out...");
+        dispatch(logout());
+        // Use a slight delay to allow state to settle or just force redirect
+        window.location.href = "/login";
+      }
+
+      // Synchronize token refresh across tabs
+      if (
+        e.key === "accessToken" &&
+        e.newValue &&
+        e.newValue !== accessTokenInRedux
+      ) {
+        console.log("Token updated in another tab, syncing Redux...");
+        const newRefreshToken = localStorage.getItem("refreshToken");
+        dispatch(
+          updateToken({
+            accessToken: e.newValue,
+            refreshToken: newRefreshToken,
+          }),
+        );
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [dispatch, accessTokenInRedux]);
+
   useEffect(() => {
     const initializeData = async () => {
       try {
@@ -66,6 +107,7 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
 
             <Route
               element={
