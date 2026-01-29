@@ -4,7 +4,7 @@ import Dexie from "dexie";
 export const db = new Dexie("QMS_Web_DB");
 
 // UPDATE VERSION: Bump version to apply schema changes (e.g., 6 -> 7)
-db.version(10).stores({
+db.version(11).stores({
   // Persistent storage for documents metadata
   documents:
     "id, name, level, category, subCategory, status, department, author, version, createdDate, expiryDate",
@@ -46,6 +46,13 @@ db.version(10).stores({
 
   // Staff/Personnel directory
   staff: "++id, name, role, dept, status, joinDate",
+
+  // Risk Categories storage
+  risk_categories: "++id, name",
+
+  // Company Information (Onboarding)
+  company_info:
+    "++id, name, industry, phone, address, websiteUrl, scope, logo, createdAt",
 });
 
 /**
