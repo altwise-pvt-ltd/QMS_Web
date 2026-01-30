@@ -187,7 +187,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
           </button>
           <button
             type="submit"
-            className="px-5 py-2.5 text-sm font-medium text-blackte bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md flex items-center gap-2"
+            className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md flex items-center gap-2"
           >
             <Save size={18} />{" "}
             {initialData ? "Update Employee" : "Create Employee"}

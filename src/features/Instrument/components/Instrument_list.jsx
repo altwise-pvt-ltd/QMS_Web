@@ -150,10 +150,11 @@ const InstrumentList = ({ instruments }) => {
   return (
     <div className="w-full">
       {/* Dense Table Header */}
-      <div className="px-4 py-2 grid grid-cols-12 text-[10px] font-bold uppercase text-slate-400 border-b border-slate-100">
-        <div className="col-span-6">Nomenclature</div>
+      <div className="px-10 py-2 grid grid-cols-12 text-[10px] font-bold uppercase text-slate-400 border-b border-slate-100 gap-4">
+        <div className="col-span-5">Nomenclature</div>
         <div className="col-span-2">Department</div>
         <div className="col-span-2 text-center">Due Date</div>
+        <div className="col-span-1 text-center">Status</div>
         <div className="col-span-2 text-right">Actions</div>
       </div>
 
