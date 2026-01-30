@@ -21,17 +21,29 @@ const PersonalDocuments = ({
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors">
             {formData.passportPhoto ? (
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileText size={20} className="text-blue-600" />
-                  <span className="text-sm text-gray-700">
-                    {formData.passportPhoto.name}
-                  </span>
+                <div className="flex items-center gap-3">
+                  {formData.passportPhoto.preview ? (
+                    <img
+                      src={formData.passportPhoto.preview}
+                      alt="Passport"
+                      className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                    />
+                  ) : (
+                    <FileText size={20} className="text-blue-600" />
+                  )}
+                  <div>
+                    <span className="text-sm text-gray-700 block font-medium">
+                      {formData.passportPhoto.name}
+                    </span>
+                    <span className="text-xs text-green-500">File selected</span>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => handleFileRemove("passportPhoto")}
-                    className="p-1 text-red-500 hover:bg-red-50 rounded"
+                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                    title="Remove Photo"
                   >
                     <X size={16} />
                   </button>

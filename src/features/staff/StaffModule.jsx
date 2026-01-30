@@ -114,15 +114,30 @@ const StaffModule = () => {
           >
             <ArrowLeft size={18} />
           </button>
-          <div>
-            <h1 className="text-[16px] font-bold text-gray-800 ">
-              {selectedStaff?.name || "Staff Member"}
-            </h1>
-            <p className="text-[14px] text-gray-500">
-              {selectedStaff
-                ? `ID: ${selectedStaff.id} • ${selectedStaff.role}`
-                : "Competence & Documents"}
-            </p>
+
+          {/* Staff Profile Photo */}
+          <div className="flex items-center gap-3">
+            {selectedStaff?.photo ? (
+              <img
+                src={selectedStaff.photo}
+                alt={selectedStaff.name}
+                className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm border-2 border-white">
+                {selectedStaff?.name?.charAt(0) || "S"}
+              </div>
+            )}
+            <div>
+              <h1 className="text-[18px] font-bold text-gray-800 leading-tight">
+                {selectedStaff?.name || "Staff Member"}
+              </h1>
+              <p className="text-[13px] text-gray-500 font-medium">
+                {selectedStaff
+                  ? `ID: ${selectedStaff.id} • ${selectedStaff.role}`
+                  : "Competence & Documents"}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -130,11 +145,10 @@ const StaffModule = () => {
         <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
           <button
             onClick={() => setActiveTab("competence")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all ${
-              activeTab === "competence"
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === "competence"
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             <UserCheck size={14} />
             Competence
@@ -142,11 +156,10 @@ const StaffModule = () => {
 
           <button
             onClick={() => setActiveTab("documents")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all ${
-              activeTab === "documents"
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all ${activeTab === "documents"
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             <FileText size={14} />
             Documents
@@ -154,11 +167,10 @@ const StaffModule = () => {
 
           <button
             onClick={() => setActiveTab("staffDetails")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all ${
-              activeTab === "staffDetails"
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all ${activeTab === "staffDetails"
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             <Briefcase size={14} />
             Staff Details
@@ -166,11 +178,10 @@ const StaffModule = () => {
 
           <button
             onClick={() => setActiveTab("permissions")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all ${
-              activeTab === "permissions"
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all ${activeTab === "permissions"
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             <Shield size={14} />
             Permissions

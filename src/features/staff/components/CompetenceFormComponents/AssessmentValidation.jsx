@@ -4,7 +4,7 @@ const AssessmentValidation = ({ formData, handleInputChange }) => {
   return (
     <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
       <h2 className="text-lg font-semibold text-gray-700 mb-4 border-l-4 border-red-500 pl-3">
-        5. Assessment & Validation
+        4. Assessment & Validation
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>

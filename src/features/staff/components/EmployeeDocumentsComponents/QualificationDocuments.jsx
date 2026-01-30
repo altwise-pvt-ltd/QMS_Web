@@ -1,11 +1,13 @@
 import React from "react";
-import { Upload, FileText, X, Plus } from "lucide-react";
+import { Upload, FileText, X, Plus, Trash2 } from "lucide-react";
 
 const QualificationDocuments = ({
   formData,
   handleFileChange,
   handleFileRemove,
+  handleInputChange,
   addQualificationField,
+  removeQualificationField,
 }) => {
   return (
     <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -25,49 +27,98 @@ const QualificationDocuments = ({
 
       <div className="space-y-4">
         {formData.qualifications.map((qual, index) => (
-          <div key={index} className="border border-gray-200 rounded-lg p-4">
+          <div
+            key={index}
+            className="border border-gray-200 rounded-lg p-4 bg-gray-50 relative"
+          >
+            {formData.qualifications.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeQualificationField(index)}
+                className="absolute top-2 right-2 p-1 text-red-500 hover:bg-red-100 rounded"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Document Title
+                  Document Title <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
+                  required
                   value={qual.title}
                   onChange={(e) =>
-                    handleFileChange(e, "qualifications", index, "title")
+                    handleInputChange(e, "qualifications", index, "title")
                   }
-                  placeholder="e.g., Bachelor's Degree, Certification"
-                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
+                  placeholder="e.g., Bachelor's Degree"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Upload Document
+                  College/University Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={qual.collegeName}
+                  onChange={(e) =>
+                    handleInputChange(e, "qualifications", index, "collegeName")
+                  }
+                  placeholder="Enter college name"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Graduation Year <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="1900"
+                  max={new Date().getFullYear()}
+                  value={qual.graduationYear}
+                  onChange={(e) =>
+                    handleInputChange(e, "qualifications", index, "graduationYear")
+                  }
+                  placeholder="YYYY"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload Document <span className="text-red-500">*</span>
                 </label>
                 {qual.file ? (
-                  <div className="flex items-center justify-between border border-gray-300 rounded-lg p-2">
-                    <div className="flex items-center gap-2">
-                      <FileText size={18} className="text-green-600" />
-                      <span className="text-sm text-gray-700">
+                  <div className="flex items-center justify-between border border-gray-300 bg-white rounded-lg p-2">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <FileText size={18} className="text-green-600 shrink-0" />
+                      <span className="text-xs text-gray-700 truncate">
                         {qual.file.name}
                       </span>
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleFileRemove("qualifications", index)}
+                      onClick={() => handleFileRemove("qualifications", index, "file")}
                       className="p-1 text-red-500 hover:bg-red-50 rounded"
                     >
                       <X size={16} />
                     </button>
                   </div>
                 ) : (
-                  <label className="cursor-pointer flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-2 hover:border-green-400 transition-colors">
+                  <label className="cursor-pointer flex items-center justify-center border-2 border-dashed border-gray-300 bg-white rounded-lg p-2 hover:border-green-400 transition-colors">
                     <Upload size={18} className="text-gray-400 mr-2" />
-                    <span className="text-sm text-gray-500">Choose file</span>
+                    <span className="text-xs text-gray-500">Choose file</span>
                     <input
                       type="file"
+                      required
                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                       onChange={(e) =>
                         handleFileChange(e, "qualifications", index, "file")

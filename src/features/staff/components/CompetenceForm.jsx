@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   FormHeader,
   EmployeeIdentification,
-  BaselineQualifications,
   SkillsMatrix,
   TrainingCertifications,
   AssessmentValidation,
@@ -18,12 +17,7 @@ const CompetenceForm = ({ initialData }) => {
     jobTitle: "",
     department: "",
     hireDate: "",
-
-    // Section 2: Baseline Qualifications
-    educationLevel: "",
-    educationDetails: "",
-    workExperienceYears: "",
-    experienceSummary: "",
+    phoneNo: "",
 
     // Section 3: Dynamic Lists
     skills: [
@@ -56,6 +50,7 @@ const CompetenceForm = ({ initialData }) => {
         employeeId: initialData.id?.toString() || "",
         jobTitle: initialData.role || "",
         department: initialData.dept || "",
+        phoneNo: initialData.phone || "",
         overallStatus: initialData.status || "",
       }));
     }
@@ -109,11 +104,6 @@ const CompetenceForm = ({ initialData }) => {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <EmployeeIdentification
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-
-        <BaselineQualifications
           formData={formData}
           handleInputChange={handleInputChange}
         />

@@ -20,7 +20,7 @@ const TrainingCertifications = ({
     <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-700 border-l-4 border-green-500 pl-3">
-          4. Training & Certifications
+          3. Training & Certifications
         </h2>
         <button
           type="button"

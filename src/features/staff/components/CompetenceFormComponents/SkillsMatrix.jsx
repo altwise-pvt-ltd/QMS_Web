@@ -6,7 +6,7 @@ const SkillsMatrix = ({ skills, handleDynamicChange, addRow, removeRow }) => {
     <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-700 border-l-4 border-purple-500 pl-3">
-          3. Skills & Competency Matrix
+          2. Skills & Competency Matrix
         </h2>
         <button
           type="button"
@@ -49,7 +49,7 @@ const SkillsMatrix = ({ skills, handleDynamicChange, addRow, removeRow }) => {
                 <td className="px-3 py-2">
                   <input
                     type="text"
-                    placeholder="e.g. Java Spring Boot"
+                    placeholder="e.g. Sample Analysis & Handling"
                     value={skill.name}
                     onChange={(e) =>
                       handleDynamicChange(

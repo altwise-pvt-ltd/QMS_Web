@@ -45,7 +45,7 @@ db.version(11).stores({
   training_attendance: "++id, eventId, staffId, status, score, completionDate",
 
   // Staff/Personnel directory
-  staff: "++id, name, role, dept, status, joinDate",
+  staff: "++id, name, role, dept, status, joinDate, photo",
 
   // Risk Categories storage
   risk_categories: "++id, name",

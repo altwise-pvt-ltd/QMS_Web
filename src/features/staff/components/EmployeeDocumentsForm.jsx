@@ -9,6 +9,7 @@ import {
   TrainingRecords,
   DocumentFormActions,
 } from "./EmployeeDocumentsComponents";
+import { db } from "../../../db";
 
 const EmployeeDocumentsForm = ({ initialData }) => {
   const [formData, setFormData] = useState({
@@ -17,7 +18,7 @@ const EmployeeDocumentsForm = ({ initialData }) => {
     cv: null,
 
     // Qualification Documents (dynamic array)
-    qualifications: [{ title: "", file: null }],
+    qualifications: [{ title: "", collegeName: "", graduationYear: "", file: null }],
 
     // Appointment Documents (dynamic array)
     appointmentDocuments: [{ title: "", file: null }],
@@ -28,14 +29,9 @@ const EmployeeDocumentsForm = ({ initialData }) => {
     // Vaccination Records (dynamic array)
     vaccinationRecords: [
       {
-        title: "",
-        covidCertificate: null,
-        covidDate: "",
-        hbsagCertificate: null,
-        hbsagDose1Date: "",
-        hbsagDose2Date: "",
-        hbsagDose3Date: "",
-        hbsagBoosterDate: "",
+        name: "",
+        date: "",
+        file: null,
       },
     ],
 
@@ -55,7 +51,7 @@ const EmployeeDocumentsForm = ({ initialData }) => {
       // Populate with existing data if available
       setFormData((prev) => ({
         ...prev,
-        // Add logic to populate from initialData when backend is ready
+        passportPhoto: initialData.photo ? { name: "Current Photo", preview: initialData.photo } : null,
       }));
     }
   }, [initialData]);
@@ -82,18 +78,38 @@ const EmployeeDocumentsForm = ({ initialData }) => {
         subField === "file" ||
         subField === "certificate" ||
         subField === "inductionTraining" ||
-        subField === "competencyTraining" ||
-        subField === "covidCertificate" ||
-        subField === "hbsagCertificate"
+        subField === "competencyTraining"
       ) {
         updatedArray[index][subField] = file;
-      } else if (subField === "title") {
-        updatedArray[index].title = value;
+      } else if (subField === "title" || subField === "name") {
+        updatedArray[index][subField] = value;
       }
       setFormData((prev) => ({ ...prev, [fieldName]: updatedArray }));
     } else {
       // Handle single file uploads
-      setFormData((prev) => ({ ...prev, [fieldName]: file }));
+      if (fieldName === "passportPhoto" && file) {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const previewUrl = reader.result;
+          setFormData((prev) => ({
+            ...prev,
+            passportPhoto: { file, name: file.name, preview: previewUrl },
+          }));
+
+          // Auto-save to DB so header updates
+          if (initialData?.id) {
+            try {
+              await db.staff.update(initialData.id, { photo: previewUrl });
+              console.log("Profile photo updated in database");
+            } catch (err) {
+              console.error("Failed to update profile photo:", err);
+            }
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setFormData((prev) => ({ ...prev, [fieldName]: file }));
+      }
     }
   };
 
@@ -143,8 +159,17 @@ const EmployeeDocumentsForm = ({ initialData }) => {
   const addQualificationField = () => {
     setFormData((prev) => ({
       ...prev,
-      qualifications: [...prev.qualifications, { title: "", file: null }],
+      qualifications: [
+        ...prev.qualifications,
+        { title: "", collegeName: "", graduationYear: "", file: null },
+      ],
     }));
+  };
+
+  // Remove qualification field
+  const removeQualificationField = (index) => {
+    const updatedDocs = formData.qualifications.filter((_, i) => i !== index);
+    setFormData((prev) => ({ ...prev, qualifications: updatedDocs }));
   };
 
   // Add new appointment document
@@ -192,14 +217,9 @@ const EmployeeDocumentsForm = ({ initialData }) => {
       vaccinationRecords: [
         ...prev.vaccinationRecords,
         {
-          title: "",
-          covidCertificate: null,
-          covidDate: "",
-          hbsagCertificate: null,
-          hbsagDose1Date: "",
-          hbsagDose2Date: "",
-          hbsagDose3Date: "",
-          hbsagBoosterDate: "",
+          name: "",
+          date: "",
+          file: null,
         },
       ],
     }));
@@ -259,7 +279,9 @@ const EmployeeDocumentsForm = ({ initialData }) => {
           formData={formData}
           handleFileChange={handleFileChange}
           handleFileRemove={handleFileRemove}
+          handleInputChange={handleInputChange}
           addQualificationField={addQualificationField}
+          removeQualificationField={removeQualificationField}
         />
 
         <AppointmentDocuments

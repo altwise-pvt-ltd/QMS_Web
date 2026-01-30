@@ -112,9 +112,17 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
                   className="hover:bg-blue-50/50 transition-colors border-b border-gray-50 group"
                 >
                   <td className="p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                      {staff.name.charAt(0)}
-                    </div>
+                    {staff.photo ? (
+                      <img
+                        src={staff.photo}
+                        alt={staff.name}
+                        className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                        {staff.name.charAt(0)}
+                      </div>
+                    )}
                     <div>
                       <div className="font-semibold text-gray-900">
                         {staff.name}
@@ -133,11 +141,10 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
 
                   <td className="p-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        staff.status === "Competent"
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${staff.status === "Competent"
                           ? "bg-green-100 text-green-700"
                           : "bg-amber-100 text-amber-700"
-                      }`}
+                        }`}
                     >
                       {staff.status}
                     </span>
