@@ -99,7 +99,7 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
     );
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-100 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col overflow-hidden border border-slate-200">
                 {/* Header - CAPA Style */}
                 <div className="flex items-center justify-between px-8 py-5 border-b bg-white">
