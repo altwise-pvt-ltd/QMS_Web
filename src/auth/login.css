@@ -33,11 +33,9 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    45deg,
-    rgba(104, 176, 239, 0.85) 0%,
-    rgba(255, 255, 255, 0.244) 100%
-  );
+  background: linear-gradient(45deg,
+      rgba(104, 176, 239, 0.85) 0%,
+      rgba(255, 255, 255, 0.244) 100%);
   z-index: 1;
 }
 
@@ -133,16 +131,28 @@
   padding: 14px 16px;
   border-radius: 14px;
   border: 1px solid #c1d6ff;
-  background: linear-gradient(#f9fafb, #ffffff);
+  background-color: #ffffff !important;
   font-size: 15px;
+  color: #111827 !important;
   transition: all 0.25s ease;
   outline: none;
 }
 
 .login-form input:focus {
   border-color: #148bfa;
-  background: white;
+  background-color: white !important;
   box-shadow: 0 0 0 4px rgba(20, 139, 250, 0.15);
+}
+
+/* Chrome Autofill styles - Fixed grey background and invisible text */
+.login-form input:-webkit-autofill,
+.login-form input:-webkit-autofill:hover,
+.login-form input:-webkit-autofill:focus,
+.login-form input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-text-fill-color: #111827 !important;
+  caret-color: #111827 !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .login-form input::placeholder {
