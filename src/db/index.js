@@ -91,3 +91,18 @@ export const resetDatabase = async () => {
     console.error("❌ Failed to reset database:", error);
   }
 };
+
+/**
+ * Clear company_info table
+ */
+export const clearCompanyInfo = async () => {
+  try {
+    await db.company_info.clear();
+    console.log("✅ clearCompanyInfo executed");
+  } catch (error) {
+    console.error("❌ Failed to clear company_info:", error);
+  }
+};
+
+// Expose to window for console usage
+window.clearCompanyInfo = clearCompanyInfo;
