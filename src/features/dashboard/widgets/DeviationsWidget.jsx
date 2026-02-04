@@ -2,9 +2,9 @@ import React from "react";
 import { TrendingUp } from "lucide-react";
 
 export const DeviationsWidget = () => (
-  <div className="flex flex-col h-full justify-between">
+  <div className="@container flex flex-col h-full justify-between">
     <div className="flex items-end gap-2">
-      <span className="text-4xl font-bold text-slate-800">7</span>
+      <span className="text-3xl @xs:text-4xl font-bold text-slate-800">7</span>
       <span className="text-sm text-emerald-500 mb-1 flex items-center">
         <TrendingUp className="w-3 h-3 mr-1 rotate-180" /> -3
       </span>

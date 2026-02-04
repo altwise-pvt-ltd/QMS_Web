@@ -23,7 +23,7 @@ const CapaChartWidget = () => {
   const isImproving = weekData.at(-1).incidents < weekData[0].incidents;
 
   return (
-    <div className="h-full flex flex-col min-h-0">
+    <div className="@container h-full flex flex-col min-h-0">
       {/* Header */}
       <div className="flex justify-between items-start gap-3 mb-2">
         <div>

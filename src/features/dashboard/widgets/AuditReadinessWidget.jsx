@@ -1,9 +1,9 @@
 import React from "react";
 
 export const AuditReadinessWidget = () => (
-  <div className="flex flex-col h-full justify-between">
+  <div className="@container flex flex-col h-full justify-between">
     <div className="flex items-end gap-2">
-      <span className="text-4xl font-bold text-slate-800">92%</span>
+      <span className="text-3xl @xs:text-4xl font-bold text-slate-800">92%</span>
       <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full mb-1 font-semibold">
         Ready
       </span>

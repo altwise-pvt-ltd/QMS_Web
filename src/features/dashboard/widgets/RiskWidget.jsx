@@ -1,22 +1,22 @@
 import React from "react";
 
 export const RiskWidget = () => (
-  <div className="flex flex-col h-full justify-between">
-    <div className="grid grid-cols-3 gap-2 mb-3">
+  <div className="@container flex flex-col h-full justify-between">
+    <div className="grid grid-cols-3 gap-1 @xs:gap-2 mb-3">
       <div className="text-center p-2 bg-emerald-50 rounded-lg">
-        <div className="text-2xl font-bold text-emerald-600">12</div>
+        <div className="text-xl @xs:text-2xl font-bold text-emerald-600">12</div>
         <div className="text-[10px] text-slate-500 uppercase font-semibold mt-1">
           Low
         </div>
       </div>
       <div className="text-center p-2 bg-amber-50 rounded-lg">
-        <div className="text-2xl font-bold text-amber-600">5</div>
+        <div className="text-xl @xs:text-2xl font-bold text-amber-600">5</div>
         <div className="text-[10px] text-slate-500 uppercase font-semibold mt-1">
           Medium
         </div>
       </div>
       <div className="text-center p-2 bg-rose-50 rounded-lg">
-        <div className="text-2xl font-bold text-rose-600">1</div>
+        <div className="text-xl @xs:text-2xl font-bold text-rose-600">1</div>
         <div className="text-[10px] text-slate-500 uppercase font-semibold mt-1">
           High
         </div>

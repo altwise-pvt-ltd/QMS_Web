@@ -25,6 +25,8 @@ import RiskWidget from "./widgets/RiskWidget";
 import DeviationsWidget from "./widgets/DeviationsWidget";
 import AuditReadinessWidget from "./widgets/AuditReadinessWidget";
 import DocumentStatusWidget from "./widgets/DocumentStatusWidget";
+import NextAuditWidget from "./widgets/NextAuditWidget";
+import SupplierQualityWidget from "./widgets/SupplierQualityWidget";
 
 const QMSDashboard = () => {
   const navigate = useNavigate();
@@ -78,13 +80,7 @@ const QMSDashboard = () => {
           icon={Clock}
           className="bg-linear-to-br from-indigo-500 to-purple-600 text-white border-none row-span-2"
         >
-          <div className="flex flex-col h-full justify-center items-center text-center text-white">
-            <div className="text-sm opacity-80 uppercase tracking-wide">
-              ISO 9001
-            </div>
-            <div className="text-3xl font-bold mt-1">12 Days</div>
-            <div className="text-sm opacity-80 mt-2">Oct 15, 2025</div>
-          </div>
+          <NextAuditWidget />
         </BentoCard>
 
         {/* 5. My Tasks (1x2 Vertical) */}
@@ -136,17 +132,7 @@ const QMSDashboard = () => {
 
         {/* 11. Supplier Quality (1x1) */}
         <BentoCard title="Supplier Quality" icon={AlertTriangle}>
-          <div className="flex flex-col h-full justify-center">
-            <div className="flex justify-between items-end">
-              <span className="text-3xl font-bold text-slate-800">89%</span>
-              <span className="text-xs text-amber-500 bg-amber-50 px-2 py-1 rounded-md">
-                Warning
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 mt-2">
-              Vendor B requires review
-            </p>
-          </div>
+          <SupplierQualityWidget />
         </BentoCard>
       </div>
     </div>

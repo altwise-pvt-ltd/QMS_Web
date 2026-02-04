@@ -69,7 +69,7 @@ export const TaskListWidget = () => {
   }
 
   return (
-    <div className="space-y-2.5">
+    <div className="@container space-y-2.5">
       {tasks.map((task) => {
         const priorityStyle =
           PRIORITY_STYLES[task.priority] || PRIORITY_STYLES.low;
@@ -80,32 +80,35 @@ export const TaskListWidget = () => {
             onClick={handleViewAll}
             className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-white hover:shadow-md hover:scale-[1.01] transition-all duration-200 cursor-pointer group"
           >
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              {/* Priority Indicator */}
-              <div
-                className={`w-2 h-2 rounded-full shrink-0 ${priorityStyle.dot}`}
-              />
+            <div className="flex flex-col @xs:flex-row @xs:items-center gap-1 @xs:gap-3 flex-1 min-w-0">
+              {/* Top Row / Left Side: Priority + Info */}
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {/* Priority Indicator */}
+                <div
+                  className={`w-2 h-2 rounded-full shrink-0 ${priorityStyle.dot}`}
+                />
 
-              {/* Task Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-slate-700 truncate">
-                    {task.title}
-                  </p>
-                </div>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-slate-400">
-                    {getTypeIcon(task.status)}
-                  </span>
-                  <p className="text-xs text-slate-400 capitalize">
-                    {task.status.replace("-", " ")}
-                  </p>
+                {/* Task Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-slate-700 truncate">
+                      {task.title}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-slate-400">
+                      {getTypeIcon(task.status)}
+                    </span>
+                    <p className="text-xs text-slate-400 capitalize">
+                      {task.status.replace("-", " ")}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Due Date */}
+              {/* Due Date (Stacks on mobile, aligns right on desktop) */}
               <span
-                className={`text-xs shrink-0 font-medium ${
+                className={`text-xs shrink-0 font-medium pl-5 @xs:pl-0 ${
                   task.isOverdue ? "text-red-600" : priorityStyle.text
                 }`}
               >

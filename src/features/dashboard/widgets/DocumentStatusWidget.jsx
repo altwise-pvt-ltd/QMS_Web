@@ -3,30 +3,30 @@ import { FileText, AlertCircle, CheckCircle2, Clock } from "lucide-react";
 
 const DocumentStatusWidget = () => {
   return (
-    <div className="flex flex-col h-full justify-between">
+    <div className="@container flex flex-col h-full justify-between">
       {/* Top Stats Row */}
       <div className="flex justify-between items-start mb-2">
-        <div className="text-center">
-          <span className="block text-2xl font-bold text-slate-800">142</span>
+        <div className="text-center flex-1">
+          <span className="block text-xl @xs:text-2xl font-bold text-slate-800">142</span>
           <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
             Total
           </span>
         </div>
 
         {/* Divider */}
-        <div className="w-px h-8 bg-slate-100 mx-2"></div>
+        <div className="w-px h-8 bg-slate-100 mx-1 @xs:mx-2"></div>
 
-        <div className="text-center">
-          <span className="block text-2xl font-bold text-amber-500">4</span>
+        <div className="text-center flex-1">
+          <span className="block text-xl @xs:text-2xl font-bold text-amber-500">4</span>
           <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
             Review
           </span>
         </div>
 
-        <div className="w-px h-8 bg-slate-100 mx-2"></div>
+        <div className="w-px h-8 bg-slate-100 mx-1 @xs:mx-2"></div>
 
-        <div className="text-center">
-          <span className="block text-2xl font-bold text-rose-500">1</span>
+        <div className="text-center flex-1">
+          <span className="block text-xl @xs:text-2xl font-bold text-rose-500">1</span>
           <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
             Expired
           </span>
