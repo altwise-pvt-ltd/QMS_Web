@@ -101,7 +101,7 @@ const MeetingViewModal = ({
           </div>
           <button
             onClick={onClose}
-            className="text-white/60 hover:text-white hover:bg-white/10 p-2.5 rounded-xl transition-all active:scale-95"
+            className="text-gray-600 hover:text-gray-600 hover:bg-white/10 p-2.5 rounded-xl transition-all active:scale-95"
           >
             <X size={28} />
           </button>

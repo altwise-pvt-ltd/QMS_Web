@@ -127,7 +127,7 @@ const MrmPage = () => {
   };
 
   const handleNextToMinutes = async () => {
-    // Load existing minutes if any
+    // Load existing minutes if any         
     const existingMinutes = await getMinutes(selectedMeeting.id);
     if (existingMinutes) {
       setSelectedMeeting({
