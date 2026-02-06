@@ -112,7 +112,7 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
   const totalQuestions = questions.length;
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-[100] p-4">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-100 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
@@ -587,11 +587,11 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
 
           {/* Tag Staff */}
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 block flex items-center gap-2">
+            <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
               <Users className="w-4 h-4" /> Tag Staff involved in incident
             </label>
             <div className="relative">
-              <div className="min-h-[45px] w-full px-4 py-1.5 border border-slate-200 rounded-md focus-within:ring-1 focus-within:ring-slate-400 transition-all bg-white flex flex-wrap gap-2 items-center">
+              <div className="min-h-11.25 w-full px-4 py-1.5 border border-slate-200 rounded-md focus-within:ring-1 focus-within:ring-slate-400 transition-all bg-white flex flex-wrap gap-2 items-center">
                 {taggedStaff.map(staff => (
                   <span key={staff.id} className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs font-bold border border-slate-200">
                     {staff.name}
@@ -606,7 +606,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                 <input
                   type="text"
                   placeholder={taggedStaff.length === 0 ? "Search staff to tag..." : ""}
-                  className="flex-1 min-w-[120px] outline-none text-sm bg-transparent"
+                  className="flex-1 min-w-30 outline-none text-sm bg-transparent"
                   value={staffSearch}
                   onChange={(e) => {
                     setStaffSearch(e.target.value);
@@ -730,7 +730,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                       <FileText className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-700 truncate max-w-[200px] md:max-w-md">{file.name}</p>
+                      <p className="text-sm font-bold text-slate-700 truncate max-w-50 md:max-w-md">{file.name}</p>
                       <p className="text-[10px] text-slate-400 font-medium uppercase">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
                     </div>
                   </div>

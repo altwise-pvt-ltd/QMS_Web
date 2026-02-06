@@ -127,7 +127,7 @@ function App() {
               <Route path="/compliance" element={<ComplianceCalendarPage />} />
               <Route path="/incidents/new" element={<NonConformanceForm />} />
               <Route path="/department" element={<Department />} />
-              <Route path="/intrusment" element={<Instrument />} />
+              <Route path="/instrument" element={<Instrument />} />
               <Route path="/training" element={<Training />} />
               <Route path="/vendor" element={<VendorModule />} />
               <Route path="/risk-assessment" element={<RiskAssessmentPage />} />

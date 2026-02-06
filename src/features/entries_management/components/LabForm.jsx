@@ -72,9 +72,9 @@ const LabForm = ({ onSave, onCancel }) => {
           </button>
           <button
             type="submit"
-            className="flex-1 py-3 bg-indigo-600 text-gray-600 font-bold text-sm 
+            className="flex-1 py-3 bg-indigo-600 text-white font-bold text-sm 
     rounded-xl shadow-lg shadow-indigo-100 
-    hover:bg-indigo-700 transition-all active:scale-95 
+    transition-all active:scale-95 
     flex items-center justify-center gap-2"
           >
             <CheckCircle2 size={16} />

@@ -36,7 +36,7 @@ const CAPAFormView = ({ capa, onBack }) => {
   return (
     <div className="min-h-screen bg-slate-100 p-4 md:p-8">
       {/* TOP ACTION BAR */}
-      <div className="max-w-[900px] mx-auto mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200 no-print">
+      <div className="max-w-225 mx-auto mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200 no-print">
         <button
           onClick={onBack}
           className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-xl font-bold"
@@ -80,9 +80,9 @@ const CAPAFormView = ({ capa, onBack }) => {
       {/* PRINT AREA */}
       <div
         id="report-content"
-        className="print-area relative max-w-[900px] mx-auto bg-white text-black font-['Times_New_Roman'] border border-slate-200 shadow-sm"
+        className="print-area relative max-w-225 mx-auto bg-white text-black font-['Times_New_Roman'] border border-slate-200 shadow-sm"
       >
-        <div className=" hidden print:block fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-64px font-bold text-black/10 pointer-events-none select-none z-[9999] whitespace-nowrap rotate-[-30deg] text-[64px] font-bold  text-black/10 ">
+        <div className=" hidden print:block fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[64px] font-bold text-black/10 pointer-events-none select-none z-9999 whitespace-nowrap rotate-[-30deg]">
           CONTROLED COPY
         </div>
 
@@ -203,7 +203,7 @@ const CAPAFormView = ({ capa, onBack }) => {
                       <h4 className="font-bold uppercase border-b border-black text-sm mb-2">
                         {title}
                       </h4>
-                      <p className="text-sm mt-1 min-h-[40px] leading-relaxed whitespace-pre-wrap">
+                      <p className="text-sm mt-1 min-h-10 leading-relaxed whitespace-pre-wrap">
                         {show(value)}
                       </p>
                     </div>
@@ -255,7 +255,7 @@ const CAPAFormView = ({ capa, onBack }) => {
                     <h4 className="font-bold uppercase border-b border-black text-sm mb-2">
                       Closure Verification
                     </h4>
-                    <div className="border border-black p-4 min-h-[80px]">
+                    <div className="border border-black p-4 min-h-20">
                       <p className="text-sm leading-relaxed whitespace-pre-wrap mb-4">
                         {show(capa.closureVerification)}
                       </p>

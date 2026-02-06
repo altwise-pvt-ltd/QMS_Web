@@ -117,7 +117,7 @@ const MeetingViewModal = ({
               </p>
             </div>
           ) : showPdfPreview ? (
-            <div className="h-[600px] lg:h-[700px] border border-gray-200 rounded-2xl overflow-hidden shadow-inner bg-gray-200/50">
+            <div className="h-150 lg:h-175 border border-gray-200 rounded-2xl overflow-hidden shadow-inner bg-gray-200/50">
               <PDFViewer width="100%" height="100%" showToolbar={true}>
                 {renderPdfPreview(meeting, actionItems, minutes)}
               </PDFViewer>
@@ -368,7 +368,7 @@ const MeetingViewModal = ({
               <button
                 onClick={handleGenerateMRMPdf}
                 disabled={loading || loadingData}
-                className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-black rounded-xl hover:bg-indigo-700 transition-all shadow-md font-bold disabled:opacity-50 text-sm active:scale-95"
+                className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md font-bold disabled:opacity-50 text-sm active:scale-95"
               >
                 <Download size={18} />
                 Download Review (PDF)
@@ -377,7 +377,7 @@ const MeetingViewModal = ({
               <button
                 onClick={handleGenerateMinutesPdf}
                 disabled={loading || loadingData}
-                className="flex items-center gap-2 px-6 py-2.5 bg-slate-800 text-black rounded-xl hover:bg-slate-900 transition-all shadow-md font-bold disabled:opacity-50 text-sm active:scale-95"
+                className="flex items-center gap-2 px-6 py-2.5 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-all shadow-md font-bold disabled:opacity-50 text-sm active:scale-95"
               >
                 <FileText size={18} />
                 Download Minutes (PDF)

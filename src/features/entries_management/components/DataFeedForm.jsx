@@ -6,7 +6,7 @@ const DataFeedForm = ({ selectedLab, selectedEntry, onSave, onCancel }) => {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Feed Daily Data</h2>
+          <h2 className="text-lg font-bold text-gray-600">Feed Daily Data</h2>
           <p className="text-xs text-slate-500 font-medium">
             For {selectedLab?.name}
           </p>
