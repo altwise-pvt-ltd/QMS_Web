@@ -25,7 +25,7 @@ const YearlyTrainingPreview = ({ trainings, onClose }) => {
                 <YearlySchedulePdf trainings={trainings} year={currentYear} />
               }
               fileName={`Yearly_Training_Schedule_${currentYear}.pdf`}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-gray-600 rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all"
             >
               {({ loading }) => (
                 <>
