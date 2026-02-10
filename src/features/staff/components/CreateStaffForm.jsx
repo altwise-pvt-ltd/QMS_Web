@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { UserPlus, X, Save } from "lucide-react";
+import api from "../../../auth/api";
 
 const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
   const [formData, setFormData] = useState({
@@ -7,10 +8,27 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
     lastName: "",
     email: "",
     mobileNumber: "",
-    department: "",
+    departmentId: "",
     jobTitle: "",
     joinDate: new Date().toISOString().split("T")[0],
   });
+  const [departments, setDepartments] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch departments for the dropdown
+  useEffect(() => {
+    const fetchDepts = async () => {
+      try {
+        const response = await api.get("/Department/GetAllDepartments");
+        if (response.data) {
+          setDepartments(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    };
+    fetchDepts();
+  }, []);
 
   // Populate form when editing existing staff
   useEffect(() => {
@@ -22,10 +40,10 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
       setFormData({
         firstName,
         lastName,
-        email: initialData.email || "",
+        email: initialData.email || initialData.workEmail || "",
         mobileNumber: initialData.mobileNumber || "",
-        department: initialData.dept || "",
-        jobTitle: initialData.role || "",
+        departmentId: initialData.departmentId || initialData.deptId || "",
+        jobTitle: initialData.role || initialData.jobTitle || "",
         joinDate:
           initialData.joinDate || new Date().toISOString().split("T")[0],
       });
@@ -36,10 +54,36 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validate and submit
-    onSubmit(formData);
+    setIsSubmitting(true);
+
+    try {
+      // Map frontend data to API payload
+      const payload = {
+        staffId: initialData?.id || initialData?.staffId || 0,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        workEmail: formData.email,
+        mobileNumber: formData.mobileNumber,
+        departmentId: parseInt(formData.departmentId),
+        jobTitle: formData.jobTitle
+      };
+
+      console.log("Submitting staff payload:", payload);
+
+      const response = await api.post("/Staff/CreateStaff", payload);
+
+      if (response.data) {
+        alert(initialData ? "Staff updated successfully" : "Staff created successfully");
+        onSubmit(response.data); // Pass back the new/updated staff object
+      }
+    } catch (error) {
+      console.error("Error saving staff:", error);
+      alert(error.response?.data?.message || "Failed to save staff information. Please check all fields.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -146,17 +190,18 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               Department *
             </label>
             <select
-              name="department"
+              name="departmentId"
               required
-              value={formData.department}
+              value={formData.departmentId}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
             >
               <option value="">Select Department</option>
-              <option value="IT">IT / Engineering</option>
-              <option value="HR">Human Resources</option>
-              <option value="QA">Quality Assurance</option>
-              <option value="Operations">Operations</option>
+              {departments.map((dept) => (
+                <option key={dept.departmentId} value={dept.departmentId}>
+                  {dept.departmentName}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -190,7 +235,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
             className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md flex items-center gap-2"
           >
             <Save size={18} />{" "}
-            {initialData ? "Update Employee" : "Create Employee"}
+            {isSubmitting ? "Saving..." : (initialData ? "Update Employee" : "Create Employee")}
           </button>
         </div>
       </form>
