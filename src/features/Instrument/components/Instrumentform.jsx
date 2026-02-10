@@ -79,19 +79,19 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
     };
 
     const VerticalFileField = ({ label, field, hint, accept = ".pdf,image/*", typeLabel = "PDF" }) => (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-200 rounded-lg bg-white group hover:border-indigo-200 transition-all">
-            <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${formData[field] ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-200 rounded-lg bg-white group hover:border-indigo-200 transition-all gap-4">
+            <div className="flex items-center gap-4 min-w-0 flex-1">
+                <div className={`w-10 h-10 rounded-lg shrink-0 flex items-center justify-center transition-colors ${formData[field] ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
                     {field === 'photo' ? <Camera size={18} /> : <Upload size={18} />}
                 </div>
-                <div>
-                    <p className="text-sm font-bold text-slate-700">{label}</p>
-                    <p className="text-[10px] text-slate-400 font-medium italic">
+                <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-slate-700 truncate">{label}</p>
+                    <p className="text-[10px] text-slate-400 font-medium italic truncate">
                         {formData[field] instanceof File ? formData[field].name : (formData[field] ? 'File attached' : (hint || `No ${typeLabel} attached`))}
                     </p>
                 </div>
             </div>
-            <label className="mt-3 sm:mt-0 px-4 py-2 border border-slate-300 rounded-md text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-600 transition-all text-center">
+            <label className="shrink-0 px-4 py-2 border border-slate-300 rounded-md text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-600 transition-all text-center">
                 {formData[field] ? `Change ${typeLabel}` : `Add ${typeLabel}`}
                 <input type="file" accept={accept} className="hidden" onChange={(e) => handleFileChange(e, field)} />
             </label>
