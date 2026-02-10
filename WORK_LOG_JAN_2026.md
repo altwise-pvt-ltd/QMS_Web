@@ -210,11 +210,8 @@ This document summarizes all development work completed on the QMS Web project f
   - Updated `.gitignore` with wildcard patterns (`WORK_LOG_*.md`, `*.key`, `*.txt`) to keep the repository clean of local dev artifacts
 
 - **Schedule Training Modal Optimization**
-  - Expanded modal layout to `max-w-4xl` and increased information density with `p-6` and `py-2.5` inputs
-  - Enhanced audit-safety in personnel selection by displaying `Name — Role (Department)`
-  - Highlighted "All Staff" group assignment as a high-impact option
-  - Added compliance helper text for auto-generated recurrence instances
-  - Fixed contrast issues on primary action buttons and implemented defensive loading states
+ 
+ 
 
 - **Training Dashboard Optimization**
   - Refined stats hierarchy to prioritize "Overdue" risk signals with high-contrast borders and rings
