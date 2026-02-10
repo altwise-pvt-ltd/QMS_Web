@@ -28,24 +28,16 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew, onVie
           />
         </div>
 
-        <div className="flex w-full md:w-auto justify-stretch md:justify-end">
-  <button
-    onClick={onCreateNew}
-    className="inline-flex w-full md:w-auto items-center justify-center gap-2
-               px-6 py-2
-               rounded-xl
-               bg-white text-gray-600
-               text-sm font-semibold
-               shadow-md shadow-slate-200
-               transition-all
-               hover:bg-indigo-500 hover:text-white hover:scale-[1.02]
-               active:scale-95"
-  >
-    <Plus className="w-4 h-4" />
-    New CAPA Entry
-  </button>
-</div>
+        <div className="flex items-center gap-3 w-full md:w-auto">
 
+          <button
+            onClick={onCreateNew}
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 bg-slate-900 text-black rounded-xl text-sm font-black hover:bg-black transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-slate-200"
+          >
+            <Plus className="w-4 h-4" />
+            New CAPA Entry
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">

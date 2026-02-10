@@ -1,12 +1,11 @@
+import React from "react";
 import {
     Activity,
     Zap,
     Heart,
     Brain,
     Box,
-    UserCircle,
-    Edit2,
-    Trash2
+    UserCircle
 } from "lucide-react";
 
 // Icon mapping based on department icon name
@@ -48,7 +47,7 @@ const ColorMap = {
 /**
  * DepartmentCard - A single department selectable card
  */
-const DepartmentCard = ({ dept, isSelected, onSelect, onEdit, onDelete }) => {
+const DepartmentCard = ({ dept, isSelected, onSelect }) => {
     const Icon = IconMap[dept.icon] || Box;
     const colors = ColorMap[dept.color] || ColorMap.indigo;
 
@@ -60,36 +59,11 @@ const DepartmentCard = ({ dept, isSelected, onSelect, onEdit, onDelete }) => {
                 : "border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1"
                 }`}
         >
-            {/* Selection indicator moved to top-left */}
             {isSelected && (
-                <div className="absolute top-0 left-0 w-10 h-10 bg-indigo-600 text-white flex items-center justify-center rounded-br-2xl shadow-sm animate-in slide-in-from-top-4 slide-in-from-left-4 duration-300 z-10">
-                    <Box size={14} />
+                <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-600 text-white flex items-center justify-center rounded-bl-2xl shadow-sm animate-in slide-in-from-top-4 slide-in-from-right-4 duration-300">
+                    <Box size={16} />
                 </div>
             )}
-
-            {/* Absolute positioned action buttons */}
-            <div className="absolute top-4 right-4 flex gap-1 z-20">
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(dept);
-                    }}
-                    className="p-2 bg-white/80 backdrop-blur-sm hover:bg-slate-100 rounded-xl text-slate-400 hover:text-indigo-600 transition-all shadow-sm border border-slate-100"
-                    title="Edit Department"
-                >
-                    <Edit2 size={14} />
-                </button>
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(dept.id, dept.name);
-                    }}
-                    className="p-2 bg-white/80 backdrop-blur-sm hover:bg-rose-50 rounded-xl text-slate-400 hover:text-rose-600 transition-all shadow-sm border border-slate-100"
-                    title="Delete Department"
-                >
-                    <Trash2 size={14} />
-                </button>
-            </div>
 
             <div className="flex justify-between items-start mb-5">
                 <div className={`p-4 rounded-2xl ${colors.bg} ${colors.text} transition-all group-hover:scale-110 shadow-sm ${isSelected ? "scale-110 ring-2 ring-white" : ""}`}>
@@ -120,7 +94,7 @@ const DepartmentCard = ({ dept, isSelected, onSelect, onEdit, onDelete }) => {
 /**
  * DepartmentCards - Grid container for all department cards
  */
-export const DepartmentCards = ({ departments, selectedId, onSelect, onEdit, onDelete }) => {
+export const DepartmentCards = ({ departments, selectedId, onSelect }) => {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 animate-in fade-in duration-700">
             {departments.map((dept) => (
@@ -129,8 +103,6 @@ export const DepartmentCards = ({ departments, selectedId, onSelect, onEdit, onD
                     dept={dept}
                     isSelected={selectedId === dept.id}
                     onSelect={onSelect}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
                 />
             ))}
         </div>

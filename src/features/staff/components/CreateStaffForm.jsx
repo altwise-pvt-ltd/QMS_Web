@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { UserPlus, X, Save } from "lucide-react";
-import api from "../../../auth/api";
 
 const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
   const [formData, setFormData] = useState({
@@ -8,27 +7,10 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
     lastName: "",
     email: "",
     mobileNumber: "",
-    departmentId: "",
+    department: "",
     jobTitle: "",
     joinDate: new Date().toISOString().split("T")[0],
   });
-  const [departments, setDepartments] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Fetch departments for the dropdown
-  useEffect(() => {
-    const fetchDepts = async () => {
-      try {
-        const response = await api.get("/Department/GetAllDepartments");
-        if (response.data) {
-          setDepartments(response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching departments:", error);
-      }
-    };
-    fetchDepts();
-  }, []);
 
   // Populate form when editing existing staff
   useEffect(() => {
@@ -40,10 +22,10 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
       setFormData({
         firstName,
         lastName,
-        email: initialData.email || initialData.workEmail || "",
+        email: initialData.email || "",
         mobileNumber: initialData.mobileNumber || "",
-        departmentId: initialData.departmentId || initialData.deptId || "",
-        jobTitle: initialData.role || initialData.jobTitle || "",
+        department: initialData.dept || "",
+        jobTitle: initialData.role || "",
         joinDate:
           initialData.joinDate || new Date().toISOString().split("T")[0],
       });
@@ -54,36 +36,10 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // Map frontend data to API payload
-      const payload = {
-        staffId: initialData?.id || initialData?.staffId || 0,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        workEmail: formData.email,
-        mobileNumber: formData.mobileNumber,
-        departmentId: parseInt(formData.departmentId),
-        jobTitle: formData.jobTitle
-      };
-
-      console.log("Submitting staff payload:", payload);
-
-      const response = await api.post("/Staff/CreateStaff", payload);
-
-      if (response.data) {
-        alert(initialData ? "Staff updated successfully" : "Staff created successfully");
-        onSubmit(response.data); // Pass back the new/updated staff object
-      }
-    } catch (error) {
-      console.error("Error saving staff:", error);
-      alert(error.response?.data?.message || "Failed to save staff information. Please check all fields.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Validate and submit
+    onSubmit(formData);
   };
 
   return (
@@ -107,7 +63,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
     p-2
     rounded-full
     text-gray-500
-    hover:bg-red-100 hover:text-red-500
+    hover:bg-red-100 hover:text-red-600
     focus:outline-none focus:ring-2 focus:ring-red-300
     transition-colors duration-150
   "
@@ -130,7 +86,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               required
               value={formData.firstName}
               onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="e.g. John"
             />
           </div>
@@ -146,7 +102,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               required
               value={formData.lastName}
               onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="e.g. Doe"
             />
           </div>
@@ -161,7 +117,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="john.doe@company.com"
             />
           </div>
@@ -177,7 +133,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               required
               value={formData.mobileNumber}
               onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="+91 98765 43210"
               pattern="[+]?[0-9\s-()]+"
               title="Please enter a valid phone number"
@@ -190,18 +146,17 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               Department *
             </label>
             <select
-              name="departmentId"
+              name="department"
               required
-              value={formData.departmentId}
+              value={formData.department}
               onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
             >
               <option value="">Select Department</option>
-              {departments.map((dept) => (
-                <option key={dept.departmentId} value={dept.departmentId}>
-                  {dept.departmentName}
-                </option>
-              ))}
+              <option value="IT">IT / Engineering</option>
+              <option value="HR">Human Resources</option>
+              <option value="QA">Quality Assurance</option>
+              <option value="Operations">Operations</option>
             </select>
           </div>
 
@@ -216,7 +171,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               required
               value={formData.jobTitle}
               onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="e.g. Senior QA Engineer"
             />
           </div>
@@ -226,18 +181,16 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
           <button
             type="button"
             onClick={onCancel}
-            disabled={isSubmitting}
-            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             Cancel
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md flex items-center gap-2 transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md flex items-center gap-2"
           >
             <Save size={18} />{" "}
-            {isSubmitting ? "Saving..." : (initialData ? "Update Employee" : "Create Employee")}
+            {initialData ? "Update Employee" : "Create Employee"}
           </button>
         </div>
       </form>

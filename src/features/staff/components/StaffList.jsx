@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Plus, MoreVertical, Edit, ClipboardCheck, Shield } from "lucide-react";
 import { db } from "../../../db";
-import api from "../../../auth/api";
 
 const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
   const [staffData, setStaffData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [permissions, setPermissions] = useState([]);
   const [openMenuId, setOpenMenuId] = useState(null);
   const menuRef = useRef(null);
 
@@ -16,45 +16,39 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
   const loadStaff = async () => {
     try {
       setLoading(true);
-
-      // Fetch both staff and departments in parallel
-      const [staffRes, deptsRes] = await Promise.all([
-        api.get("/Staff/GetAllStaff"),
-        api.get("/Department/GetAllDepartments")
-      ]);
-
-      const staffFromServer = staffRes.data || [];
-      const deptsFromServer = deptsRes.data || [];
-
-      // Create a map for quick department name lookup
-      const deptMap = {};
-      deptsFromServer.forEach(d => {
-        deptMap[d.departmentId] = d.departmentName;
-      });
-
-      // Map server staff to frontend format
-      const mappedStaff = staffFromServer.map(s => ({
-        id: s.staffId,
-        firstName: s.firstName,
-        lastName: s.lastName,
-        name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || "Unnamed",
-        email: s.workEmail,
-        mobileNumber: s.mobileNumber,
-        role: s.jobTitle || "No Role",
-        dept: deptMap[s.departmentId] || `Dept ${s.departmentId}`,
-        deptId: s.departmentId,
-        status: s.status || (s.staffAssessmentCompetenceStatus ? "Competent" : "Needs Review"),
-        joinDate: s.createdDate ? s.createdDate.split("T")[0] : "N/A",
-        photo: s.staffPassportPhotoPath,
-        resume: s.staffResumePath
-      }));
-
-      setStaffData(mappedStaff);
+      const data = await db.staff.toArray();
+      if (data.length === 0) {
+        const initialStaff = [
+          {
+            name: "Alice Johnson",
+            role: "QA Lead",
+            dept: "Quality",
+            status: "Competent",
+            joinDate: "2022-01-01",
+          },
+          {
+            name: "Bob Smith",
+            role: "Developer",
+            dept: "Engineering",
+            status: "Needs Training",
+            joinDate: "2024-05-01",
+          },
+          {
+            name: "Charlie Davis",
+            role: "HR Manager",
+            dept: "HR",
+            status: "Competent",
+            joinDate: "2022-04-22",
+          },
+        ];
+        await db.staff.bulkAdd(initialStaff);
+        const seededData = await db.staff.toArray();
+        setStaffData(seededData);
+      } else {
+        setStaffData(data);
+      }
     } catch (error) {
-      console.error("Error loading staff from server:", error);
-      // Fallback to local DB if available
-      const localData = await db.staff.toArray();
-      if (localData.length > 0) setStaffData(localData);
+      console.error("Error loading staff:", error);
     } finally {
       setLoading(false);
     }
@@ -148,8 +142,8 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
                   <td className="p-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${staff.status === "Competent"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-amber-100 text-amber-700"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-amber-100 text-amber-700"
                         }`}
                     >
                       {staff.status}

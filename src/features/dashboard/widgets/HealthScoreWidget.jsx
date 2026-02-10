@@ -2,14 +2,14 @@ import React from "react";
 
 export const HealthScoreWidget = () => (
   <div className="@container flex flex-col items-center justify-center h-full w-full">
-    <div className="relative w-full max-w-48 aspect-square flex items-center justify-center mx-auto">
+    <div className="relative w-full max-w-40 max-h-40 aspect-square flex items-center justify-center mx-auto">
       {/* Background Circle */}
       <svg className="w-full h-full transform -rotate-90" viewBox="0 0 192 192">
         <circle
           cx="96"
           cy="96"
           r="88"
-          stroke="currentColor"
+          stroke="currentColor" 
           strokeWidth="12"
           fill="transparent"
           className="text-slate-100"
@@ -33,7 +33,7 @@ export const HealthScoreWidget = () => (
         <span className="text-sm font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full mt-2">
           Excellent
         </span>
-      </div>
+      </div>  
     </div>
     <div className="grid grid-cols-3 gap-2 @sm:gap-4 w-full mt-6 text-center">
       <div>

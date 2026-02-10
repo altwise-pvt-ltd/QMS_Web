@@ -115,10 +115,11 @@ const Training = () => {
 
   const StatCard = ({ title, value, icon: Icon, color, isRisk }) => (
     <div
-      className={`bg-white p-5 rounded-2xl border ${isRisk
-        ? "border-rose-200 bg-rose-50/10 shadow-rose-100"
-        : "border-slate-100 shadow-slate-100"
-        } shadow-lg transition-all group overflow-hidden relative`}
+      className={`bg-white p-5 rounded-2xl border ${
+        isRisk
+          ? "border-rose-200 bg-rose-50/10 shadow-rose-100"
+          : "border-slate-100 shadow-slate-100"
+      } shadow-lg transition-all group overflow-hidden relative`}
     >
       <div
         className={`absolute top-0 right-0 w-20 h-20 -mr-8 -mt-8 rounded-full opacity-5 group-hover:scale-110 transition-transform ${color}`}
@@ -129,15 +130,17 @@ const Training = () => {
             {title}
           </p>
           <h3
-            className={`text-3xl font-black ${isRisk ? "text-rose-600" : "text-slate-800"
-              }`}
+            className={`text-3xl font-black ${
+              isRisk ? "text-rose-600" : "text-slate-800"
+            }`}
           >
             {value}
           </h3>
         </div>
         <div
-          className={`p-3 rounded-xl ${color} bg-opacity-10 ${isRisk ? "ring-2 ring-rose-500 ring-offset-2" : ""
-            }`}
+          className={`p-3 rounded-xl ${color} bg-opacity-10 ${
+            isRisk ? "ring-2 ring-rose-500 ring-offset-2" : ""
+          }`}
         >
           <Icon
             className={`w-6 h-6 ${isRisk ? "text-rose-600" : color.replace("bg-", "text-")}`}
@@ -180,7 +183,7 @@ const Training = () => {
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white
+            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-gray-600
              rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] transition-all outline-none border-2 border-indigo-700"
           >
             <Plus size={20} />
@@ -299,24 +302,27 @@ const Training = () => {
                   filteredTrainings.map((training) => (
                     <tr
                       key={training.id}
-                      className={`hover:bg-slate-50 transition-colors group ${training.status === "overdue" ? "bg-rose-50/20" : ""
-                        }`}
+                      className={`hover:bg-slate-50 transition-colors group ${
+                        training.status === "overdue" ? "bg-rose-50/20" : ""
+                      }`}
                     >
                       <td className="px-6 py-3">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center ${training.status === "overdue"
-                              ? "bg-rose-100 text-rose-600"
-                              : "bg-indigo-50 text-indigo-600"
-                              }`}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                              training.status === "overdue"
+                                ? "bg-rose-100 text-rose-600"
+                                : "bg-indigo-50 text-indigo-600"
+                            }`}
                           >
                             <GraduationCap size={16} />
                           </div>
                           <p
-                            className={`text-sm font-bold ${training.status === "overdue"
-                              ? "text-rose-700"
-                              : "text-slate-800"
-                              }`}
+                            className={`text-sm font-bold ${
+                              training.status === "overdue"
+                                ? "text-rose-700"
+                                : "text-slate-800"
+                            }`}
                           >
                             {training.title}
                           </p>
@@ -334,10 +340,11 @@ const Training = () => {
                       </td>
                       <td className="px-6 py-3 text-center">
                         <span
-                          className={`text-sm font-bold ${training.status === "overdue"
-                            ? "text-rose-600"
-                            : "text-slate-700"
-                            }`}
+                          className={`text-sm font-bold ${
+                            training.status === "overdue"
+                              ? "text-rose-600"
+                              : "text-slate-700"
+                          }`}
                         >
                           {new Date(training.dueDate).toLocaleDateString(
                             "en-GB",
@@ -347,14 +354,15 @@ const Training = () => {
                       </td>
                       <td className="px-6 py-3 text-center">
                         <span
-                          className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${training.status === "completed"
-                            ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                            : training.status === "in-progress"
-                              ? "bg-blue-50 text-blue-600 border-blue-100"
-                              : training.status === "overdue"
-                                ? "bg-rose-100 text-rose-700 border-rose-200 shadow-sm"
-                                : "bg-amber-50 text-amber-600 border-amber-100"
-                            }`}
+                          className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                            training.status === "completed"
+                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                              : training.status === "in-progress"
+                                ? "bg-blue-50 text-blue-600 border-blue-100"
+                                : training.status === "overdue"
+                                  ? "bg-rose-100 text-rose-700 border-rose-200 shadow-sm"
+                                  : "bg-amber-50 text-amber-600 border-amber-100"
+                          }`}
                         >
                           {training.status}
                         </span>
@@ -362,7 +370,7 @@ const Training = () => {
                       <td className="px-6 py-3 text-center">
                         <button
                           title="View Details"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-indigo-600 hover:text-white transition-all shadow-sm border border-slate-200"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-indigo-600 hover:text-gray-600 transition-all shadow-sm border border-slate-200"
                         >
                           <span className="text-[10px] font-black uppercase tracking-tight">
                             View

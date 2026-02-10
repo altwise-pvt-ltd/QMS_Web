@@ -23,7 +23,6 @@ const QualityIndicator = () => {
   const [indicators, setIndicators] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingIndicator, setEditingIndicator] = useState(null);
 
   useEffect(() => {
     loadIndicators();
@@ -53,67 +52,36 @@ const QualityIndicator = () => {
   const [newSeverity, setNewSeverity] = useState("1");
   const [newMin, setNewMin] = useState("");
   const [newMax, setNewMax] = useState("");
-  const [newCount, setNewCount] = useState("");
 
-  useEffect(() => {
-    if (editingIndicator) {
-      setNewName(editingIndicator.name || "");
-      setNewCategory(editingIndicator.category || "");
-      setNewThreshold(editingIndicator.threshold?.toString() || "");
-      setNewSeverity(editingIndicator.severity?.toString() || "1");
-      setNewMin(editingIndicator.minValue?.toString() || "");
-      setNewMax(editingIndicator.maxValue?.toString() || "");
-      setNewCount(editingIndicator.count?.toString() || "0");
-      setIsModalOpen(true);
-    } else {
+  const handleAddIndicator = async () => {
+    if (!newName || !newCategory) return;
+
+    const newIndicator = {
+      id: `new-${Date.now()}`,
+      name: newName,
+      category: newCategory,
+      count: 0,
+      hasCapa: false,
+      incidents: [],
+      threshold: parseFloat(newThreshold) || 0,
+      severity: parseInt(newSeverity) || 1,
+      minValue: parseFloat(newMin) || 0,
+      maxValue: parseFloat(newMax) || 0,
+    };
+
+    try {
+      await db.quality_indicators.add(newIndicator);
+      setIndicators([newIndicator, ...indicators]);
+      setIsModalOpen(false);
       setNewName("");
       setNewCategory("");
       setNewThreshold("");
       setNewSeverity("1");
       setNewMin("");
       setNewMax("");
-      setNewCount("0");
-    }
-  }, [editingIndicator]);
-
-  const handleSaveIndicator = async () => {
-    if (!newName || !newCategory) return;
-
-    const indicatorData = {
-      name: newName,
-      category: newCategory,
-      threshold: parseFloat(newThreshold) || 0,
-      severity: parseInt(newSeverity) || 1,
-      minValue: parseFloat(newMin) || 0,
-      maxValue: parseFloat(newMax) || 0,
-      count: parseInt(newCount) || 0,
-    };
-
-    try {
-      if (editingIndicator) {
-        await db.quality_indicators.update(editingIndicator.id, indicatorData);
-        setIndicators(indicators.map(ind =>
-          ind.id === editingIndicator.id ? { ...ind, ...indicatorData } : ind
-        ));
-      } else {
-        const newIndicator = {
-          id: `new-${Date.now()}`,
-          ...indicatorData,
-          hasCapa: false,
-          incidents: [],
-        };
-        await db.quality_indicators.add(newIndicator);
-        setIndicators([newIndicator, ...indicators]);
-      }
-      handleCloseModal();
     } catch (error) {
-      console.error("Error saving indicator:", error);
+      console.error("Error adding indicator:", error);
     }
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingIndicator(null);
   };
 
   const filteredIndicators = indicators.filter((indicator) => {
@@ -193,17 +161,16 @@ const QualityIndicator = () => {
 
     return (
       <div
-        onClick={() => setEditingIndicator(indicator)}
-        className={`bg-white group rounded-2xl border-2 transition-all p-5 flex flex-col justify-between h-full hover:-translate-y-1 shadow-sm hover:shadow-xl cursor-pointer ${isOverThreshold || isOutOfRange ? "border-rose-200" : "border-slate-100"}`}
+        className={`bg-white group rounded-2xl border-2 transition-all p-5 flex flex-col justify-between h-full hover:-translate-y-1 shadow-sm hover:shadow-xl ${isOverThreshold || isOutOfRange ? "border-rose-200" : "border-slate-100"}`}
       >
         <div>
           <div className="flex justify-between items-start mb-4">
             <span
               className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${indicator.category === "Pre-Analytical"
-                ? "bg-amber-50 text-amber-600"
-                : indicator.category === "Analytical"
-                  ? "bg-indigo-50 text-indigo-600"
-                  : "bg-emerald-50 text-emerald-600"
+                  ? "bg-amber-50 text-amber-600"
+                  : indicator.category === "Analytical"
+                    ? "bg-indigo-50 text-indigo-600"
+                    : "bg-emerald-50 text-emerald-600"
                 }`}
             >
               {indicator.category}
@@ -284,9 +251,9 @@ const QualityIndicator = () => {
                 )}
               </div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+            <button className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-gray-600 transition-all shadow-sm">
               <ChevronRight size={20} />
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -358,7 +325,7 @@ const QualityIndicator = () => {
           <div className="flex items-center bg-white p-1 rounded-2xl shadow-sm border border-slate-100 w-full md:w-auto">
             <button
               onClick={() => setSelectedCategory("All")}
-              className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === "All" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
+              className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === "All" ? "bg-indigo-600 text-gray-600 shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
             >
               All
             </button>
@@ -366,7 +333,7 @@ const QualityIndicator = () => {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === cat ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
+                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === cat ? "bg-indigo-600 text-gray-600 shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
               >
                 {cat}
               </button>
@@ -391,10 +358,7 @@ const QualityIndicator = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {/* Add New Card */}
           <div
-            onClick={() => {
-              setEditingIndicator(null);
-              setIsModalOpen(true);
-            }}
+            onClick={() => setIsModalOpen(true)}
             className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 group hover:border-indigo-300 transition-all flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-white min-h-[220px]"
           >
             <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all mb-4">
@@ -414,7 +378,7 @@ const QualityIndicator = () => {
         </div>
       </div>
 
-      {/* Add/Edit Indicator Modal */}
+      {/* Add New Indicator Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300">
@@ -422,7 +386,7 @@ const QualityIndicator = () => {
               <div className="flex justify-between items-start mb-8">
                 <div>
                   <h2 className="text-3xl font-black text-slate-800 mb-2 italic">
-                    {editingIndicator ? "Edit Quality Metric" : "Configure Quality Metric"}
+                    Configure Quality Metric
                   </h2>
                   <p className="text-slate-500 text-sm font-medium">
                     Establish benchmarks and performance thresholds for QMS
@@ -439,17 +403,17 @@ const QualityIndicator = () => {
                   <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
                     Select Stage
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 gap-2">
                     {CATEGORIES.map((cat) => (
                       <button
                         key={cat}
                         onClick={() => setNewCategory(cat)}
                         className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${newCategory === cat
-                          ? "border-indigo-600 bg-indigo-50/50 text-indigo-700"
-                          : "border-slate-100 hover:border-slate-200 text-slate-600"
+                            ? "border-indigo-600 bg-indigo-50/50 text-indigo-700"
+                            : "border-slate-100 hover:border-slate-200 text-slate-600"
                           }`}
                       >
-                        <span className="font-bold text-xs">{cat}</span>
+                        <span className="font-bold">{cat}</span>
                         {newCategory === cat && <CheckCircle2 size={18} />}
                       </button>
                     ))}
@@ -469,7 +433,7 @@ const QualityIndicator = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
                       Threshold (%)
@@ -497,18 +461,6 @@ const QualityIndicator = () => {
                       <option value="4">4</option>
                       <option value="5">5 (Critical)</option>
                     </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
-                      Current Value
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={newCount}
-                      onChange={(e) => setNewCount(e.target.value)}
-                      className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-hidden font-bold text-slate-800"
-                    />
                   </div>
                 </div>
 
@@ -542,17 +494,17 @@ const QualityIndicator = () => {
 
               <div className="flex gap-4 mt-10">
                 <button
-                  onClick={handleCloseModal}
+                  onClick={() => setIsModalOpen(false)}
                   className="flex-1 py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl transition-all"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleSaveIndicator}
+                  onClick={handleAddIndicator}
                   disabled={!newName || !newCategory}
-                  className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                  className="flex-1 py-4 bg-indigo-600 text-gray-600 font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                 >
-                  {editingIndicator ? "Update Metric" : "Define Metric"}
+                  Define Metric
                 </button>
               </div>
             </div>

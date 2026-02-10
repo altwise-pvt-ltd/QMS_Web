@@ -2,7 +2,7 @@ import React from "react";
 
 export const ActivityFeedWidget = () => (
   <div className="@container space-y-6 relative pl-2">
-    <div className="absolute left-2.75 top-2 bottom-2 w-0.5 bg-slate-100" />
+    <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-100" />
     {[
       {
         user: "Sarah C.",

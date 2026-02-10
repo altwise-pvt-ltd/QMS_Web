@@ -36,7 +36,7 @@ const DocumentViewModal = ({ document, onClose }) => {
             {document.fileUrl && (
               <button
                 onClick={handleDownload}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-colors"
               >
                 <Download size={18} />
                 Download
