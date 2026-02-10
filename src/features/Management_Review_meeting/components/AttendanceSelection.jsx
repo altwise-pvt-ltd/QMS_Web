@@ -37,9 +37,9 @@ const AttendanceSelection = ({
       prev.map((user) =>
         user.id === userId
           ? {
-              ...user,
-              status: user.status === "Present" ? "Absent" : "Present",
-            }
+            ...user,
+            status: user.status === "Present" ? "Absent" : "Present",
+          }
           : user,
       ),
     );
@@ -77,7 +77,7 @@ const AttendanceSelection = ({
           </div>
           <button
             onClick={handleFinalSave}
-            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-black rounded-xl hover:bg-indigo-700 shadow-lg font-bold transition-all active:scale-95"
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-lg font-bold transition-all active:scale-95"
           >
             <Save size={20} /> Finalize & Save All
           </button>
@@ -145,11 +145,10 @@ const AttendanceSelection = ({
                     <div className="flex justify-center">
                       <button
                         onClick={() => toggleStatus(user.id)}
-                        className={`group flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all font-bold text-xs ${
-                          user.status === "Present"
+                        className={`group flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all font-bold text-xs ${user.status === "Present"
                             ? "bg-green-50 border-green-200 text-green-700"
                             : "bg-red-50 border-red-200 text-red-700"
-                        }`}
+                          }`}
                       >
                         {user.status === "Present" ? (
                           <>

@@ -6,7 +6,7 @@ import { updateToken, logout } from "../store/slices/authSlice";
  * Axios instance configured with a base URL and interceptors for token management.
  */
 const api = axios.create({
-  baseURL: "https://api.escuelajs.co/api/v1", // Platzi Fake API Base URL
+  baseURL: "/api", // QMS API Base URL via Vite Proxy
 });
 
 /**
@@ -15,9 +15,14 @@ const api = axios.create({
  * for every outgoing request if it exists in the Redux store.
  */
 api.interceptors.request.use((config) => {
-  // Pull token directly from Redux store state to avoid storage sync issues
+  // Pull token from Redux store state
   const state = store.getState();
-  const token = state.auth.accessToken;
+  let token = state.auth.accessToken;
+
+  // Fallback to localStorage if Redux state is not yet updated (e.g., during login cleanup)
+  if (!token) {
+    token = localStorage.getItem("accessToken");
+  }
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -49,23 +54,25 @@ api.interceptors.response.use(
 
         // Attempt to call the refresh-token endpoint
         const response = await axios.post(
-          "https://api.escuelajs.co/api/v1/auth/refresh-token",
+          "/api/AdminUser/RefreshToken",
           {
             refreshToken: refreshToken,
           },
         );
 
         // On success, save the new tokens in Redux (which also updates localStorage)
+        const newAccessToken = response.data.accessToken || response.data.access_token;
+        const newRefreshToken = response.data.refreshToken || response.data.refresh_token;
+
         store.dispatch(
           updateToken({
-            accessToken: response.data.access_token,
-            refreshToken: response.data.refresh_token,
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
           }),
         );
 
         // Update the header of the original request and retry it
-        api.defaults.headers.common["Authorization"] =
-          `Bearer ${response.data.access_token}`;
+        api.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
         // If the refresh call itself fails, the session is truly dead

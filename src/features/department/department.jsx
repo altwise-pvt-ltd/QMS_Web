@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Building2,
     LayoutDashboard,
@@ -13,20 +13,80 @@ import { DEPARTMENTS } from "./emp_data";
 import DepartmentCards from "./component/department_cards";
 import DepartmentView from "./component/department_view";
 import AddDepartment from "./component/add_department";
+import api from "../../auth/api";
 
 const Department = () => {
     const [departments, setDepartments] = useState(DEPARTMENTS);
     const [selectedDeptId, setSelectedDeptId] = useState(DEPARTMENTS[0]?.id);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [editingDepartment, setEditingDepartment] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] = useState(true);
+
+    const fetchDepartments = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get("/Department/GetAllDepartments");
+            if (response.data && response.data.length > 0) {
+                const mappedDepts = response.data.map(dept => ({
+                    id: dept.departmentId,
+                    name: dept.departmentName,
+                    head: dept.headOfDepartmentName,
+                    employeeCount: 0,
+                    icon: "Building2",
+                    color: "indigo"
+                }));
+                setDepartments(mappedDepts);
+                if (mappedDepts.length > 0 && !selectedDeptId) {
+                    setSelectedDeptId(mappedDepts[0].id);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching departments:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDepartments();
+    }, []);
 
     const handleAddDepartment = (newDept) => {
-        setDepartments([newDept, ...departments]);
+        if (editingDepartment) {
+            setDepartments(departments.map(d => d.id === newDept.id ? newDept : d));
+        } else {
+            setDepartments([newDept, ...departments]);
+            if (departments.length === 0) {
+                setSelectedDeptId(newDept.id);
+            }
+        }
+    };
+
+    const handleEdit = (dept) => {
+        setEditingDepartment(dept);
+        setIsAddModalOpen(true);
+    };
+
+    const handleDelete = async (id, name) => {
+        if (window.confirm(`Are you sure you want to delete the "${name}" department? This action cannot be undone.`)) {
+            try {
+                // Changing from api.get to api.delete as the server returned 405 Method Not Allowed
+                await api.delete(`/Department/DeleteDepartment/${id}`);
+                setDepartments(departments.filter(d => d.id !== id));
+                if (selectedDeptId === id) {
+                    setSelectedDeptId(departments.find(d => d.id !== id)?.id);
+                }
+                alert("Department deleted successfully");
+            } catch (error) {
+                console.error("Delete failed", error);
+                alert("Failed to delete department. Please try again.");
+            }
+        }
     };
 
     const filteredDepartments = departments.filter(dept =>
-        dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        dept.code.toLowerCase().includes(searchTerm.toLowerCase())
+        (dept.name || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Stats for overview
@@ -91,6 +151,8 @@ const Department = () => {
                             departments={filteredDepartments}
                             selectedId={selectedDeptId}
                             onSelect={setSelectedDeptId}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
                         />
 
                         <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm p-10 animate-in slide-in-from-bottom-8 duration-500">
@@ -98,7 +160,7 @@ const Department = () => {
                                 <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm">
                                     <Users2 size={24} />
                                 </div>
-                                <div className>
+                                <div className="flex flex-col">
                                     <h3 className="text-xl font-black text-slate-800 tracking-tight">Departmental Roster</h3>
                                     <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">
                                         Active Team: {departments.find(d => d.id === selectedDeptId)?.name}
@@ -119,8 +181,12 @@ const Department = () => {
 
             <AddDepartment
                 isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
+                onClose={() => {
+                    setIsAddModalOpen(false);
+                    setEditingDepartment(null);
+                }}
                 onAdd={handleAddDepartment}
+                editingData={editingDepartment}
             />
         </div>
     );

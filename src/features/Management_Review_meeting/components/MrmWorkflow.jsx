@@ -301,20 +301,18 @@ const MrmWorkflow = ({ initialData, onSave, onCancel }) => {
                 <button
                   key={step.id}
                   onClick={() => setActiveStep(step.id)}
-                  className={`relative z-10 flex flex-col items-center gap-3 transition-all group ${
-                    isActive
+                  className={`relative z-10 flex flex-col items-center gap-3 transition-all group ${isActive
                       ? "scale-110"
                       : "grayscale opacity-70 hover:opacity-100 hover:grayscale-0"
-                  }`}
+                    }`}
                 >
                   <div
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center border-2 transition-all shadow-md ${
-                      isActive
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center border-2 transition-all shadow-md ${isActive
                         ? "bg-indigo-600 border-indigo-600 text-white shadow-indigo-200"
                         : isPast
                           ? "bg-green-100 border-green-200 text-green-600"
                           : "bg-white border-gray-200 text-gray-400"
-                    }`}
+                      }`}
                   >
                     {isPast ? <Check size={22} /> : <step.icon size={22} />}
                   </div>
@@ -377,7 +375,7 @@ const MrmWorkflow = ({ initialData, onSave, onCancel }) => {
           <button
             disabled={activeStep === 4}
             onClick={() => setActiveStep((prev) => prev + 1)}
-            className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-black rounded-2xl hover:bg-indigo-700 shadow-lg font-bold transition-all disabled:opacity-40 disabled:bg-gray-400 active:scale-95 group"
+            className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 shadow-lg font-bold transition-all disabled:opacity-40 disabled:bg-gray-400 active:scale-95 group"
           >
             {activeStep === 4
               ? "Review Final Document"

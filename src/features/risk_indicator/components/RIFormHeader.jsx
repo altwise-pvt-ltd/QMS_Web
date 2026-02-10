@@ -23,7 +23,7 @@ const RIFormHeader = ({ onBack, onDownload, onPrint, title }) => {
                 </button>
                 <button
                     onClick={onDownload}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-gray-600 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 active:scale-95"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 active:scale-95"
                 >
                     <Download size={18} />
                     Export PDF

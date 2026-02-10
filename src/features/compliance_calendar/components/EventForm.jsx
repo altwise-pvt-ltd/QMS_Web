@@ -238,7 +238,7 @@ const EventForm = ({ event, eventTypes, onClose }) => {
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50"
             >
               <Save size={18} />
               {saving ? "Saving..." : eventId ? "Update Event" : "Create Event"}

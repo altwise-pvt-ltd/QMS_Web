@@ -23,6 +23,7 @@ const RiskIndicator = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingIndicator, setEditingIndicator] = useState(null);
 
     const [isAddingCategory, setIsAddingCategory] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState("");
@@ -103,36 +104,67 @@ const RiskIndicator = () => {
     const [newSeverity, setNewSeverity] = useState("1");
     const [newMin, setNewMin] = useState("");
     const [newMax, setNewMax] = useState("");
+    const [newCount, setNewCount] = useState("");
 
-    const handleAddIndicator = async () => {
-        if (!newName || !newCategory) return;
-
-        const newIndicator = {
-            id: `risk-new-${Date.now()}`,
-            name: newName,
-            category: newCategory,
-            count: 0,
-            hasCapa: false,
-            incidents: [],
-            threshold: parseFloat(newThreshold) || 0,
-            severity: parseInt(newSeverity) || 1,
-            minValue: parseFloat(newMin) || 0,
-            maxValue: parseFloat(newMax) || 0,
-        };
-
-        try {
-            await db.risk_indicators.add(newIndicator);
-            setIndicators([newIndicator, ...indicators]);
-            setIsModalOpen(false);
+    useEffect(() => {
+        if (editingIndicator) {
+            setNewName(editingIndicator.name || "");
+            setNewCategory(editingIndicator.category || "");
+            setNewThreshold(editingIndicator.threshold?.toString() || "");
+            setNewSeverity(editingIndicator.severity?.toString() || "1");
+            setNewMin(editingIndicator.minValue?.toString() || "");
+            setNewMax(editingIndicator.maxValue?.toString() || "");
+            setNewCount(editingIndicator.count?.toString() || "0");
+            setIsModalOpen(true);
+        } else {
             setNewName("");
             setNewCategory("");
             setNewThreshold("");
             setNewSeverity("1");
             setNewMin("");
             setNewMax("");
-        } catch (error) {
-            console.error("Error adding indicator:", error);
+            setNewCount("0");
         }
+    }, [editingIndicator]);
+
+    const handleSaveIndicator = async () => {
+        if (!newName || !newCategory) return;
+
+        const indicatorData = {
+            name: newName,
+            category: newCategory,
+            threshold: parseFloat(newThreshold) || 0,
+            severity: parseInt(newSeverity) || 1,
+            minValue: parseFloat(newMin) || 0,
+            maxValue: parseFloat(newMax) || 0,
+            count: parseInt(newCount) || 0,
+        };
+
+        try {
+            if (editingIndicator) {
+                await db.risk_indicators.update(editingIndicator.id, indicatorData);
+                setIndicators(indicators.map(ind =>
+                    ind.id === editingIndicator.id ? { ...ind, ...indicatorData } : ind
+                ));
+            } else {
+                const newIndicator = {
+                    id: `risk-new-${Date.now()}`,
+                    ...indicatorData,
+                    hasCapa: false,
+                    incidents: [],
+                };
+                await db.risk_indicators.add(newIndicator);
+                setIndicators([newIndicator, ...indicators]);
+            }
+            handleCloseModal();
+        } catch (error) {
+            console.error("Error saving indicator:", error);
+        }
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingIndicator(null);
     };
 
     const filteredIndicators = indicators.filter((indicator) => {
@@ -212,7 +244,8 @@ const RiskIndicator = () => {
 
         return (
             <div
-                className={`bg-white group rounded-2xl border-2 transition-all p-5 flex flex-col justify-between h-full hover:-translate-y-1 shadow-sm hover:shadow-xl ${isOverThreshold || isOutOfRange ? "border-rose-200" : "border-slate-100"}`}
+                onClick={() => setEditingIndicator(indicator)}
+                className={`bg-white group rounded-2xl border-2 transition-all p-5 flex flex-col justify-between h-full hover:-translate-y-1 shadow-sm hover:shadow-xl cursor-pointer ${isOverThreshold || isOutOfRange ? "border-rose-200" : "border-slate-100"}`}
             >
                 <div>
                     <div className="flex justify-between items-start mb-4">
@@ -286,9 +319,9 @@ const RiskIndicator = () => {
                             )}
                         </div>
                     </div>
-                    <button className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-black transition-all shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
                         <ChevronRight size={20} />
-                    </button>
+                    </div>
                 </div>
             </div>
         );
@@ -359,7 +392,7 @@ const RiskIndicator = () => {
                     <div className="flex flex-wrap items-center bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 gap-1 w-full xl:w-auto">
                         <button
                             onClick={() => setSelectedCategory("All")}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === "All" ? "bg-indigo-600 text-black shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === "All" ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
                         >
                             All
                         </button>
@@ -367,7 +400,7 @@ const RiskIndicator = () => {
                             <button
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.name)}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === cat.name ? "bg-indigo-600 text-black shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
+                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === cat.name ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
                             >
                                 {cat.name}
                             </button>
@@ -403,7 +436,7 @@ const RiskIndicator = () => {
                                     />
                                     <button
                                         onClick={handleAddCategory}
-                                        className="px-4 py-2 bg-indigo-600 text-black text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm"
+                                        className="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm"
                                     >
                                         Add
                                     </button>
@@ -433,7 +466,10 @@ const RiskIndicator = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {/* Add New Card */}
                     <div
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => {
+                            setEditingIndicator(null);
+                            setIsModalOpen(true);
+                        }}
                         className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 group hover:border-indigo-400 transition-all flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-white min-h-[220px]"
                     >
                         <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all mb-4">
@@ -453,7 +489,7 @@ const RiskIndicator = () => {
                 </div>
             </div>
 
-            {/* Add New Indicator Modal */}
+            {/* Add/Edit Indicator Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300 overflow-y-auto max-h-[90vh]">
@@ -461,7 +497,7 @@ const RiskIndicator = () => {
                             <div className="flex justify-between items-start mb-8">
                                 <div>
                                     <h2 className="text-3xl font-black text-slate-800 mb-2 italic">
-                                        Configure Risk Metric
+                                        {editingIndicator ? "Edit Risk Metric" : "Configure Risk Metric"}
                                     </h2>
                                     <p className="text-slate-500 text-sm font-medium">
                                         Establish risk categories and potential impact levels
@@ -507,7 +543,7 @@ const RiskIndicator = () => {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-3 gap-4">
                                     <div>
                                         <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
                                             Threshold Count
@@ -535,6 +571,18 @@ const RiskIndicator = () => {
                                             <option value="4">4</option>
                                             <option value="5">5 (Critical)</option>
                                         </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
+                                            Current Count
+                                        </label>
+                                        <input
+                                            type="number"
+                                            placeholder="0"
+                                            value={newCount}
+                                            onChange={(e) => setNewCount(e.target.value)}
+                                            className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-hidden font-bold text-slate-800"
+                                        />
                                     </div>
                                 </div>
 
@@ -568,17 +616,17 @@ const RiskIndicator = () => {
 
                             <div className="flex gap-4 mt-10">
                                 <button
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={handleCloseModal}
                                     className="flex-1 py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={handleAddIndicator}
+                                    onClick={handleSaveIndicator}
                                     disabled={!newName || !newCategory}
-                                    className="flex-1 py-4 bg-indigo-600 text-gray-600 font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                                    className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                                 >
-                                    Define Risk Metric
+                                    {editingIndicator ? "Update Risk Metric" : "Define Risk Metric"}
                                 </button>
                             </div>
                         </div>
