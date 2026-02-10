@@ -124,12 +124,27 @@ const DocumentLibrary = () => {
           </div>
 
           <button
-            onClick={() => handleUploadClick()}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600  text-sm font-semibold rounded-lg border-2 border-indigo-700 hover:bg-indigo-700 hover:border-indigo-800 hover:shadow-lg hover:shadow-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 active:scale-95 shadow-md whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4" />
-            Upload Document
-          </button>
+  type="button"
+  onClick={handleUploadClick}
+  className="
+    inline-flex items-center gap-2
+    px-4 py-2.5
+    rounded-lg
+    bg-indigo-600 text-white
+    text-sm font-semibold
+    shadow-sm
+    hover:bg-indigo-700
+    focus:outline-none
+    focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+    transition-colors duration-200
+    active:scale-95
+    whitespace-nowrap
+  "
+>
+  <Plus className="w-4 h-4" />
+  Upload Document
+</button>
+
         </div>
       </div>
 
