@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import api from "./api";
+import { loginUser, getProfile } from "./authService";
 import {
   setCredentials,
   logout as logoutAction,
@@ -28,10 +28,10 @@ export const AuthProvider = ({ children }) => {
       if (token && !user) {
         try {
           // Attempt to fetch the user profile verify the token is still valid
-          const response = await api.get("/auth/profile");
+          const profileData = await getProfile(token);
           dispatch(
             setCredentials({
-              user: response.data,
+              user: profileData,
               accessToken: token,
               refreshToken: localStorage.getItem("refreshToken"),
             }),
@@ -59,8 +59,16 @@ export const AuthProvider = ({ children }) => {
     );
   };
 
-  const logout = () => {
-    dispatch(logoutAction());
+  const logout = async () => {
+    try {
+      // Try to notify the API about the logout
+      await api.post("/AdminUser/Logout");
+    } catch (error) {
+      console.error("API Logout failed", error);
+    } finally {
+      // Always clear local state regardless of API success
+      dispatch(logoutAction());
+    }
   };
 
   return (

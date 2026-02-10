@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { db } from "../../../db";
 import { X, Box, UserCircle, ChevronDown } from "lucide-react";
+import api from "../../../auth/api";
 
 /**
  * AddDepartment component - A modal for defining a new department
@@ -9,13 +10,27 @@ import { X, Box, UserCircle, ChevronDown } from "lucide-react";
  * @param {boolean} props.isOpen - Controls visibility
  * @param {function} props.onClose - Callback to close the modal
  * @param {function} props.onAdd - Callback when a department is successfully created
+ * @param {Object} [props.editingData] - Optional data for a department being edited
  */
-export const AddDepartment = ({ isOpen, onClose, onAdd }) => {
+export const AddDepartment = ({ isOpen, onClose, onAdd, editingData }) => {
     const [formData, setFormData] = useState({
         name: "",
         head: ""
     });
     const [staffList, setStaffList] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    // Populate form if in edit mode
+    React.useEffect(() => {
+        if (editingData) {
+            setFormData({
+                name: editingData.name || "",
+                head: editingData.head || ""
+            });
+        } else {
+            setFormData({ name: "", head: "" });
+        }
+    }, [editingData, isOpen]);
 
     React.useEffect(() => {
         const fetchStaff = async () => {
@@ -31,22 +46,46 @@ export const AddDepartment = ({ isOpen, onClose, onAdd }) => {
         }
     }, [isOpen]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.name) return;
 
-        // Create new department object
-        const newDept = {
-            ...formData,
-            id: Date.now(),
-            employeeCount: 0,
-            icon: "Box", // Default icon
-            color: "indigo" // Default color
-        };
+        setLoading(true);
+        try {
+            // Prepare payload
+            const payload = {
+                departmentId: editingData ? editingData.id : 0,
+                departmentName: formData.name,
+                headOfDepartmentName: formData.head || "Not Assigned"
+            };
 
-        onAdd(newDept);
-        setFormData({ name: "", head: "" }); // Reset form
-        onClose();
+            // Using CreateDepartment for both if no Update endpoint provided, 
+            // but usually it's one or the other. I'll stick to the provided pattern.
+            const url = "/Department/CreateDepartment";
+            const response = await api.post(url, payload);
+
+            if (response.data) {
+                const updatedDept = response.data;
+
+                // Map server response to match frontend state
+                const transformedDept = {
+                    id: updatedDept.departmentId,
+                    name: updatedDept.departmentName,
+                    head: updatedDept.headOfDepartmentName,
+                    employeeCount: editingData ? editingData.employeeCount : 0,
+                    icon: editingData ? editingData.icon : "Box",
+                    color: editingData ? editingData.color : "indigo"
+                };
+
+                onAdd(transformedDept);
+                onClose();
+            }
+        } catch (error) {
+            console.error("Error saving department:", error);
+            alert(error.response?.data?.message || "Failed to save department. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (!isOpen) return null;
@@ -56,12 +95,16 @@ export const AddDepartment = ({ isOpen, onClose, onAdd }) => {
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
                 <div className="p-8">
                     <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-2xl font-black text-slate-800">New Department</h2>
+                        <h2 className="text-2xl font-black text-slate-800">
+                            {editingData ? "Edit Department" : "New Department"}
+                        </h2>
                         <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all">
                             <X size={20} />
                         </button>
                     </div>
-                    <p className="text-slate-500 text-sm mb-8">Establish a new unit within the organization</p>
+                    <p className="text-slate-500 text-sm mb-8">
+                        {editingData ? "Update the department details below." : "Establish a new unit within the organization."}
+                    </p>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
@@ -115,9 +158,10 @@ export const AddDepartment = ({ isOpen, onClose, onAdd }) => {
                             </button>
                             <button
                                 type="submit"
-                                className="flex-1 py-4 bg-indigo-600 text-black font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all"
+                                disabled={loading}
+                                className="flex-1 py-4 bg-indigo-600 text-black font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Create Dept
+                                {loading ? "Saving..." : (editingData ? "Update Dept" : "Create Dept")}
                             </button>
                         </div>
                     </form>

@@ -10,7 +10,7 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { login } = useAuth();
-  const [corporateId, setCorporateId] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -27,7 +27,7 @@ const Login = () => {
     setError(null);
 
     // Basic validation: ensure both fields are filled
-    if (!corporateId || !password) {
+    if (!email || !password) {
       setError("Please fill all required fields");
       return;
     }
@@ -36,32 +36,42 @@ const Login = () => {
 
     try {
       // 1. Authenticate with credentials and store tokens in LocalStorage (handled inside loginUser)
-      console.log(`Attempting login for: ${corporateId}`);
-      const loginResponse = await loginUser(corporateId, password);
+      console.log(`Attempting login for: ${email}`);
+      const loginResponse = await loginUser(email, password);
 
-      // 2. Use the fresh tokens to fetch the detailed user profile
-      const profileResponse = await getProfile();
+      // Extract tokens from response
+      const token = loginResponse.accessToken || loginResponse.token || loginResponse.access_token;
+      const refreshToken = loginResponse.refreshToken || loginResponse.refresh_token;
 
-      // 3. Update Redux State
+      if (!token) {
+        throw new Error("No access token received");
+      }
+
+      // 2. IMPORTANT: Fetch the detailed user profile using the token we just received
+      // We pass the token explicitly to avoid any race conditions with Redux/localStorage
+      const profileData = await getProfile(token);
+
+      // 3. Update Redux State with both user profile and tokens
       dispatch(
         setCredentials({
-          user: profileResponse.data,
-          accessToken: loginResponse.access_token,
-          refreshToken: loginResponse.refresh_token,
+          user: profileData,
+          accessToken: token,
+          refreshToken: refreshToken,
         }),
       );
 
       // 4. Update the global AuthContext with the fetched profile data
-      // This tells the rest of the app (like Sidbar and ProtectedRoute) that we are logged in.
-      login(profileResponse.data);
+      login(profileData);
 
-      // 4. On success, navigate to the main dashboard
+      // 5. On success, navigate to the main dashboard
       navigate("/dashboard");
     } catch (err) {
       console.error("Login Failed", err);
       // Provision for user-friendly error messages
       if (err.response && err.response.status === 401) {
         setError("Invalid credentials. Please check your email and password.");
+      } else if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
       } else {
         setError("Login failed. Please try again later.");
       }
@@ -100,14 +110,15 @@ const Login = () => {
 
             <form onSubmit={handleSubmit} className="login-form">
               <div className="form-group">
-                <label htmlFor="corporateId">Corporate ID</label>
+                <label htmlFor="email">Email</label>
                 <input
-                  id="corporateId"
-                  type="text"
-                  value={corporateId}
-                  onChange={(e) => setCorporateId(e.target.value)}
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
                   autoComplete="username"
+                  placeholder="name@example.com"
                   required
                 />
               </div>
