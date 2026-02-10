@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   FileText,
-  Download,
+  Upload,
   Eye,
   Trash2,
   Calendar,
@@ -18,28 +18,67 @@ const InstrumentDetailModal = ({ item, onClose }) => {
   if (!item) return null;
   const isExpired = new Date(item.expiryDate) < new Date();
 
+  const handleFileUpdate = (label, file) => {
+    if (file) {
+      console.log(`Updating ${label} with file:`, file.name);
+      alert(`File "${file.name}" selected for ${label}. Update functionality implemented in UI.`);
+    }
+  };
+
+  const handleViewFile = (label, value) => {
+    if (value && value !== "N/A") {
+      // Check if it's a real URL (blob or http)
+      if (value.startsWith('blob:') || value.startsWith('http')) {
+        window.open(value, '_blank');
+      } else {
+        // If it's a mock filename string, simulate opening or show info
+        alert(`Simulating View for ${label}: ${value}\n\nIn the live system, this would open the actual PDF file from the secure storage.`);
+      }
+    }
+  };
+
   const DocItem = ({ label, value }) => (
-    <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100 hover:border-indigo-200 transition-all group">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-indigo-500 shadow-sm">
-          <FileText size={18} />
+    <div
+      onClick={() => handleViewFile(label, value)}
+      className={`w-full flex items-center justify-between p-10 mt-2 rounded-[32px] border transition-all group relative overflow-hidden snap-center ${value !== "N/A"
+        ? "bg-white cursor-pointer hover:border-indigo-300 hover:shadow-2xl hover:-translate-y-1 border-slate-100"
+        : "bg-slate-50/50 cursor-default border-slate-50 opacity-20"
+        }`}
+    >
+      <div className="flex items-center gap-5 min-w-0 flex-1">
+        <div className={`w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center shadow-inner transition-colors ${value !== "N/A" ? "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white" : "bg-white text-slate-300"
+          }`}>
+          <FileText size={24} />
         </div>
-        <div>
-          <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider leading-none mb-1">{label}</p>
-          <p className="text-sm font-bold text-slate-700 truncate max-w-[150px]">{value !== "N/A" ? value : "No Document"}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-black uppercase text-indigo-600/60 tracking-widest leading-none mb-1.5">{label}</p>
+          <p className={`text-[15px] font-black truncate transition-colors ${value !== "N/A" ? "text-slate-900 group-hover:text-indigo-600" : "text-slate-400"
+            }`}>
+            {value !== "N/A" ? value : "No Attachment Found"}
+          </p>
         </div>
       </div>
-      {value !== "N/A" && (
-        <button className="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
-          <Download size={18} />
-        </button>
-      )}
+
+      <div className="flex items-center ml-4 shrink-0" onClick={(e) => e.stopPropagation()}>
+        <label className={`px-6 py-3.5 border rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer shadow-sm ${value !== "N/A"
+          ? "border-slate-200 text-slate-600 hover:bg-slate-900 hover:text-white hover:border-slate-900"
+          : "border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white hover:border-indigo-600"
+          }`}>
+          {value !== "N/A" ? "Change PDF" : "Add PDF"}
+          <input
+            type="file"
+            className="hidden"
+            accept="application/pdf,image/*"
+            onChange={(e) => handleFileUpdate(label, e.target.files[0])}
+          />
+        </label>
+      </div>
     </div>
   );
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-4xl rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-500 border border-white/20">
+      <div className="bg-white w-full max-w-5xl rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500 border border-white/20">
         <div className="relative h-48 bg-indigo-600 overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
@@ -95,22 +134,17 @@ const InstrumentDetailModal = ({ item, onClose }) => {
                 </div>
               </div>
             </div>
-
-            <div className="p-8 bg-indigo-50/50 rounded-[32px] border border-indigo-100 space-y-4">
-              <h5 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest text-center">Export Dashboard</h5>
-              <button className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs shadow-xl shadow-indigo-100 hover:bg-slate-900 transition-all flex items-center justify-center gap-2">
-                <Download size={16} /> Download Full Bio
-              </button>
-            </div>
           </div>
 
           {/* Right Column: Documents & Logs */}
-          <div className="lg:col-span-8 space-y-10">
+          <div className="lg:col-span-8 space-y-12">
             <div className="space-y-6">
-              <h5 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2">
+              <h5 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2 ml-1">
                 <FileSearch size={16} /> Document Archive
               </h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              {/* Vertical Scrollable Row - Shows approx 3 items */}
+              <div className="flex flex-col overflow-y-auto gap-4 max-h-[420px] pr-4 custom-scrollbar snap-y">
                 <DocItem label="Purchase Order" value={item.purchaseOrder} />
                 <DocItem label="Bill Receipt" value={item.billReceipt} />
                 <DocItem label="Installation Report" value={item.installationReport} />
@@ -148,7 +182,7 @@ const InstrumentList = ({ instruments }) => {
     );
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-4">
       {/* Dense Table Header */}
       <div className="px-10 py-2 grid grid-cols-12 text-[10px] font-bold uppercase text-slate-400 border-b border-slate-100 gap-4">
         <div className="col-span-5">Nomenclature</div>
