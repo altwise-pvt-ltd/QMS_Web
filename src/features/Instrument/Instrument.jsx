@@ -9,17 +9,58 @@ import {
     Clock,
     AlertCircle
 } from "lucide-react";
+import { useEffect } from "react";
 import InstrumentForm from "./components/Instrumentform";
 import InstrumentList from "./components/Instrument_list";
-import { INSTRUMENTS } from "./Instrument_data";
+import instrumentService from "./services/instrumentService";
 
 const Instrument = () => {
-    const [instruments, setInstruments] = useState(INSTRUMENTS);
+    const [instruments, setInstruments] = useState([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] = useState(true);
 
-    const handleAddInstrument = (newInstrument) => {
-        setInstruments([newInstrument, ...instruments]);
+    const fetchInstruments = async () => {
+        try {
+            setLoading(true);
+            const response = await instrumentService.getInstruments();
+
+            // Normalize API response to match local state expectations
+            // The API uses 'instrumentNomenclature' and 'equipmentPhotographFilePath'
+            const data = Array.isArray(response) ? response : (response?.data || []);
+            const baseUrl = "https://qmsapi.altwise.in/"; // Base URL for uploaded files
+
+            const normalizedData = data.map(item => ({
+                ...item,
+                id: item.instrumentCalibrationId || item.id || Date.now(),
+                name: item.instrumentNomenclature || item.instrumentName || item.name || "Unnamed Instrument",
+                department: item.operatingDepartment || item.departmentName || item.department || "General",
+                expiryDate: item.expiryDate || item.nextCalibrationDate || "",
+                // Document mappings for the detail view
+                photo: item.equipmentPhotographFilePath ? `${baseUrl}${item.equipmentPhotographFilePath}` : null,
+                purchaseOrder: item.purchaseOrderFileName || "N/A",
+                billReceipt: item.billReceiptFileName || "N/A",
+                installationReport: item.installationReportFileName || "N/A",
+                iqOqPq: item.iqOqPqProtocolFileName || "N/A",
+                userManual: item.userOperationsManualFileName || "N/A",
+                calibrationCert: item.latestCalibrationCertFileName || "N/A",
+                maintenanceText: item.preventiveMaintenanceNotes || ""
+            }));
+
+            setInstruments(normalizedData);
+        } catch (error) {
+            console.error("Error fetching instruments:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchInstruments();
+    }, []);
+
+    const handleAddInstrument = () => {
+        fetchInstruments();
     };
 
     const filteredInstruments = instruments.filter(inst =>
@@ -91,7 +132,7 @@ const Instrument = () => {
                         <input
                             type="text"
                             placeholder="Search by instrument name or department..."
-                            className="w-full pl-16 pr-8 py-5 bg-white border border-slate-100 rounded-[28px] shadow-sm outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-600 transition-all font-semibold italic text-slate-800 whitespace-nowrap overflow-hidden"
+                            className="w-full pl-16 pr-8 py-5 bg-white border border-slate-100 rounded-[28px] shadow-sm outline-none focus:ring-4 focus:ring-indigo-50 +focus:border-indigo-600 transition-all font-semibold italic text-slate-800 whitespace-nowrap overflow-hidden"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -109,7 +150,13 @@ const Instrument = () => {
                     </div>
                 </div>
 
-                <InstrumentList instruments={filteredInstruments} />
+                {loading ? (
+                    <div className="py-20 text-center text-slate-400 font-bold animate-pulse">
+                        Synchronizing with Calibration Database...
+                    </div>
+                ) : (
+                    <InstrumentList instruments={filteredInstruments} />
+                )}
             </div>
 
             <InstrumentForm

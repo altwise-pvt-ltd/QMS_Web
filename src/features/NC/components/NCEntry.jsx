@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { NC_OPTIONS } from "../data/NcCategories";
 import { FileText as FileIcon, UploadCloud, Eye, Trash2, Users, UserPlus, X } from "lucide-react";
 import { db } from "../../../db";
+import { getDepartments } from "../../department/services/departmentService";
 import UploadPreviewModal from "../../documents/component/UploadPreviewModal";
 
 const NCEntry = ({ entry, onUpdate }) => {
@@ -10,6 +11,7 @@ const NCEntry = ({ entry, onUpdate }) => {
   const [staffList, setStaffList] = useState([]);
   const [showStaffDropdown, setShowStaffDropdown] = useState(false);
   const [staffSearch, setStaffSearch] = useState("");
+  const [departments, setDepartments] = useState([]);
 
   useEffect(() => {
     const fetchStaff = async () => {
@@ -21,6 +23,16 @@ const NCEntry = ({ entry, onUpdate }) => {
       }
     };
     fetchStaff();
+
+    const fetchDepartments = async () => {
+      try {
+        const depts = await getDepartments();
+        setDepartments(depts);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    };
+    fetchDepartments();
   }, []);
 
   useEffect(() => {
@@ -65,14 +77,19 @@ const NCEntry = ({ entry, onUpdate }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Department
             </label>
-            <input
-              type="text"
+            <select
               value={entry.department}
               onChange={(e) => onUpdate(entry.id, "department", e.target.value)}
-              placeholder="e.g., Pathology"
-              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border rounded-md bg-white focus:ring-2 focus:ring-blue-500"
               required
-            />
+            >
+              <option value="">Select Department</option>
+              {departments.map((dept) => (
+                <option key={dept.id || dept.departmentId} value={dept.departmentName || dept.name}>
+                  {dept.departmentName || dept.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* NC Category */}

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Upload, FileText, X, Eye } from "lucide-react";
+import { useEffect } from "react";
 import UploadPreviewModal from "./UploadPreviewModal";
+import { getDepartments } from "../../department/services/departmentService";
 
 export default function DocumentUploadForm({
   onSubmit,
@@ -23,6 +25,19 @@ export default function DocumentUploadForm({
   });
 
   const [showPreview, setShowPreview] = useState(false);
+  const [departments, setDepartments] = useState([]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const depts = await getDepartments();
+        setDepartments(depts);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   // 3. Handlers
   const handleFileChange = (e) => {
@@ -58,11 +73,10 @@ export default function DocumentUploadForm({
           Document File *
         </label>
         <div
-          className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-colors ${
-            formData.file
+          className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-colors ${formData.file
               ? "border-emerald-500 bg-emerald-50"
               : "border-slate-300 hover:bg-slate-50"
-          }`}
+            }`}
         >
           {!formData.file ? (
             <label className="cursor-pointer flex flex-col items-center w-full">
@@ -165,16 +179,21 @@ export default function DocumentUploadForm({
             <label className="block text-sm font-medium text-slate-700">
               Department *
             </label>
-            <input
-              type="text"
+            <select
               required
-              className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+              className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
               value={formData.department}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, department: e.target.value }))
               }
-              placeholder="e.g. Quality Assurance"
-            />
+            >
+              <option value="">Select Department</option>
+              {departments.map((dept) => (
+                <option key={dept.id || dept.departmentId} value={dept.departmentName || dept.name}>
+                  {dept.departmentName || dept.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Author */}

@@ -23,6 +23,7 @@ const RiskIndicator = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingIndicator, setEditingIndicator] = useState(null);
 
     const [isAddingCategory, setIsAddingCategory] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState("");
@@ -101,37 +102,55 @@ const RiskIndicator = () => {
     const [newCategory, setNewCategory] = useState("");
     const [newThreshold, setNewThreshold] = useState("");
     const [newSeverity, setNewSeverity] = useState("1");
-    const [newMin, setNewMin] = useState("");
-    const [newMax, setNewMax] = useState("");
 
-    const handleAddIndicator = async () => {
-        if (!newName || !newCategory) return;
-
-        const newIndicator = {
-            id: `risk-new-${Date.now()}`,
-            name: newName,
-            category: newCategory,
-            count: 0,
-            hasCapa: false,
-            incidents: [],
-            threshold: parseFloat(newThreshold) || 0,
-            severity: parseInt(newSeverity) || 1,
-            minValue: parseFloat(newMin) || 0,
-            maxValue: parseFloat(newMax) || 0,
-        };
-
-        try {
-            await db.risk_indicators.add(newIndicator);
-            setIndicators([newIndicator, ...indicators]);
-            setIsModalOpen(false);
+    useEffect(() => {
+        if (editingIndicator) {
+            setNewName(editingIndicator.name);
+            setNewCategory(editingIndicator.category);
+            setNewThreshold(editingIndicator.threshold?.toString() || "");
+            setNewSeverity(editingIndicator.severity?.toString() || "1");
+        } else {
             setNewName("");
             setNewCategory("");
             setNewThreshold("");
             setNewSeverity("1");
-            setNewMin("");
-            setNewMax("");
+        }
+    }, [editingIndicator]);
+
+    const handleSaveIndicator = async () => {
+        if (!newName || !newCategory) return;
+
+        try {
+            if (editingIndicator) {
+                // Update existing
+                const updatedIndicator = {
+                    ...editingIndicator,
+                    name: newName,
+                    category: newCategory,
+                    threshold: parseFloat(newThreshold) || 0,
+                    severity: parseInt(newSeverity) || 1,
+                };
+                await db.risk_indicators.put(updatedIndicator);
+                setIndicators(indicators.map(i => i.id === editingIndicator.id ? updatedIndicator : i));
+            } else {
+                // Add new
+                const newIndicator = {
+                    id: `risk-new-${Date.now()}`,
+                    name: newName,
+                    category: newCategory,
+                    count: 0,
+                    hasCapa: false,
+                    incidents: [],
+                    threshold: parseFloat(newThreshold) || 0,
+                    severity: parseInt(newSeverity) || 1,
+                };
+                await db.risk_indicators.add(newIndicator);
+                setIndicators([newIndicator, ...indicators]);
+            }
+            setIsModalOpen(false);
+            setEditingIndicator(null);
         } catch (error) {
-            console.error("Error adding indicator:", error);
+            console.error("Error saving indicator:", error);
         }
     };
 
@@ -195,11 +214,6 @@ const RiskIndicator = () => {
     const IndicatorCard = ({ indicator }) => {
         const isOverThreshold =
             indicator.threshold && indicator.count > indicator.threshold;
-        const isOutOfRange =
-            (indicator.minValue !== undefined &&
-                indicator.count < indicator.minValue) ||
-            (indicator.maxValue !== undefined &&
-                indicator.count > indicator.maxValue);
 
         const getSeverityStyles = (severity) => {
             const s = parseInt(severity);
@@ -212,7 +226,11 @@ const RiskIndicator = () => {
 
         return (
             <div
-                className={`bg-white group rounded-2xl border-2 transition-all p-5 flex flex-col justify-between h-full hover:-translate-y-1 shadow-sm hover:shadow-xl ${isOverThreshold || isOutOfRange ? "border-rose-200" : "border-slate-100"}`}
+                onClick={() => {
+                    setEditingIndicator(indicator);
+                    setIsModalOpen(true);
+                }}
+                className={`bg-white group rounded-2xl border-2 transition-all p-5 flex flex-col justify-between h-full hover:-translate-y-1 shadow-sm hover:shadow-xl cursor-pointer ${isOverThreshold ? "border-rose-200" : "border-slate-100"}`}
             >
                 <div>
                     <div className="flex justify-between items-start mb-4">
@@ -251,17 +269,6 @@ const RiskIndicator = () => {
                                 </p>
                             </div>
                         )}
-                        {(indicator.minValue !== undefined && indicator.minValue > 0 ||
-                            indicator.maxValue !== undefined && indicator.maxValue > 0) && (
-                                <div>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                                        Range
-                                    </p>
-                                    <p className="text-xs font-black text-slate-700">
-                                        {indicator.minValue ?? 0} - {indicator.maxValue ?? "∞"}
-                                    </p>
-                                </div>
-                            )}
                     </div>
                 </div>
 
@@ -272,11 +279,11 @@ const RiskIndicator = () => {
                         </p>
                         <div className="flex items-center gap-2">
                             <span
-                                className={`text-3xl font-black tracking-tighter ${isOverThreshold || isOutOfRange ? "text-rose-600" : "text-slate-800"}`}
+                                className={`text-3xl font-black tracking-tighter ${isOverThreshold ? "text-rose-600" : "text-slate-800"}`}
                             >
                                 {indicator.count}
                             </span>
-                            {isOverThreshold || isOutOfRange ? (
+                            {isOverThreshold ? (
                                 <AlertCircle size={18} className="text-rose-500 animate-pulse" />
                             ) : (
                                 <TrendingUp
@@ -433,7 +440,10 @@ const RiskIndicator = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {/* Add New Card */}
                     <div
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => {
+                            setEditingIndicator(null);
+                            setIsModalOpen(true);
+                        }}
                         className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 group hover:border-indigo-400 transition-all flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-white min-h-[220px]"
                     >
                         <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all mb-4">
@@ -461,7 +471,7 @@ const RiskIndicator = () => {
                             <div className="flex justify-between items-start mb-8">
                                 <div>
                                     <h2 className="text-3xl font-black text-slate-800 mb-2 italic">
-                                        Configure Risk Metric
+                                        {editingIndicator ? "Update Risk Metric" : "Configure Risk Metric"}
                                     </h2>
                                     <p className="text-slate-500 text-sm font-medium">
                                         Establish risk categories and potential impact levels
@@ -538,47 +548,25 @@ const RiskIndicator = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
-                                            Min Value
-                                        </label>
-                                        <input
-                                            type="number"
-                                            placeholder="0"
-                                            value={newMin}
-                                            onChange={(e) => setNewMin(e.target.value)}
-                                            className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-hidden font-bold text-slate-800"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
-                                            Max Value
-                                        </label>
-                                        <input
-                                            type="number"
-                                            placeholder="100"
-                                            value={newMax}
-                                            onChange={(e) => setNewMax(e.target.value)}
-                                            className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-hidden font-bold text-slate-800"
-                                        />
-                                    </div>
-                                </div>
+
                             </div>
 
                             <div className="flex gap-4 mt-10">
                                 <button
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={() => {
+                                        setIsModalOpen(false);
+                                        setEditingIndicator(null);
+                                    }}
                                     className="flex-1 py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={handleAddIndicator}
+                                    onClick={handleSaveIndicator}
                                     disabled={!newName || !newCategory}
                                     className="flex-1 py-4 bg-indigo-600 text-gray-600 font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                                 >
-                                    Define Risk Metric
+                                    {editingIndicator ? "Update Risk Metric" : "Define Risk Metric"}
                                 </button>
                             </div>
                         </div>
