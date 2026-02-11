@@ -14,7 +14,7 @@ import staffService from "../services/staffService";
 
 const EmployeeDocumentsForm = ({ initialData }) => {
   const [formData, setFormData] = useState({
-// ... (rest is same until handleSubmit)
+    // ... (rest is same until handleSubmit)
     // Personal Documents
     passportPhoto: null,
     cv: null,
@@ -289,11 +289,11 @@ const EmployeeDocumentsForm = ({ initialData }) => {
               // Ensure we use the correct indexing syntax for ASP.NET Core / Standard Model Binding
               // e.g., Qualifications[0].Title
               if (key === fileField) {
-                 // For files, we might need a specific naming convention or just map them
-                 // often it's "Qualifications[0].File"
-                 data.append(`${prefix}[${index}].${key}`, item[key]);
+                // For files, we might need a specific naming convention or just map them
+                // often it's "Qualifications[0].File"
+                data.append(`${prefix}[${index}].${key}`, item[key]);
               } else {
-                 data.append(`${prefix}[${index}].${key}`, item[key]);
+                data.append(`${prefix}[${index}].${key}`, item[key]);
               }
             }
           });
@@ -320,19 +320,19 @@ const EmployeeDocumentsForm = ({ initialData }) => {
       // formData.trainingRecords: { title, inductionTraining (file), competencyTraining (file) }
       // specific handling since it has multiple files
       formData.trainingRecords.forEach((item, index) => {
-         data.append(`TrainingRecords[${index}].title`, item.title);
-         if (item.inductionTraining) {
-            data.append(`TrainingRecords[${index}].inductionTraining`, item.inductionTraining);
-         }
-         if (item.competencyTraining) {
-            data.append(`TrainingRecords[${index}].competencyTraining`, item.competencyTraining);
-         }
+        data.append(`TrainingRecords[${index}].title`, item.title);
+        if (item.inductionTraining) {
+          data.append(`TrainingRecords[${index}].inductionTraining`, item.inductionTraining);
+        }
+        if (item.competencyTraining) {
+          data.append(`TrainingRecords[${index}].competencyTraining`, item.competencyTraining);
+        }
       });
 
       console.log("Submitting Employee Documents Data via API...");
-      
+
       const response = await staffService.submitStaffDetails(data);
-      
+
       if (response.data) {
         alert("Documents submitted successfully!");
         console.log("Response:", response.data);
@@ -396,6 +396,7 @@ const EmployeeDocumentsForm = ({ initialData }) => {
           formData={formData}
           handleFileChange={handleFileChange}
           handleFileRemove={handleFileRemove}
+          handleInputChange={handleInputChange}
           addTrainingRecord={addTrainingRecord}
           removeTrainingRecord={removeTrainingRecord}
         />

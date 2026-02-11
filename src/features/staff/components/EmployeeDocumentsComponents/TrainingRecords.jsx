@@ -5,6 +5,7 @@ const TrainingRecords = ({
   formData,
   handleFileChange,
   handleFileRemove,
+  handleInputChange,
   addTrainingRecord,
   removeTrainingRecord,
 }) => {
