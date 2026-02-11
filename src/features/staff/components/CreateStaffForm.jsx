@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { UserPlus, X, Save } from "lucide-react";
-import api from "../../../auth/api";
+import { Spinner } from "../../../components/ui/Spinner";
+// import api from "../../../auth/api";
+import staffService from "../services/staffService";
 
 const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
   const [formData, setFormData] = useState({
@@ -19,7 +21,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
   useEffect(() => {
     const fetchDepts = async () => {
       try {
-        const response = await api.get("/Department/GetAllDepartments");
+        const response = await staffService.getAllDepartments();
         if (response.data) {
           setDepartments(response.data);
         }
@@ -72,7 +74,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
 
       console.log("Submitting staff payload:", payload);
 
-      const response = await api.post("/Staff/CreateStaff", payload);
+      const response = await staffService.createStaff(payload);
 
       if (response.data) {
         alert(initialData ? "Staff updated successfully" : "Staff created successfully");
@@ -222,22 +224,54 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
           </div>
         </div>
 
-        <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-100 mt-6">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md flex items-center gap-2"
-          >
-            <Save size={18} />{" "}
-            {isSubmitting ? "Saving..." : (initialData ? "Update Employee" : "Create Employee")}
-          </button>
-        </div>
+       <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-100 mt-6">
+  <button
+    type="button"
+    onClick={onCancel}
+    className="
+      px-5 py-2.5
+      text-sm font-medium
+      text-gray-700
+      bg-white
+      border border-gray-300
+      rounded-lg
+      transition-colors duration-200
+      hover:bg-red-50 hover:text-red-600 hover:border-red-300
+      focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2
+    "
+  >
+    Cancel
+  </button>
+
+  <button
+    type="submit"
+    disabled={isSubmitting}
+    className={`
+      px-5 py-2.5
+      text-sm font-medium
+      rounded-lg
+      flex items-center gap-2
+      transition-colors  duration-200
+      ${
+        isSubmitting
+          ? "bg-blue-400 text-gray-600 cursor-not-allowed"
+          : "bg-blue-600 text-gray-600 hover:bg-blue-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      }
+    `}
+  >
+    {isSubmitting ? (
+      <Spinner size={18} className="text-gray-600" />
+    ) : (
+      <Save size={18} />
+    )}
+    {isSubmitting
+      ? "Saving..."
+      : initialData
+      ? "Update Employee"
+      : "Create Employee"}
+  </button>
+</div>
+
       </form>
     </div>
   );
