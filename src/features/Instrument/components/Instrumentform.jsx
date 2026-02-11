@@ -228,7 +228,7 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
                     <button
                         form="instrument-form"
                         type="submit"
-                        className="px-10 py-2.5 bg-slate-900 text-white rounded-md text-sm font-bold hover:bg-black transition-all shadow-sm active:scale-95 uppercase tracking-widest"
+                        className="px-10 py-2.5 bg-slate-900 text-black rounded-md text-sm font-bold hover:bg-black transition-all shadow-sm active:scale-95 uppercase tracking-widest"
                     >
                         Submit Registration
                     </button>

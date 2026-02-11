@@ -55,7 +55,7 @@ const PdfExportButtons = ({ meeting, actionItems, minutes }) => {
       <button
         onClick={handleGenerateMRMPdf}
         disabled={loading}
-        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium disabled:opacity-50"
+        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-gray-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium disabled:opacity-50"
       >
         <Download size={18} />
         Download MRM PDF
@@ -64,7 +64,7 @@ const PdfExportButtons = ({ meeting, actionItems, minutes }) => {
       <button
         onClick={handleGenerateMinutesPdf}
         disabled={loading}
-        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium disabled:opacity-50"
+        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium disabled:opacity-50"
       >
         <FileText size={18} />
         Download Minutes PDF

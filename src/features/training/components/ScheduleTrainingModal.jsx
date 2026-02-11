@@ -339,7 +339,7 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
             <button
               disabled={loading}
               type="submit"
-              className="flex-1 px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-[0.98] transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-3 disabled:opacity-50"
+              className="flex-1 px-8 py-4 bg-indigo-600 text-gray-600 rounded-xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-[0.98] transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-3 disabled:opacity-50"
             >
               {loading ? (
                 "Scheduling..."

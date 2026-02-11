@@ -81,9 +81,10 @@ const Login = () => {
     }
   };
   return (
-    <div className="login-page">
+    <main className="login-page">
       <div className="login-container">
-        <div className="login-left">
+        {/* Branding Section */}
+        <section className="login-left">
           <div className="login-left-content">
             <div className="brand-title">Quality Management System</div>
             <div>
@@ -95,12 +96,13 @@ const Login = () => {
               </p>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="login-right">
+        {/* Login Form Section */}
+        <section className="login-right">
           <div className="login-form-wrapper">
             <h2 className="welcome-text">Welcome</h2>
-            <p>Access your diagnostic portal</p>
+            <p className="welcome-subtext">Access your diagnostic portal</p>
 
             {error && (
               <div className="error-message" role="alert">
@@ -152,8 +154,19 @@ const Login = () => {
                 </div>
               </div>
 
-              <button type="submit" className="login-btn" disabled={loading}>
-                {loading ? "Signing in..." : "Sign In to Dashboard"}
+              <button
+                type="submit"
+                className="login-btn"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <div className="spinner"></div>
+                    <span>Signing in...</span>
+                  </>
+                ) : (
+                  "Sign In to Dashboard"
+                )}
               </button>
             </form>
 
@@ -161,9 +174,9 @@ const Login = () => {
               Need technical support? <a href="/support">Contact IT Helpdesk</a>
             </p>
           </div>
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 };
 

@@ -107,7 +107,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
     p-2
     rounded-full
     text-gray-500
-    hover:bg-red-100 hover:text-red-500
+    hover:bg-red-100 hover:text-red-600
     focus:outline-none focus:ring-2 focus:ring-red-300
     transition-colors duration-150
   "
@@ -130,7 +130,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               required
               value={formData.firstName}
               onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="e.g. John"
             />
           </div>
@@ -146,7 +146,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               required
               value={formData.lastName}
               onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="e.g. Doe"
             />
           </div>
@@ -161,7 +161,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="john.doe@company.com"
             />
           </div>
@@ -177,7 +177,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               required
               value={formData.mobileNumber}
               onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="+91 98765 43210"
               pattern="[+]?[0-9\s-()]+"
               title="Please enter a valid phone number"
@@ -194,7 +194,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               required
               value={formData.departmentId}
               onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
             >
               <option value="">Select Department</option>
               {departments.map((dept) => (
@@ -216,7 +216,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               required
               value={formData.jobTitle}
               onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="e.g. Senior QA Engineer"
             />
           </div>
@@ -226,15 +226,13 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
           <button
             type="button"
             onClick={onCancel}
-            disabled={isSubmitting}
-            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             Cancel
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md flex items-center gap-2 transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md flex items-center gap-2"
           >
             <Save size={18} />{" "}
             {isSubmitting ? "Saving..." : (initialData ? "Update Employee" : "Create Employee")}

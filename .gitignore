@@ -6,3 +6,7 @@ january_2026_log.md
 *.txt
 *.key
 dexie-cloud.json
+src/auth/AUTH_FLOW.md
+src/features/onboarding/ORG_FLOW.md
+src/features/department/DEPT_FLOW.md
+src/features/staff/STAFF_FLOW.md
