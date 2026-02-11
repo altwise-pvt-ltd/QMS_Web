@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Plus, MoreVertical, Edit, ClipboardCheck, Shield } from "lucide-react";
 import { db } from "../../../db";
-import api from "../../../auth/api";
+// import api from "../../../auth/api";
+
+import staffService from "../services/staffService";
+import { Skeleton } from "../../../components/ui/Skeleton";
+import { Link } from "react-router-dom"; // Assuming standard router link if needed, though this file uses onAddNew props
 
 const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
   const [staffData, setStaffData] = useState([]);
@@ -19,8 +23,8 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
 
       // Fetch both staff and departments in parallel
       const [staffRes, deptsRes] = await Promise.all([
-        api.get("/Staff/GetAllStaff"),
-        api.get("/Department/GetAllDepartments")
+        staffService.getAllStaff(),
+        staffService.getAllDepartments()
       ]);
 
       const staffFromServer = staffRes.data || [];
@@ -45,8 +49,8 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
         deptId: s.departmentId,
         status: s.status || (s.staffAssessmentCompetenceStatus ? "Competent" : "Needs Review"),
         joinDate: s.createdDate ? s.createdDate.split("T")[0] : "N/A",
-        photo: s.staffPassportPhotoPath,
-        resume: s.staffResumePath
+        photo: staffService.getAssetUrl(s.staffPassportPhotoPath),
+        resume: staffService.getAssetUrl(s.staffResumePath)
       }));
 
       setStaffData(mappedStaff);
@@ -97,8 +101,20 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
 
       <div className="overflow-visible p-2 flex-1">
         {loading ? (
-          <div className="p-20 text-center text-slate-400 font-medium">
-            Syncing with directory...
+          <div className="p-4 space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center space-x-4 border-b border-gray-50 pb-4">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-50" />
+                  <Skeleton className="h-3 w-37.5" />
+                </div>
+                <Skeleton className="h-6 w-20 rounded-md" />
+                <Skeleton className="h-6 w-24 rounded-full" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-8 w-8 rounded-full" />
+              </div>
+            ))}
           </div>
         ) : (
           <table className="w-full text-left border-collapse">
@@ -122,6 +138,10 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
                       <img
                         src={staff.photo}
                         alt={staff.name}
+                        onError={(e) => {
+                          e.target.onerror = null; 
+                          e.target.src = staffService.getPlaceholderImage();
+                        }}
                         className="w-10 h-10 rounded-full object-cover border border-gray-200"
                       />
                     ) : (

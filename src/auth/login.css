@@ -55,14 +55,16 @@
    LEFT: BRANDING
    ========================= */
 .login-left {
-  flex: 1.2;
-  position: relative;
-  padding: 60px;
-  background-image: url("../assets/bg_Image/bg.jpeg");
-  background-size: cover;
-  background-position: center;
+  width: 50%;
+  background: #d2e5f7;
+  padding: 40px;
   display: flex;
   align-items: center;
+  position: relative;
+  background-image: url("../assets/bg_Image/bg.jpeg");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: cover;
 }
 
 .login-left::before {

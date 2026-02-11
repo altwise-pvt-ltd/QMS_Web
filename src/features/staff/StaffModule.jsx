@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import staffService from "./services/staffService";
 import {
   ArrowLeft,
   UserCheck,
@@ -121,6 +122,10 @@ const StaffModule = () => {
               <img
                 src={selectedStaff.photo}
                 alt={selectedStaff.name}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = staffService.getPlaceholderImage();
+                }}
                 className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
               />
             ) : (
@@ -129,7 +134,7 @@ const StaffModule = () => {
               </div>
             )}
             <div>
-              <h1 className="text-[18px] font-bold text-gray-800 leading-tight">
+              <h1 className="text-[14px] font-bold text-gray-800 leading-tight">
                 {selectedStaff?.name || "Staff Member"}
               </h1>
               <p className="text-[13px] text-gray-500 font-medium">

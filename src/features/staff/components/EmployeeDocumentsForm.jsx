@@ -10,9 +10,11 @@ import {
   DocumentFormActions,
 } from "./EmployeeDocumentsComponents";
 import { db } from "../../../db";
+import staffService from "../services/staffService";
 
 const EmployeeDocumentsForm = ({ initialData }) => {
   const [formData, setFormData] = useState({
+// ... (rest is same until handleSubmit)
     // Personal Documents
     passportPhoto: null,
     cv: null,
@@ -257,11 +259,91 @@ const EmployeeDocumentsForm = ({ initialData }) => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Employee Documents Data:", formData);
-    // TODO: Implement API call to save documents
-    // This will need to handle file uploads to your backend
+    setIsSubmitting(true);
+
+    try {
+      const data = new FormData();
+
+      // Append basic fields if needed (assuming they are passed or part of this form)
+      if (initialData?.id) {
+        data.append("StaffId", initialData.id);
+      }
+
+      // 1. Personal Documents
+      if (formData.passportPhoto?.file) {
+        data.append("PassportPhoto", formData.passportPhoto.file);
+      }
+      if (formData.cv) {
+        data.append("CV", formData.cv);
+      }
+
+      // Helper to append array of objects
+      const appendArray = (array, prefix, fileField = "file") => {
+        array.forEach((item, index) => {
+          Object.keys(item).forEach((key) => {
+            if (item[key]) {
+              // Ensure we use the correct indexing syntax for ASP.NET Core / Standard Model Binding
+              // e.g., Qualifications[0].Title
+              if (key === fileField) {
+                 // For files, we might need a specific naming convention or just map them
+                 // often it's "Qualifications[0].File"
+                 data.append(`${prefix}[${index}].${key}`, item[key]);
+              } else {
+                 data.append(`${prefix}[${index}].${key}`, item[key]);
+              }
+            }
+          });
+        });
+      };
+
+      // 2. Qualifications
+      // formData.qualifications: { title, collegeName, graduationYear, file }
+      appendArray(formData.qualifications, "Qualifications", "file");
+
+      // 3. Appointment Documents
+      // formData.appointmentDocuments: { title, file }
+      appendArray(formData.appointmentDocuments, "AppointmentDocuments", "file");
+
+      // 4. Medical Records
+      // formData.medicalRecords: { title, certificate (file), issueDate }
+      appendArray(formData.medicalRecords, "MedicalRecords", "certificate");
+
+      // 5. Vaccination Records
+      // formData.vaccinationRecords: { name, date, file }
+      appendArray(formData.vaccinationRecords, "VaccinationRecords", "file");
+
+      // 6. Training Records
+      // formData.trainingRecords: { title, inductionTraining (file), competencyTraining (file) }
+      // specific handling since it has multiple files
+      formData.trainingRecords.forEach((item, index) => {
+         data.append(`TrainingRecords[${index}].title`, item.title);
+         if (item.inductionTraining) {
+            data.append(`TrainingRecords[${index}].inductionTraining`, item.inductionTraining);
+         }
+         if (item.competencyTraining) {
+            data.append(`TrainingRecords[${index}].competencyTraining`, item.competencyTraining);
+         }
+      });
+
+      console.log("Submitting Employee Documents Data via API...");
+      
+      const response = await staffService.submitStaffDetails(data);
+      
+      if (response.data) {
+        alert("Documents submitted successfully!");
+        console.log("Response:", response.data);
+      }
+
+    } catch (error) {
+      console.error("Error submitting documents:", error);
+      alert("Failed to submit documents. " + (error.response?.data?.message || error.message));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -318,7 +400,7 @@ const EmployeeDocumentsForm = ({ initialData }) => {
           removeTrainingRecord={removeTrainingRecord}
         />
 
-        <DocumentFormActions onSubmit={handleSubmit} />
+        <DocumentFormActions onSubmit={handleSubmit} loading={isSubmitting} />
       </form>
     </div>
   );
