@@ -202,7 +202,7 @@ const StaffModule = () => {
 
         {activeTab === "documents" && (
           <div className="max-w-4xl mx-auto">
-            <StaffDocuments staffName={selectedStaff?.name} />
+            <StaffDocuments staffName={selectedStaff?.name} staffId={selectedStaff?.id} />
           </div>
         )}
 

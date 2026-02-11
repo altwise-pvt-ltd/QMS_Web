@@ -38,15 +38,16 @@ const staffService = {
    * @returns {Promise<AxiosResponse<any>>}
    */
    updateStaff: (staffData) => {
-    // Assuming the update endpoint follows a similar pattern or is the same as create
-    // If there is a specific update endpoint, it should be used here.
-    // For now, based on CreateStaffForm, it seems create is used for both or update logic is not fully visible in the snippet
-    // The user's code uses /Staff/CreateStaff even for updates in the provided snippet?
-    // Let's re-read CreateStaffForm.jsx
-    // Line 75: const response = await api.post("/Staff/CreateStaff", payload); 
-    // It seems they use CreateStaff for both, or update is not implemented yet. 
-    // I will stick to what creates uses.
     return api.post("/Staff/CreateStaff", staffData);
+  },
+
+  /**
+   * Fetches documents for a specific staff member.
+   * @param {number|string} staffId - The ID of the staff member.
+   * @returns {Promise<AxiosResponse<any>>}
+   */
+  getStaffDocuments: (staffId) => {
+    return api.get(`/StaffDocuments/GetAllDocuments/${staffId}`);
   },
 
   /**
