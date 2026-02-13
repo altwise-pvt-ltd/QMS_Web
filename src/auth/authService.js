@@ -14,7 +14,7 @@ const API_URL = "/api";
 
 export const loginUser = async (email, password) => {
   // We use raw axios here because we don't have a token yet
-  const response = await axios.post(`${API_URL}/AdminUser/AdminLogin`, {
+  const response = await axios.post(`${API_URL}/AdminUser/Login`, {
     email,
     password,
   });
@@ -48,7 +48,7 @@ export const getProfile = async (token = null) => {
     }
     : {};
 
-  const response = await api.get("/AdminUser/GetAdminUserProfile", config);
+  const response = await api.get("/AdminUser/GetProfile", config);
   return response.data;
 };
 

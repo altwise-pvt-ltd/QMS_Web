@@ -74,7 +74,9 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
 
       console.log("Submitting staff payload:", payload);
 
-      const response = await staffService.createStaff(payload);
+      const response = initialData
+        ? await staffService.updateStaff(payload)
+        : await staffService.createStaff(payload);
 
       if (response.data) {
         alert(initialData ? "Staff updated successfully" : "Staff created successfully");
@@ -181,7 +183,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="+91 98765 43210"
-              pattern="[+]?[0-9\s-()]+"
+              pattern="^\+?[0-9\s\-()]+$"
               title="Please enter a valid phone number"
             />
           </div>
@@ -224,11 +226,11 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
           </div>
         </div>
 
-       <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-100 mt-6">
-  <button
-    type="button"
-    onClick={onCancel}
-    className="
+        <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-100 mt-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="
       px-5 py-2.5
       text-sm font-medium
       text-gray-700
@@ -239,38 +241,37 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
       hover:bg-red-50 hover:text-red-600 hover:border-red-300
       focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2
     "
-  >
-    Cancel
-  </button>
+          >
+            Cancel
+          </button>
 
-  <button
-    type="submit"
-    disabled={isSubmitting}
-    className={`
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`
       px-5 py-2.5
       text-sm font-medium
       rounded-lg
       flex items-center gap-2
       transition-colors  duration-200
-      ${
-        isSubmitting
-          ? "bg-blue-400 text-gray-600 cursor-not-allowed"
-          : "bg-blue-600 text-gray-600 hover:bg-blue-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-      }
+      ${isSubmitting
+                ? "bg-blue-400 text-gray-600 cursor-not-allowed"
+                : "bg-blue-600 text-gray-600 hover:bg-blue-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              }
     `}
-  >
-    {isSubmitting ? (
-      <Spinner size={18} className="text-gray-600" />
-    ) : (
-      <Save size={18} />
-    )}
-    {isSubmitting
-      ? "Saving..."
-      : initialData
-      ? "Update Employee"
-      : "Create Employee"}
-  </button>
-</div>
+          >
+            {isSubmitting ? (
+              <Spinner size={18} className="text-gray-600" />
+            ) : (
+              <Save size={18} />
+            )}
+            {isSubmitting
+              ? "Saving..."
+              : initialData
+                ? "Update Employee"
+                : "Create Employee"}
+          </button>
+        </div>
 
       </form>
     </div>

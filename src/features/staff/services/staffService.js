@@ -24,6 +24,15 @@ const staffService = {
   },
 
   /**
+   * Fetches a single staff member by ID.
+   * @param {number|string} id - The ID of the staff member.
+   * @returns {Promise<AxiosResponse<any>>}
+   */
+  getStaffById: (id) => {
+    return api.get(`/Staff/GetStaffById/${id}`);
+  },
+
+  /**
    * Creates a new staff member.
    * @param {Object} staffData - The staff data payload.
    * @returns {Promise<AxiosResponse<any>>}
@@ -32,13 +41,22 @@ const staffService = {
     return api.post("/Staff/CreateStaff", staffData);
   },
 
-   /**
-   * Updates an existing staff member.
-   * @param {Object} staffData - The staff data payload.
+  /**
+  * Updates an existing staff member.
+  * @param {Object} staffData - The staff data payload.
+  * @returns {Promise<AxiosResponse<any>>}
+  */
+  updateStaff: (staffData) => {
+    return api.put("/Staff/UpdateStaff", staffData);
+  },
+
+  /**
+   * Deletes a staff member by ID.
+   * @param {number|string} id - The ID of the staff member.
    * @returns {Promise<AxiosResponse<any>>}
    */
-   updateStaff: (staffData) => {
-    return api.post("/Staff/CreateStaff", staffData);
+  deleteStaffById: (id) => {
+    return api.delete(`/Staff/DeleteStaffById/${id}`);
   },
 
   /**
@@ -60,6 +78,7 @@ const staffService = {
       headers: {
         "Content-Type": "multipart/form-data",
       },
+      skipAuth: true,
     });
   },
 
@@ -72,9 +91,10 @@ const staffService = {
     if (!path) return "";
     // If path is already a full URL, return it
     if (path.startsWith("http")) return path;
-    
-    // Ensure no double slashes if path starts with /
-    const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+
+    // Ensure forward slashes and no leading slash to avoid double slashes
+    const normalizedPath = path.replace(/\\/g, '/');
+    const cleanPath = normalizedPath.startsWith("/") ? normalizedPath.slice(1) : normalizedPath;
     return `${API_BASE_URL}${cleanPath}`;
   },
 

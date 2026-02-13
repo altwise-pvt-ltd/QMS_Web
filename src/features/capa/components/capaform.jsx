@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, Upload, FileText, Calendar, CheckCircle2, AlertCircle, ArrowLeft, Send, ClipboardList, Info, Users, UserPlus } from 'lucide-react';
 import { db } from '../../../db';
 import { getDepartments } from '../../department/services/departmentService';
+import staffService from '../../staff/services/staffService';
 
 // Import questions from quedata.js
 import { CAPA_QUESTIONS } from '../quedata.js';
@@ -301,8 +302,15 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   useEffect(() => {
     const fetchStaff = async () => {
       try {
-        const staff = await db.staff.toArray();
-        setStaffList(staff);
+        const response = await staffService.getAllStaff();
+        const data = response.data || [];
+        const mappedStaff = data.map(s => ({
+          id: s.staffId || s.id,
+          name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || s.staffName || "Unnamed Staff",
+          role: s.jobTitle || "Staff",
+          dept: departments.find(d => (d.id || d.departmentId) === s.departmentId)?.name || departments.find(d => (d.id || d.departmentId) === s.departmentId)?.departmentName || "General"
+        }));
+        setStaffList(mappedStaff);
       } catch (error) {
         console.error("Error fetching staff:", error);
       }
@@ -317,8 +325,10 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
         console.error("Error fetching departments:", error);
       }
     };
-    fetchDepartments();
-  }, []);
+    if (departments.length === 0) {
+      fetchDepartments();
+    }
+  }, [departments]); // Re-run when departments array changes to fix mapping
 
   // Pre-fill if selectedNC exists
   useEffect(() => {
