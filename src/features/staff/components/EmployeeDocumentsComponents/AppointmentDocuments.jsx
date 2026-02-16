@@ -3,6 +3,7 @@ import { Upload, FileText, X, Plus, Trash2 } from "lucide-react";
 
 const AppointmentDocuments = ({
   formData,
+  existingDocuments,
   handleFileChange,
   handleFileRemove,
   addAppointmentDocument,
@@ -23,6 +24,40 @@ const AppointmentDocuments = ({
           Add Document
         </button>
       </div>
+
+      {/* Existing Documents List */}
+      {existingDocuments?.appointmentDocuments?.length > 0 && (
+        <div className="mb-6 space-y-2">
+          <h3 className="text-sm font-medium text-gray-700 mb-2">
+            Existing Documents
+          </h3>
+          <div className="grid grid-cols-1 gap-2">
+            {existingDocuments.appointmentDocuments.map((doc, idx) => (
+              <div
+                key={idx}
+                className="flex items-center justify-between p-3 bg-purple-50 border border-purple-100 rounded-lg"
+              >
+                <div className="flex items-center gap-2">
+                  <FileText size={16} className="text-purple-600" />
+                  <span className="text-sm font-medium text-purple-900">
+                    {doc.title}
+                  </span>
+                </div>
+                {doc.file?.url && (
+                  <a
+                    href={doc.file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-medium text-blue-600 hover:underline"
+                  >
+                    View
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-4">
         {formData.appointmentDocuments.map((doc, index) => (

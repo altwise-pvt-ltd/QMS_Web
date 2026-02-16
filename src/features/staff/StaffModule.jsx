@@ -15,6 +15,7 @@ import CompetenceForm from "./components/CompetenceForm";
 import StaffDocuments from "./components/StaffDocuments";
 import PermissionsForm from "./components/PermissionsPage";
 import EmployeeDocumentsForm from "./components/EmployeeDocumentsForm";
+import ImageWithFallback from "../../components/ui/ImageWithFallback";
 
 const StaffModule = () => {
   const [view, setView] = useState("list"); // 'list', 'create', or 'details'
@@ -104,6 +105,13 @@ const StaffModule = () => {
   }
 
   // --- RENDER: DETAILS VIEW (Competence + Documents) ---
+  const tabs = [
+    { id: "competence", label: "Competence", icon: UserCheck },
+    { id: "documents", label: "Documents", icon: FileText },
+    { id: "staffDetails", label: "Staff Details", icon: Briefcase },
+    { id: "permissions", label: "Permissions", icon: Shield },
+  ];
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Top Bar for Detail View */}
@@ -119,17 +127,13 @@ const StaffModule = () => {
           {/* Staff Profile Photo */}
           <div className="flex items-center gap-3">
             {selectedStaff?.photo ? (
-              <img
+              <ImageWithFallback
                 src={selectedStaff.photo}
                 alt={selectedStaff.name}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = staffService.getPlaceholderImage();
-                }}
                 className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
               />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm border-2 border-white">
+              <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-[14px ] shadow-sm border-2 border-white">
                 {selectedStaff?.name?.charAt(0) || "S"}
               </div>
             )}
@@ -148,49 +152,26 @@ const StaffModule = () => {
 
         {/* Tabs Switcher */}
         <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
-          <button
-            onClick={() => setActiveTab("competence")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === "competence"
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-              }`}
-          >
-            <UserCheck size={14} />
-            Competence
-          </button>
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
 
-          <button
-            onClick={() => setActiveTab("documents")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all ${activeTab === "documents"
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-              }`}
-          >
-            <FileText size={14} />
-            Documents
-          </button>
-
-          <button
-            onClick={() => setActiveTab("staffDetails")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all ${activeTab === "staffDetails"
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-              }`}
-          >
-            <Briefcase size={14} />
-            Staff Details
-          </button>
-
-          <button
-            onClick={() => setActiveTab("permissions")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all ${activeTab === "permissions"
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-              }`}
-          >
-            <Shield size={14} />
-            Permissions
-          </button>
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  isActive
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                }`}
+                aria-current={isActive ? "page" : undefined}
+              >
+                <Icon size={16} />
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -202,7 +183,10 @@ const StaffModule = () => {
 
         {activeTab === "documents" && (
           <div className="max-w-4xl mx-auto">
-            <StaffDocuments staffName={selectedStaff?.name} staffId={selectedStaff?.id} />
+            <StaffDocuments
+              staffName={selectedStaff?.name}
+              staffId={selectedStaff?.id}
+            />
           </div>
         )}
 

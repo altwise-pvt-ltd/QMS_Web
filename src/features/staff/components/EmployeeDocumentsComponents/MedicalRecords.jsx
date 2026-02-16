@@ -3,6 +3,7 @@ import { Upload, FileText, X, Plus, Trash2 } from "lucide-react";
 
 const MedicalRecords = ({
   formData,
+  existingDocuments,
   handleFileChange,
   handleFileRemove,
   handleInputChange,
@@ -30,6 +31,42 @@ const MedicalRecords = ({
           Medical fitness certificate is required yearly. Add multiple records
           to track history.
         </p>
+
+        {/* Existing Documents List */}
+        {existingDocuments?.medicalRecords?.length > 0 && (
+          <div className="mb-6 space-y-2">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">
+              Existing Records
+            </h3>
+            <div className="grid grid-cols-1 gap-2">
+              {existingDocuments.medicalRecords.map((doc, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-3 bg-red-50 border border-red-100 rounded-lg"
+                >
+                  <div>
+                    <span className="text-sm font-medium text-red-900 block">
+                      {doc.title}
+                    </span>
+                    <span className="text-xs text-red-700">
+                      Issued: {doc.issueDate}
+                    </span>
+                  </div>
+                  {doc.certificate?.url && (
+                    <a
+                      href={doc.certificate.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-medium text-blue-600 hover:underline flex items-center gap-1"
+                    >
+                      <FileText size={14} /> View
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {formData.medicalRecords.map((record, index) => (
           <div

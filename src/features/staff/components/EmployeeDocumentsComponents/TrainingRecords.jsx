@@ -3,8 +3,10 @@ import { Upload, FileText, X, Plus, Trash2 } from "lucide-react";
 
 const TrainingRecords = ({
   formData,
+  existingDocuments,
   handleFileChange,
   handleFileRemove,
+  handleInputChange,
   addTrainingRecord,
   removeTrainingRecord,
 }) => {
@@ -25,6 +27,51 @@ const TrainingRecords = ({
       </div>
 
       <div className="space-y-4">
+        {/* Existing Documents List */}
+        {existingDocuments?.trainingRecords?.length > 0 && (
+          <div className="mb-6 space-y-2">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">
+              Existing Training Records
+            </h3>
+            <div className="grid grid-cols-1 gap-2">
+              {existingDocuments.trainingRecords.map((doc, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-3 bg-indigo-50 border border-indigo-100 rounded-lg"
+                >
+                  <div>
+                    <span className="text-sm font-medium text-indigo-900 block">
+                      {doc.title}
+                    </span>
+                    <div className="flex gap-3 text-xs text-indigo-700 mt-1">
+                      {doc.inductionTraining?.url && (
+                        <a
+                          href={doc.inductionTraining.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline flex items-center gap-1"
+                        >
+                          <FileText size={12} /> Induction
+                        </a>
+                      )}
+                      {doc.competencyTraining?.url && (
+                        <a
+                          href={doc.competencyTraining.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline flex items-center gap-1"
+                        >
+                          <FileText size={12} /> Competency
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {formData.trainingRecords.map((record, index) => (
           <div
             key={index}

@@ -24,6 +24,15 @@ const staffService = {
   },
 
   /**
+   * Fetches a single staff member by ID.
+   * @param {number|string} id - The ID of the staff member.
+   * @returns {Promise<AxiosResponse<any>>}
+   */
+  getStaffById: (id) => {
+    return api.get(`/Staff/GetStaffById/${id}`);
+  },
+
+  /**
    * Creates a new staff member.
    * @param {Object} staffData - The staff data payload.
    * @returns {Promise<AxiosResponse<any>>}
@@ -38,7 +47,16 @@ const staffService = {
    * @returns {Promise<AxiosResponse<any>>}
    */
    updateStaff: (staffData) => {
-    return api.post("/Staff/CreateStaff", staffData);
+    return api.put("/Staff/UpdateStaff", staffData);
+  },
+
+  /**
+   * Deletes a staff member by ID.
+   * @param {number|string} id - The ID of the staff member.
+   * @returns {Promise<AxiosResponse<any>>}
+   */
+  deleteStaffById: (id) => {
+    return api.delete(`/Staff/DeleteStaffById/${id}`);
   },
 
   /**
@@ -60,6 +78,7 @@ const staffService = {
       headers: {
         "Content-Type": "multipart/form-data",
       },
+      skipAuth: true,
     });
   },
 
