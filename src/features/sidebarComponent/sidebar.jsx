@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
+import staffService from "../staff/services/staffService";
 import {
   LayoutDashboard,
   FileText,
@@ -335,11 +336,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           {!isCollapsed && user && (
             <div className="px-2 py-3 bg-indigo-50 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
               <ImageWithFallback
-                src={
-                  user.avatar
-                    ? (user.avatar.startsWith('http') ? user.avatar : `https://qmsapi.altwise.in/${user.avatar.startsWith('/') ? user.avatar.substring(1) : user.avatar}`)
-                    : `https://ui-avatars.com/api/?name=${user.name}&background=6366f1&color=fff`
-                }
+                src={staffService.getAssetUrl(user.avatar) || `https://ui-avatars.com/api/?name=${user.name}&background=6366f1&color=fff`}
                 alt={user.name}
                 className="w-10 h-10 rounded-lg shadow-sm border border-white object-cover"
               />

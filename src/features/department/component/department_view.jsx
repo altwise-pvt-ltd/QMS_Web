@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { User, Mail, ShieldCheck, Loader2 } from "lucide-react";
 import { getDepartmentWiseStaff } from "../services/departmentService";
+import staffService from "../../staff/services/staffService";
 import ImageWithFallback from "../../../components/ui/ImageWithFallback";
 
 /**
@@ -98,7 +99,7 @@ export const DepartmentView = ({ deptId, deptName }) => {
                     {staff.map(emp => (
                         <div key={emp.id} className="flex items-center gap-3 p-3 bg-slate-50/50 rounded-2xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-100 transition-all group">
                             <ImageWithFallback
-                                src={emp.avatar}
+                                src={staffService.getAssetUrl(emp.avatar)}
                                 alt={emp.name}
                                 className="w-10 h-10 rounded-xl border-2 border-white shadow-sm object-cover"
                             />
