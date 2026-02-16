@@ -11,17 +11,76 @@ import {
   ClipboardCheck,
   History,
   FileSearch,
-  UserCircle
+  UserCircle,
+  Pencil
 } from "lucide-react";
+
+import instrumentService from "../services/instrumentService";
+
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return dateString;
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
+const getFileName = (url) => {
+  if (!url || url === "N/A") return "No Attachment Found";
+  if (url.startsWith('blob:')) return "New File Selected";
+  try {
+    const parts = url.split('/');
+    const fullName = parts[parts.length - 1];
+    // Remove the UUID prefix if it exists (e.g. 6ccafd24-..._filename.pdf)
+    return fullName.includes('_') ? fullName.split('_').slice(1).join('_') : fullName;
+  } catch {
+    return url;
+  }
+};
 
 const InstrumentDetailModal = ({ item, onClose }) => {
   if (!item) return null;
   const isExpired = new Date(item.expiryDate) < new Date();
 
-  const handleFileUpdate = (label, file) => {
+  const handleFileUpdate = async (label, file) => {
     if (file) {
-      console.log(`Updating ${label} with file:`, file.name);
-      alert(`File "${file.name}" selected for ${label}. Update functionality implemented in UI.`);
+      try {
+        const payload = new FormData();
+        // Map label to expected API field
+        const labelToField = {
+          "Purchase Order": "PurchaseOrderFile",
+          "Bill Receipt": "BillReceiptFile",
+          "Installation Report": "InstallationReportFile",
+          "IQ/OQ/PQ Protocol": "IqOqPqProtocolFile",
+          "Operations Manual": "UserOperationsManualFile",
+          "Calibration Cert": "LatestCalibrationCert"
+        };
+
+        const fieldName = labelToField[label];
+        if (!fieldName) return;
+
+        payload.append(fieldName, file);
+        // Map required fields for update validation
+        payload.append("InstrumentCalibrationId", item.instrumentCalibrationId);
+        payload.append("InstrumentNomenclature", item.name);
+        payload.append("OperatingDepartment", item.department);
+        payload.append("PreventiveMaintenanceNotes", item.maintenanceText || item.preventiveMaintenanceNotes || "Updated via Profile View");
+        payload.append("ExpiryDate", item.expiryDate);
+        payload.append("Status", "Active");
+
+        await instrumentService.updateInstrumentCalibration(item.instrumentCalibrationId, payload);
+        alert(`${label} updated successfully!`);
+        // Note: In a real app, you'd trigger a refresh here. 
+        // For now, we update the local state if onAdd or similar prop was passed, 
+        // but here we just show success.
+        window.location.reload(); // Simple refresh to show new data
+      } catch (error) {
+        console.error("Error updating file:", error);
+        alert("Failed to update file.");
+      }
     }
   };
 
@@ -54,32 +113,26 @@ const InstrumentDetailModal = ({ item, onClose }) => {
           <p className="text-[10px] font-black uppercase text-indigo-600/60 tracking-widest leading-none mb-1.5">{label}</p>
           <p className={`text-[15px] font-black truncate transition-colors ${value !== "N/A" ? "text-slate-900 group-hover:text-indigo-600" : "text-slate-400"
             }`}>
-            {value !== "N/A" ? value : "No Attachment Found"}
+            {getFileName(value)}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center ml-4 shrink-0" onClick={(e) => e.stopPropagation()}>
-        <label className={`px-6 py-3.5 border rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer shadow-sm ${value !== "N/A"
-          ? "border-slate-200 text-slate-600 hover:bg-slate-900 hover:text-white hover:border-slate-900"
-          : "border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white hover:border-indigo-600"
+      <div className="flex items-center ml-4 shrink-0">
+        <button className={`px-6 py-3.5 border rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${value !== "N/A"
+          ? "border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white"
+          : "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed"
           }`}>
-          {value !== "N/A" ? "Change PDF" : "Add PDF"}
-          <input
-            type="file"
-            className="hidden"
-            accept="application/pdf,image/*"
-            onChange={(e) => handleFileUpdate(label, e.target.files[0])}
-          />
-        </label>
+          View PDF
+        </button>
       </div>
     </div>
   );
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-5xl rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500 border border-white/20">
-        <div className="relative h-48 bg-indigo-600 overflow-hidden">
+      <div className="bg-white w-full max-w-5xl rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-[95vh] animate-in zoom-in-95 duration-500 border border-white/20">
+        <div className="relative h-48 bg-indigo-600">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
           </div>
@@ -121,17 +174,24 @@ const InstrumentDetailModal = ({ item, onClose }) => {
               </h5>
               <div className="space-y-4">
                 <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 space-y-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase">Registered Date</p>
-                  <p className="font-bold text-slate-700">Jan 17, 2026</p>
-                </div>
-                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 space-y-1">
                   <p className="text-[10px] font-black text-slate-400 uppercase">Certification Expiry</p>
-                  <p className={`font-bold ${isExpired ? 'text-rose-600' : 'text-slate-700'}`}>{item.expiryDate || "N/A"}</p>
+                  <p className={`font-bold ${isExpired ? 'text-rose-600' : 'text-slate-700'}`}>{formatDate(item.expiryDate)}</p>
                 </div>
                 <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 space-y-1">
                   <p className="text-[10px] font-black text-slate-400 uppercase">Current Status</p>
-                  <p className={`font-bold ${isExpired ? 'text-rose-600' : 'text-emerald-600'}`}>{isExpired ? 'Needs Calibration' : 'Operational'}</p>
+                  <p className={`font-bold ${item.status === 'Active' ? 'text-emerald-600' : 'text-rose-600'}`}>{item.status || "Active"}</p>
                 </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <h5 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                <History size={16} /> Maintenance Log
+              </h5>
+              <div className="p-8 bg-slate-50 rounded-[32px] border border-slate-100">
+                <p className="text-slate-600 font-medium italic leading-relaxed">
+                  {item.maintenanceText || "No maintenance history recorded for this unit."}
+                </p>
               </div>
             </div>
           </div>
@@ -154,16 +214,7 @@ const InstrumentDetailModal = ({ item, onClose }) => {
               </div>
             </div>
 
-            <div className="space-y-6">
-              <h5 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2">
-                <History size={16} /> Maintenance Log
-              </h5>
-              <div className="p-8 bg-slate-50 rounded-[32px] border border-slate-100">
-                <p className="text-slate-600 font-medium italic leading-relaxed">
-                  {item.maintenanceText || "No maintenance history recorded for this unit."}
-                </p>
-              </div>
-            </div>
+
           </div>
         </div>
       </div>
@@ -171,7 +222,7 @@ const InstrumentDetailModal = ({ item, onClose }) => {
   );
 };
 
-const InstrumentList = ({ instruments }) => {
+const InstrumentList = ({ instruments, onDelete, onEdit }) => {
   const [selectedItem, setSelectedItem] = useState(null);
 
   if (instruments.length === 0)
@@ -219,7 +270,7 @@ const InstrumentList = ({ instruments }) => {
 
             <div className="col-span-2 flex items-center gap-2 text-slate-600 font-bold text-sm">
               <Calendar size={14} className="text-indigo-400" />
-              {item.expiryDate || "Not Set"}
+              {formatDate(item.expiryDate)}
             </div>
 
             <div className="col-span-1">
@@ -229,12 +280,22 @@ const InstrumentList = ({ instruments }) => {
             <div className="col-span-2 flex items-center justify-end gap-3">
               <button
                 onClick={() => setSelectedItem(item)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-indigo-50 text-indigo-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-sm group/btn"
+                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm group/btn"
               >
                 <Eye size={14} className="group-hover/btn:scale-110 transition-transform" />
-                View Profile
+                View
               </button>
-              <button className="p-2.5 hover:bg-rose-50 text-slate-300 hover:text-rose-600 rounded-xl transition-all border border-transparent hover:border-rose-100">
+              <button
+                onClick={() => onEdit(item)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm group/btn"
+              >
+                <Pencil size={14} className="group-hover/btn:scale-110 transition-transform" />
+                Edit
+              </button>
+              <button
+                onClick={() => onDelete(item.id)}
+                className="p-2.5 hover:bg-rose-50 text-slate-300 hover:text-rose-600 rounded-xl transition-all border border-transparent hover:border-rose-100"
+              >
                 <Trash2 size={18} />
               </button>
             </div>

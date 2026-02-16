@@ -3,6 +3,7 @@ import { NC_OPTIONS } from "../data/NcCategories";
 import { FileText as FileIcon, UploadCloud, Eye, Trash2, Users, UserPlus, X } from "lucide-react";
 import { db } from "../../../db";
 import { getDepartments } from "../../department/services/departmentService";
+import staffService from "../../staff/services/staffService";
 import UploadPreviewModal from "../../documents/component/UploadPreviewModal";
 
 const NCEntry = ({ entry, onUpdate }) => {
@@ -16,8 +17,15 @@ const NCEntry = ({ entry, onUpdate }) => {
   useEffect(() => {
     const fetchStaff = async () => {
       try {
-        const staff = await db.staff.toArray();
-        setStaffList(staff);
+        const response = await staffService.getAllStaff();
+        const data = response.data || [];
+        const mappedStaff = data.map(s => ({
+          id: s.staffId || s.id,
+          name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || s.staffName || "Unnamed Staff",
+          role: s.jobTitle || "Staff",
+          dept: departments.find(d => (d.id || d.departmentId) === s.departmentId)?.name || departments.find(d => (d.id || d.departmentId) === s.departmentId)?.departmentName || "General"
+        }));
+        setStaffList(mappedStaff);
       } catch (error) {
         console.error("Error fetching staff:", error);
       }
@@ -32,8 +40,11 @@ const NCEntry = ({ entry, onUpdate }) => {
         console.error("Error fetching departments:", error);
       }
     };
-    fetchDepartments();
-  }, []);
+
+    if (departments.length === 0) {
+      fetchDepartments();
+    }
+  }, [departments]);
 
   useEffect(() => {
     if (!entry.category) {

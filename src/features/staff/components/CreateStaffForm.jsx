@@ -74,7 +74,9 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
 
       console.log("Submitting staff payload:", payload);
 
-      const response = await staffService.createStaff(payload);
+      const response = initialData
+        ? await staffService.updateStaff(payload)
+        : await staffService.createStaff(payload);
 
       if (response.data) {
         alert(initialData ? "Staff updated successfully" : "Staff created successfully");

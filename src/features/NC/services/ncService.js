@@ -10,7 +10,7 @@ export const ncService = {
      */
     createNC: async (ncData) => {
         try {
-            const response = await api.post("/NC/CreateNC", ncData);
+            const response = await api.post("/NonConformance/CreateNonConformance", ncData);
             return response.data;
         } catch (error) {
             console.error("Error creating NC:", error);
@@ -23,7 +23,7 @@ export const ncService = {
      */
     getNCs: async () => {
         try {
-            const response = await api.get("/NC/GetAllNCs");
+            const response = await api.get("/NonConformance/GetAllNonConformances");
             return response.data;
         } catch (error) {
             console.error("Error fetching NCs:", error);

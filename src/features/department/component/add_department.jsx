@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { db } from "../../../db";
 import { X, Box, UserCircle, ChevronDown } from "lucide-react";
-import api from "../../../auth/api";
+import { addDepartment, updateDepartment } from "../services/departmentService";
+import staffService from "../../staff/services/staffService";
 
 /**
  * AddDepartment component - A modal for defining a new department
@@ -35,8 +35,15 @@ export const AddDepartment = ({ isOpen, onClose, onAdd, editingData }) => {
     React.useEffect(() => {
         const fetchStaff = async () => {
             try {
-                const staff = await db.staff.toArray();
-                setStaffList(staff);
+                const response = await staffService.getAllStaff();
+                const data = response.data || [];
+                // Map to unified format used in the app
+                const mappedStaff = data.map(s => ({
+                    id: s.staffId,
+                    name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || "Unnamed Staff",
+                    role: s.jobTitle || "Staff"
+                }));
+                setStaffList(mappedStaff);
             } catch (error) {
                 console.error("Error fetching staff:", error);
             }
@@ -59,19 +66,20 @@ export const AddDepartment = ({ isOpen, onClose, onAdd, editingData }) => {
                 headOfDepartmentName: formData.head || "Not Assigned"
             };
 
-            // Using CreateDepartment for both if no Update endpoint provided, 
-            // but usually it's one or the other. I'll stick to the provided pattern.
-            const url = "/Department/CreateDepartment";
-            const response = await api.post(url, payload);
+            let responseData;
+            if (editingData) {
+                responseData = await updateDepartment(payload);
+            } else {
+                responseData = await addDepartment(payload);
+            }
 
-            if (response.data) {
-                const updatedDept = response.data;
-
+            if (responseData) {
+                const data = responseData.value || responseData;
                 // Map server response to match frontend state
                 const transformedDept = {
-                    id: updatedDept.departmentId,
-                    name: updatedDept.departmentName,
-                    head: updatedDept.headOfDepartmentName,
+                    id: data.departmentId,
+                    name: data.departmentName,
+                    head: data.headOfDepartmentName,
                     employeeCount: editingData ? editingData.employeeCount : 0,
                     icon: editingData ? editingData.icon : "Box",
                     color: editingData ? editingData.color : "indigo"
