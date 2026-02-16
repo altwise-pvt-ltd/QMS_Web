@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { X, FileText, ExternalLink, ShieldAlert } from "lucide-react";
+import ImageWithFallback from "../../../components/ui/ImageWithFallback";
 
 export default function UploadPreviewModal({ file, isOpen, onClose }) {
   const [objectUrl, setObjectUrl] = useState(null);
@@ -60,7 +61,7 @@ export default function UploadPreviewModal({ file, isOpen, onClose }) {
         <div className="flex-1 bg-slate-200 relative overflow-hidden">
           {isImage && objectUrl ? (
             <div className="w-full h-full flex items-center justify-center p-8 bg-slate-300">
-              <img
+              <ImageWithFallback
                 src={objectUrl}
                 alt="Document preview"
                 className="max-w-full max-h-full shadow-2xl rounded-sm object-contain border border-white/20"

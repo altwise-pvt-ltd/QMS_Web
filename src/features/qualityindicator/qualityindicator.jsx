@@ -226,6 +226,17 @@ const QualityIndicator = () => {
                 </p>
               </div>
             )}
+            {(indicator.minValue !== undefined ||
+              indicator.maxValue !== undefined) && (
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                    Range
+                  </p>
+                  <p className="text-xs font-black text-slate-700">
+                    {indicator.minValue ?? 0} - {indicator.maxValue ?? "∞"}
+                  </p>
+                </div>
+              )}
           </div>
         </div>
 
@@ -365,10 +376,7 @@ const QualityIndicator = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {/* Add New Card */}
           <div
-            onClick={() => {
-              setEditingIndicator(null);
-              setIsModalOpen(true);
-            }}
+            onClick={() => setIsModalOpen(true)}
             className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 group hover:border-indigo-300 transition-all flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-white min-h-[220px]"
           >
             <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all mb-4">

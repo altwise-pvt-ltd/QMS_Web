@@ -23,6 +23,7 @@ import {
   Truck,
   ShieldAlert,
 } from "lucide-react";
+import ImageWithFallback from "../../components/ui/ImageWithFallback";
 
 /**
  * Sidebar component that provides navigation across the application.
@@ -333,7 +334,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           {/* User Profile Card */}
           {!isCollapsed && user && (
             <div className="px-2 py-3 bg-indigo-50 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <img
+              <ImageWithFallback
                 src={
                   user.avatar || "https://ui-avatars.com/api/?name=" + user.name
                 }

@@ -1,10 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Upload, X, CheckCircle, Smartphone, Globe, MapPin, Building2, Briefcase } from "lucide-react";
+import {
+  Upload,
+  X,
+  CheckCircle,
+  Smartphone,
+  Globe,
+  MapPin,
+  Building2,
+  Briefcase,
+} from "lucide-react";
 import { db } from "../../db";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import api from "../../auth/api";
 import "./onboarding.css";
+import ImageWithFallback from "../../components/ui/ImageWithFallback";
 
 const OnboardingPage = () => {
   const navigate = useNavigate();
@@ -26,7 +36,12 @@ const OnboardingPage = () => {
         console.log("Fetching organization info from server...");
         const response = await api.get("/Organization/GetAllOrganization");
 
-        if (response.data && response.data.isSuccess && response.data.value && response.data.value.length > 0) {
+        if (
+          response.data &&
+          response.data.isSuccess &&
+          response.data.value &&
+          response.data.value.length > 0
+        ) {
           const company = response.data.value[0]; // Take the first one for onboarding
           console.log("Server organization found:", company);
 
@@ -34,8 +49,10 @@ const OnboardingPage = () => {
             name: company.LegalCompanyName || company.legalCompanyName || "",
             industry: company.IndustrySector || company.industrySector || "",
             phone: company.BusinessPhone || company.businessPhone || "",
-            websiteUrl: company.CorporateWebsite || company.corporateWebsite || "",
-            address: company.RegisteredAddress || company.registeredAddress || "",
+            websiteUrl:
+              company.CorporateWebsite || company.corporateWebsite || "",
+            address:
+              company.RegisteredAddress || company.registeredAddress || "",
           });
 
           // Sync to local Dexie
@@ -152,7 +169,9 @@ const OnboardingPage = () => {
       } else {
         // If absolutely no logo, we have to send something or the server fails
         // Providing a tiny transparent 1x1 pixel blob as a fallback if logo is "required"
-        const pixel = atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=");
+        const pixel = atob(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+        );
         const array = new Uint8Array(pixel.length);
         for (let i = 0; i < pixel.length; i++) array[i] = pixel.charCodeAt(i);
         const blob = new Blob([array], { type: "image/png" });
@@ -161,11 +180,15 @@ const OnboardingPage = () => {
 
       console.log("Submitting Onboarding via FormData (with Logo File)...");
 
-      const response = await api.post("/Organization/CreateOrganization", formDataToSend, {
-        headers: {
-          "Content-Type": "multipart/form-data",
+      const response = await api.post(
+        "/Organization/CreateOrganization",
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         },
-      });
+      );
 
       if (response.data.isSuccess) {
         console.log("Organization created successfully on server");
@@ -195,7 +218,10 @@ const OnboardingPage = () => {
         console.error("Server Response Status:", error.response.status);
         alert(`Server Error: ${JSON.stringify(error.response.data)}`);
       } else {
-        alert(error.message || "Failed to save company information. Please try again.");
+        alert(
+          error.message ||
+            "Failed to save company information. Please try again.",
+        );
       }
     } finally {
       setLoading(false);
@@ -208,27 +234,51 @@ const OnboardingPage = () => {
         <header className="onboarding-header">
           <div className="header-content">
             <h1>Organization Profile</h1>
-            <p>Configure your corporate identity to meet ISO compliance standards.</p>
+            <p>
+              Configure your corporate identity to meet ISO compliance
+              standards.
+            </p>
           </div>
-          <button type="submit" form="onboarding-form" className="onboarding-btn primary" disabled={loading}>
+          <button
+            type="submit"
+            form="onboarding-form"
+            className="onboarding-btn primary"
+            disabled={loading}
+          >
             {loading ? "Processing..." : "Save & Continue"}
           </button>
         </header>
 
-        <form id="onboarding-form" onSubmit={handleSubmit} className="onboarding-form">
-
+        <form
+          id="onboarding-form"
+          onSubmit={handleSubmit}
+          className="onboarding-form"
+        >
           {/* Section 1: Brand Identity */}
           <section className="form-section">
             <div className="section-info">
               <h3>Brand Identity</h3>
-              <p>This logo will appear on all generated ISO documentation and reports.</p>
+              <p>
+                This logo will appear on all generated ISO documentation and
+                reports.
+              </p>
             </div>
             <div className="section-fields">
               <div className="logo-horizontal-upload">
                 {logoPreview ? (
                   <div className="logo-preview-wrapper">
-                    <img src={logoPreview} alt="Preview" className="logo-preview" />
-                    <button type="button" className="remove-logo-btn" onClick={removeLogo}><X size={14} /></button>
+                    <ImageWithFallback
+                      src={logoPreview}
+                      alt="Preview"
+                      className="logo-preview"
+                    />
+                    <button
+                      type="button"
+                      className="remove-logo-btn"
+                      onClick={removeLogo}
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                 ) : (
                   <label className="logo-dropzone">
@@ -241,7 +291,8 @@ const OnboardingPage = () => {
                     />
                     <Upload size={20} />
                     <div>
-                      <span className="upload-link">Click to upload</span> or drag and drop
+                      <span className="upload-link">Click to upload</span> or
+                      drag and drop
                       <p className="upload-hint">PNG, JPG or SVG (max. 2MB)</p>
                     </div>
                   </label>
@@ -264,35 +315,72 @@ const OnboardingPage = () => {
                   <label htmlFor="name">Legal Company Name</label>
                   <div className="input-wrapper">
                     <Building2 size={16} className="field-icon" />
-                    <input id="name" name="name" type="text" value={formData.name} onChange={handleChange} required placeholder="Acme Corp" />
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                      placeholder="Acme Corp"
+                    />
                   </div>
                 </div>
                 <div className="form-group">
                   <label htmlFor="industry">Industry Sector</label>
                   <div className="input-wrapper">
                     <Briefcase size={16} className="field-icon" />
-                    <input id="industry" name="industry" type="text" value={formData.industry} onChange={handleChange} required placeholder="Manufacturing" />
+                    <input
+                      id="industry"
+                      name="industry"
+                      type="text"
+                      value={formData.industry}
+                      onChange={handleChange}
+                      required
+                      placeholder="Manufacturing"
+                    />
                   </div>
                 </div>
                 <div className="form-group">
                   <label htmlFor="phone">Business Phone</label>
                   <div className="input-wrapper">
                     <Smartphone size={16} className="field-icon" />
-                    <input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required />
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
                 </div>
                 <div className="form-group">
                   <label htmlFor="websiteUrl">Corporate Website</label>
                   <div className="input-wrapper">
                     <Globe size={16} className="field-icon" />
-                    <input id="websiteUrl" name="websiteUrl" type="url" value={formData.websiteUrl} onChange={handleChange} placeholder="https://" />
+                    <input
+                      id="websiteUrl"
+                      name="websiteUrl"
+                      type="url"
+                      value={formData.websiteUrl}
+                      onChange={handleChange}
+                      placeholder="https://"
+                    />
                   </div>
                 </div>
                 <div className="form-group full-width">
                   <label htmlFor="address">Registered Address</label>
                   <div className="input-wrapper textarea-wrapper">
                     <MapPin size={16} className="field-icon" />
-                    <textarea id="address" name="address" rows="3" value={formData.address} onChange={handleChange} required />
+                    <textarea
+                      id="address"
+                      name="address"
+                      rows="3"
+                      value={formData.address}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
                 </div>
               </div>
