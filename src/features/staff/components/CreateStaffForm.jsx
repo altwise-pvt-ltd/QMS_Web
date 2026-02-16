@@ -214,7 +214,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="+91 98765 43210"
-              pattern="[+]?[0-9\s-()]+"
+              pattern="[+\-]?[0-9\s\-()]+"
               title="Please enter a valid phone number"
             />
           </div>

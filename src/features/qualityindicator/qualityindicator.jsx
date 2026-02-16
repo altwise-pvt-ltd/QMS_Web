@@ -166,11 +166,11 @@ const QualityIndicator = () => {
 
     const getSeverityStyles = (severity) => {
       const s = parseInt(severity);
-      if (s >= 5) return "bg-rose-500 text-gray-600 shadow-rose-100";
-      if (s >= 4) return "bg-orange-500 text-gray-600 shadow-orange-100";
-      if (s >= 3) return "bg-amber-500 text-gray-600 shadow-amber-100";
-      if (s >= 2) return "bg-blue-500 text-gray-600 shadow-blue-100";
-      return "bg-emerald-500 text-gray-600 shadow-emerald-100";
+      if (s >= 5) return "bg-rose-500 text-white shadow-rose-100";
+      if (s >= 4) return "bg-orange-500 text-white shadow-orange-100";
+      if (s >= 3) return "bg-amber-500 text-white shadow-amber-100";
+      if (s >= 2) return "bg-blue-500 text-white shadow-blue-100";
+      return "bg-emerald-500 text-white shadow-emerald-100";
     };
 
     return (
@@ -343,7 +343,7 @@ const QualityIndicator = () => {
           <div className="flex items-center bg-white p-1 rounded-2xl shadow-sm border border-slate-100 w-full md:w-auto">
             <button
               onClick={() => setSelectedCategory("All")}
-              className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === "All" ? "bg-indigo-600 text-gray-600 shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
+              className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === "All" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
             >
               All
             </button>
@@ -351,7 +351,7 @@ const QualityIndicator = () => {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === cat ? "bg-indigo-600 text-gray-600 shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
+                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === cat ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
               >
                 {cat}
               </button>
@@ -498,7 +498,7 @@ const QualityIndicator = () => {
                 <button
                   onClick={handleSaveIndicator}
                   disabled={!newName || !newCategory}
-                  className="flex-1 py-4 bg-indigo-600 text-gray-600 font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                  className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   {editingIndicator ? "Update Metric" : "Define Metric"}
                 </button>
