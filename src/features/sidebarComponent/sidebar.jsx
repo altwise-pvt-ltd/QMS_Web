@@ -103,8 +103,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <LayoutDashboard className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Dashboard
@@ -121,8 +121,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <FileText className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Documents
@@ -136,8 +136,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <ClipboardList className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   CAPA & Incidents
@@ -154,8 +154,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <ClipboardList className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Entries Management
@@ -169,8 +169,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <Calendar className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Compliance Calendar
@@ -187,8 +187,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Management Review
@@ -205,8 +205,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <Users className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Staff
@@ -222,8 +222,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <BarChart3 className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Quality Indicators
@@ -239,8 +239,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <AlertTriangle className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Risk Indicators
@@ -254,8 +254,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <GraduationCap className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Training
@@ -269,8 +269,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <Building2 className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Department
@@ -284,8 +284,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <Activity className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Instrument Calibration
@@ -299,8 +299,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <Truck className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Vendor Management
@@ -317,8 +317,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <ShieldAlert className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Risk Assessment
@@ -335,10 +335,12 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             <div className="px-2 py-3 bg-indigo-50 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
               <img
                 src={
-                  user.avatar || "https://ui-avatars.com/api/?name=" + user.name
+                  user.avatar
+                    ? (user.avatar.startsWith('http') ? user.avatar : `https://qmsapi.altwise.in/${user.avatar.startsWith('/') ? user.avatar.substring(1) : user.avatar}`)
+                    : `https://ui-avatars.com/api/?name=${user.name}&background=6366f1&color=fff`
                 }
                 alt={user.name}
-                className="w-10 h-10 rounded-lg shadow-sm border border-white"
+                className="w-10 h-10 rounded-lg shadow-sm border border-white object-cover"
               />
               <div className="flex-1 overflow-hidden">
                 <p className="text-sm font-bold text-slate-800 truncate">
@@ -357,8 +359,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <Settings className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Settings
@@ -373,8 +375,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <LogOut className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:-translate-x-1" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Sign Out

@@ -235,20 +235,20 @@ const InstrumentList = ({ instruments, onDelete, onEdit }) => {
   return (
     <div className="w-full space-y-4">
       {/* Dense Table Header */}
-      <div className="px-10 py-2 grid grid-cols-12 text-[10px] font-bold uppercase text-slate-400 border-b border-slate-100 gap-4">
-        <div className="col-span-5">Nomenclature</div>
+      <div className="px-6 sm:px-10 py-2 grid grid-cols-12 text-[10px] font-bold uppercase text-slate-400 border-b border-slate-100 gap-4">
+        <div className="col-span-4">Nomenclature</div>
         <div className="col-span-2">Department</div>
         <div className="col-span-2 text-center">Due Date</div>
         <div className="col-span-1 text-center">Status</div>
-        <div className="col-span-2 text-right">Actions</div>
+        <div className="col-span-3 text-right">Actions</div>
       </div>
 
       {instruments.map((item) => {
         const isExpired = new Date(item.expiryDate) < new Date();
 
         return (
-          <div key={item.id} className="group bg-white rounded-[32px] border border-slate-100 hover:border-indigo-200 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 overflow-hidden px-10 py-6 grid grid-cols-12 items-center gap-4">
-            <div className="col-span-5 flex items-center gap-6">
+          <div key={item.id} className="group bg-white rounded-[32px] border border-slate-100 hover:border-indigo-200 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 overflow-hidden px-6 sm:px-10 py-6 grid grid-cols-12 items-center gap-4">
+            <div className="col-span-4 flex items-center gap-3 sm:gap-6">
               {item.photo ? (
                 <img src={item.photo} alt={item.name} className="w-16 h-16 object-cover rounded-2xl shadow-sm border border-slate-50" />
               ) : (
@@ -273,11 +273,11 @@ const InstrumentList = ({ instruments, onDelete, onEdit }) => {
               {formatDate(item.expiryDate)}
             </div>
 
-            <div className="col-span-1">
+            <div className="col-span-1 flex justify-center">
               <div className={`w-3 h-3 rounded-full shadow-sm animate-pulse ${isExpired ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
             </div>
 
-            <div className="col-span-2 flex items-center justify-end gap-3">
+            <div className="col-span-3 flex items-center justify-end gap-3">
               <button
                 onClick={() => setSelectedItem(item)}
                 className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm group/btn"
