@@ -3,6 +3,7 @@ import { Upload, FileText, X, Plus, Trash2 } from "lucide-react";
 
 const VaccinationRecords = ({
   formData,
+  existingDocuments,
   handleFileChange,
   handleFileRemove,
   handleInputChange,
@@ -26,6 +27,42 @@ const VaccinationRecords = ({
       </div>
 
       <div className="space-y-4">
+        {/* Existing Documents List */}
+        {existingDocuments?.vaccinationRecords?.length > 0 && (
+          <div className="mb-6 space-y-2">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">
+              Existing Vaccinations
+            </h3>
+            <div className="grid grid-cols-1 gap-2">
+              {existingDocuments.vaccinationRecords.map((doc, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-3 bg-orange-50 border border-orange-100 rounded-lg"
+                >
+                  <div>
+                    <span className="text-sm font-medium text-orange-900 block">
+                      {doc.name}
+                    </span>
+                    <span className="text-xs text-orange-700">
+                      Date: {doc.date}
+                    </span>
+                  </div>
+                  {doc.file?.url && (
+                    <a
+                      href={doc.file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-medium text-blue-600 hover:underline flex items-center gap-1"
+                    >
+                      <FileText size={14} /> View
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {formData.vaccinationRecords.map((record, index) => (
           <div
             key={index}
@@ -85,7 +122,10 @@ const VaccinationRecords = ({
                   {record.file ? (
                     <div className="flex items-center justify-between p-1">
                       <div className="flex items-center gap-2 overflow-hidden">
-                        <FileText size={16} className="text-orange-600 shrink-0" />
+                        <FileText
+                          size={16}
+                          className="text-orange-600 shrink-0"
+                        />
                         <span className="text-xs text-gray-700 truncate">
                           {record.file.name}
                         </span>
@@ -103,15 +143,18 @@ const VaccinationRecords = ({
                   ) : (
                     <label className="cursor-pointer flex items-center justify-center py-1">
                       <Upload size={16} className="text-gray-400 mr-2" />
-                      <span className="text-xs text-gray-500">
-                        Select file
-                      </span>
+                      <span className="text-xs text-gray-500">Select file</span>
                       <input
                         type="file"
                         required
                         accept=".pdf,.jpg,.jpeg,.png"
                         onChange={(e) =>
-                          handleFileChange(e, "vaccinationRecords", index, "file")
+                          handleFileChange(
+                            e,
+                            "vaccinationRecords",
+                            index,
+                            "file",
+                          )
                         }
                         className="hidden"
                       />

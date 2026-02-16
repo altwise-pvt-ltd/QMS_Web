@@ -105,7 +105,7 @@ const InstrumentDetailModal = ({ item, onClose }) => {
         }`}
     >
       <div className="flex items-center gap-5 min-w-0 flex-1">
-        <div className={`w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center shadow-inner transition-colors ${value !== "N/A" ? "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white" : "bg-white text-slate-300"
+        <div className={`w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center shadow-inner transition-colors ${value !== "N/A" ? "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-black" : "bg-white text-slate-300"
           }`}>
           <FileText size={24} />
         </div>
@@ -120,7 +120,7 @@ const InstrumentDetailModal = ({ item, onClose }) => {
 
       <div className="flex items-center ml-4 shrink-0">
         <button className={`px-6 py-3.5 border rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${value !== "N/A"
-          ? "border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white"
+          ? "border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-black"
           : "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed"
           }`}>
           View PDF
@@ -138,7 +138,7 @@ const InstrumentDetailModal = ({ item, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="absolute top-8 right-8 w-12 h-12 bg-white/10 hover:bg-white text-white hover:text-indigo-600 rounded-2xl transition-all flex items-center justify-center backdrop-blur-md border border-white/20 z-10"
+            className="absolute top-8 right-8 w-12 h-12 bg-white/10 hover:bg-white text-black hover:text-indigo-600 rounded-2xl transition-all flex items-center justify-center backdrop-blur-md border border-white/20 z-10"
           >
             <X size={24} />
           </button>
@@ -152,12 +152,12 @@ const InstrumentDetailModal = ({ item, onClose }) => {
               </div>
             )}
             <div className="pb-12 space-y-1">
-              <h3 className="text-3xl font-black text-white tracking-tight uppercase italic">{item.name}</h3>
+              <h3 className="text-3xl font-black text-black tracking-tight uppercase italic">{item.name}</h3>
               <div className="flex items-center gap-3">
-                <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-[10px] font-black rounded-full uppercase tracking-widest border border-white/10">
+                <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-black text-[10px] font-black rounded-full uppercase tracking-widest border border-white/10">
                   {item.department}
                 </span>
-                <span className={`px-3 py-1 text-[10px] font-black rounded-full uppercase tracking-widest ${isExpired ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'}`}>
+                <span className={`px-3 py-1 text-[10px] font-black rounded-full uppercase tracking-widest ${isExpired ? 'bg-rose-500 text-black' : 'bg-emerald-500 text-black'}`}>
                   {isExpired ? 'Expired' : 'Compliant'}
                 </span>
               </div>
@@ -280,14 +280,14 @@ const InstrumentList = ({ instruments, onDelete, onEdit }) => {
             <div className="col-span-3 flex items-center justify-end gap-3">
               <button
                 onClick={() => setSelectedItem(item)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm group/btn"
+                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-black transition-all shadow-sm group/btn"
               >
                 <Eye size={14} className="group-hover/btn:scale-110 transition-transform" />
                 View
               </button>
               <button
                 onClick={() => onEdit(item)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm group/btn"
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-black transition-all shadow-sm group/btn"
               >
                 <Pencil size={14} className="group-hover/btn:scale-110 transition-transform" />
                 Edit

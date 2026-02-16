@@ -166,11 +166,11 @@ const QualityIndicator = () => {
 
     const getSeverityStyles = (severity) => {
       const s = parseInt(severity);
-      if (s >= 5) return "bg-rose-500 text-gray-600 shadow-rose-100";
-      if (s >= 4) return "bg-orange-500 text-gray-600 shadow-orange-100";
-      if (s >= 3) return "bg-amber-500 text-gray-600 shadow-amber-100";
-      if (s >= 2) return "bg-blue-500 text-gray-600 shadow-blue-100";
-      return "bg-emerald-500 text-gray-600 shadow-emerald-100";
+      if (s >= 5) return "bg-rose-500 text-white shadow-rose-100";
+      if (s >= 4) return "bg-orange-500 text-white shadow-orange-100";
+      if (s >= 3) return "bg-amber-500 text-white shadow-amber-100";
+      if (s >= 2) return "bg-blue-500 text-white shadow-blue-100";
+      return "bg-emerald-500 text-white shadow-emerald-100";
     };
 
     return (
@@ -226,6 +226,17 @@ const QualityIndicator = () => {
                 </p>
               </div>
             )}
+            {(indicator.minValue !== undefined ||
+              indicator.maxValue !== undefined) && (
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                    Range
+                  </p>
+                  <p className="text-xs font-black text-slate-700">
+                    {indicator.minValue ?? 0} - {indicator.maxValue ?? "∞"}
+                  </p>
+                </div>
+              )}
           </div>
         </div>
 
@@ -332,7 +343,7 @@ const QualityIndicator = () => {
           <div className="flex items-center bg-white p-1 rounded-2xl shadow-sm border border-slate-100 w-full md:w-auto">
             <button
               onClick={() => setSelectedCategory("All")}
-              className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === "All" ? "bg-indigo-600 text-gray-600 shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
+              className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === "All" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
             >
               All
             </button>
@@ -340,7 +351,7 @@ const QualityIndicator = () => {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === cat ? "bg-indigo-600 text-gray-600 shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
+                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === cat ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
               >
                 {cat}
               </button>
@@ -365,10 +376,7 @@ const QualityIndicator = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {/* Add New Card */}
           <div
-            onClick={() => {
-              setEditingIndicator(null);
-              setIsModalOpen(true);
-            }}
+            onClick={() => setIsModalOpen(true)}
             className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 group hover:border-indigo-300 transition-all flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-white min-h-[220px]"
           >
             <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all mb-4">
@@ -490,7 +498,7 @@ const QualityIndicator = () => {
                 <button
                   onClick={handleSaveIndicator}
                   disabled={!newName || !newCategory}
-                  className="flex-1 py-4 bg-indigo-600 text-gray-600 font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                  className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   {editingIndicator ? "Update Metric" : "Define Metric"}
                 </button>

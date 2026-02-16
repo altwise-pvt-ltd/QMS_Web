@@ -5,6 +5,7 @@ import { db } from "../../../db";
 
 import staffService from "../services/staffService";
 import { Skeleton } from "../../../components/ui/Skeleton";
+import ImageWithFallback from "../../../components/ui/ImageWithFallback";
 import { Link } from "react-router-dom"; // Assuming standard router link if needed, though this file uses onAddNew props
 
 const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
@@ -24,7 +25,7 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
       // Fetch both staff and departments in parallel
       const [staffRes, deptsRes] = await Promise.all([
         staffService.getAllStaff(),
-        staffService.getAllDepartments()
+        staffService.getAllDepartments(),
       ]);
 
       const staffFromServer = staffRes.data || [];
@@ -32,12 +33,12 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
 
       // Create a map for quick department name lookup
       const deptMap = {};
-      deptsFromServer.forEach(d => {
+      deptsFromServer.forEach((d) => {
         deptMap[d.departmentId] = d.departmentName;
       });
 
       // Map server staff to frontend format
-      const mappedStaff = staffFromServer.map(s => ({
+      const mappedStaff = staffFromServer.map((s) => ({
         id: s.staffId,
         firstName: s.firstName,
         lastName: s.lastName,
@@ -47,10 +48,12 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
         role: s.jobTitle || "No Role",
         dept: deptMap[s.departmentId] || `Dept ${s.departmentId}`,
         deptId: s.departmentId,
-        status: s.status || (s.staffAssessmentCompetenceStatus ? "Competent" : "Needs Review"),
+        status:
+          s.status ||
+          (s.staffAssessmentCompetenceStatus ? "Competent" : "Needs Review"),
         joinDate: s.createdDate ? s.createdDate.split("T")[0] : "N/A",
         photo: staffService.getAssetUrl(s.staffPassportPhotoPath),
-        resume: staffService.getAssetUrl(s.staffResumePath)
+        resume: staffService.getAssetUrl(s.staffResumePath),
       }));
 
       setStaffData(mappedStaff);
@@ -93,7 +96,7 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
         </div>
         <button
           onClick={onAddNew}
-          className="bg-blue-600 text-gray-600 px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-md transition-all"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-md transition-all"
         >
           <Plus size={18} /> Add New Staff
         </button>
@@ -103,7 +106,10 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
         {loading ? (
           <div className="p-4 space-y-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center space-x-4 border-b border-gray-50 pb-4">
+              <div
+                key={i}
+                className="flex items-center space-x-4 border-b border-gray-50 pb-4"
+              >
                 <Skeleton className="h-12 w-12 rounded-full" />
                 <div className="space-y-2 flex-1">
                   <Skeleton className="h-4 w-50" />
@@ -135,13 +141,9 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
                 >
                   <td className="p-4 flex items-center gap-3">
                     {staff.photo ? (
-                      <img
+                      <ImageWithFallback
                         src={staff.photo}
                         alt={staff.name}
-                        onError={(e) => {
-                          e.target.onerror = null; 
-                          e.target.src = staffService.getPlaceholderImage();
-                        }}
                         className="w-10 h-10 rounded-full object-cover border border-gray-200"
                       />
                     ) : (
@@ -168,8 +170,8 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
                   <td className="p-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${staff.status === "Competent"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-amber-100 text-amber-700"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-amber-100 text-amber-700"
                         }`}
                     >
                       {staff.status}

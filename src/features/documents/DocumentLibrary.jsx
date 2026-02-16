@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, createSearchParams } from "react-router-dom";
 import {
   Search,
   FolderOpen,
@@ -7,22 +7,117 @@ import {
   ChevronRight,
   ArrowRight,
   Plus,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
-import { DOC_LEVELS } from "./data.js";
-import { createSearchParams } from "react-router-dom";
+import { LEVEL_CONFIG } from "./data.js";
+import documentService from "./services/documentService";
+import {
+  transformCategory,
+  transformSubCategory,
+} from "./services/documentTransformer";
 
 const DocumentLibrary = () => {
-  const [levels, setLevels] = useState(DOC_LEVELS);
-  const [activeLevelId, setActiveLevelId] = useState("level-1");
+  const [levels, setLevels] = useState([]);
+  const [activeLevelId, setActiveLevelId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Sync state with data.js changes
-  React.useEffect(() => {
-    setLevels(DOC_LEVELS);
-  }, []);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [loadingSub, setLoadingSub] = useState(false);
 
   const navigate = useNavigate();
-  const activeData = levels.find((l) => l.id === activeLevelId);
+  // Ref to track the current active level for race condition handling
+  const activeLevelRef = useRef(null);
+
+  // Fetch Categories on Mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setIsLoading(true);
+        const data = await documentService.getCategories();
+        const transformedLevels = data.map((cat) => {
+          let levelNum = cat.documentCategoryLevel;
+          if (typeof levelNum === "string") {
+            const match = levelNum.match(/\d+/);
+            levelNum = match ? parseInt(match[0], 10) : 0;
+          }
+          return transformCategory(cat, LEVEL_CONFIG[levelNum]);
+        });
+
+        // Sort by level number to ensure correct order
+        transformedLevels.sort((a, b) => a.level - b.level);
+
+        setLevels(transformedLevels);
+
+        // Set initial active level
+        if (transformedLevels.length > 0) {
+          const firstLevelId = transformedLevels[0].id;
+          setActiveLevelId(firstLevelId);
+          activeLevelRef.current = firstLevelId;
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load document categories.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Fetch Subcategories when active level changes
+  useEffect(() => {
+    if (!activeLevelId) return;
+
+    // Update ref immediately
+    activeLevelRef.current = activeLevelId;
+
+    const fetchSubItems = async () => {
+      // Find current level data
+      const currentLevelIndex = levels.findIndex((l) => l.id === activeLevelId);
+      if (currentLevelIndex === -1) return;
+
+      // Check if items are already loaded (simple caching check)
+      // Note: If you want to force refresh on click, remove this check or add a refresh button
+      if (
+        levels[currentLevelIndex].items &&
+        levels[currentLevelIndex].items.length > 0
+      ) {
+        return;
+      }
+
+      try {
+        setLoadingSub(true);
+        const subData = await documentService.getSubCategories(activeLevelId);
+
+        // Race condition check: Ensure we are still on the same level
+        if (activeLevelRef.current !== activeLevelId) return;
+
+        const transformedItems = subData.map(transformSubCategory);
+
+        setLevels((prevLevels) =>
+          prevLevels.map((level) =>
+            level.id === activeLevelId
+              ? { ...level, items: transformedItems }
+              : level,
+          ),
+        );
+      } catch (err) {
+        console.error(err);
+        // Optional: Set a specific error for the subpanel or just log it
+        // We don't want to block the whole UI if just one folder fails
+      } finally {
+        if (activeLevelRef.current === activeLevelId) {
+          setLoadingSub(false);
+        }
+      }
+    };
+
+    fetchSubItems();
+  }, [activeLevelId]); // Removed `levels` from dependency to avoid loop, we use functional update
+
+  const activeData = levels.find((l) => l.id === activeLevelId) || {};
 
   const handleViewClick = (docName) => {
     navigate({
@@ -34,59 +129,103 @@ const DocumentLibrary = () => {
     });
   };
 
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     const name = prompt("Enter Name");
     if (!name) return;
 
-    setLevels((prevLevels) =>
-      prevLevels.map((level) =>
-        level.id === activeLevelId
-          ? {
-              ...level,
-              items: [...(level.items || []), { name }],
-            }
-          : level,
-      ),
-    );
+    // Optimistic update or wait for API? Let's wait for API to ensure ID is correct
+    try {
+      // Assuming 'test' user for now as per request example, or we can look up current user if available
+      const payload = {
+        documentCategoryId: activeData.id,
+        documentSubCategoryName: name,
+        createdBy: "test", // TODO: Replace with actual user name from auth store if available
+      };
+
+      const newSubCategory = await documentService.createSubCategory(payload);
+      const transformedItem = transformSubCategory(newSubCategory);
+
+      setLevels((prevLevels) =>
+        prevLevels.map((level) =>
+          level.id === activeLevelId
+            ? {
+                ...level,
+                items: [...(level.items || []), transformedItem],
+              }
+            : level,
+        ),
+      );
+    } catch (err) {
+      console.error("Failed to create folder", err);
+      alert("Failed to create folder. Please try again.");
+    }
   };
 
-  const handleEditItem = (index, currentName) => {
+  const handleEditItem = async (index, currentName) => {
     const newName = prompt("Edit Name", currentName);
     if (!newName || newName === currentName) return;
 
-    setLevels((prevLevels) =>
-      prevLevels.map((level) =>
-        level.id === activeLevelId
-          ? {
-              ...level,
-              items: level.items.map((item, idx) =>
-                idx === index ? { ...item, name: newName } : item,
-              ),
-            }
-          : level,
-      ),
-    );
+    try {
+      const itemToEdit = activeData.items[index];
+
+      const payload = {
+        documentCategoryId: activeData.id,
+        documentSubCategoryId: itemToEdit.id,
+        documentSubCategoryName: newName,
+        createdBy: "test", // TODO: Replace with actual user
+        updatedBy: "test", // TODO: Replace with actual user
+      };
+
+      await documentService.updateSubCategory(payload);
+
+      // Update local state to reflect change immediately
+      setLevels((prevLevels) =>
+        prevLevels.map((level) =>
+          level.id === activeLevelId
+            ? {
+                ...level,
+                items: level.items.map((item, idx) =>
+                  idx === index ? { ...item, name: newName } : item,
+                ),
+              }
+            : level,
+        ),
+      );
+    } catch (err) {
+      console.error("Failed to update folder", err);
+      alert("Failed to update folder. Please try again.");
+    }
   };
 
-  const handleDeleteItem = (index, name) => {
+  const handleDeleteItem = async (index, name) => {
     const confirmDelete = window.confirm(
       `⚠️ Delete "${name}"?\n\nThis will permanently delete the entire folder and all its data. This action cannot be undone.`,
     );
     if (!confirmDelete) return;
 
-    setLevels((prevLevels) =>
-      prevLevels.map((level) =>
-        level.id === activeLevelId
-          ? {
-              ...level,
-              items: level.items.filter((_, idx) => idx !== index),
-            }
-          : level,
-      ),
-    );
+    try {
+      const itemToDelete = activeData.items[index];
+
+      await documentService.deleteSubCategory(itemToDelete.id, activeData.id);
+
+      setLevels((prevLevels) =>
+        prevLevels.map((level) =>
+          level.id === activeLevelId
+            ? {
+                ...level,
+                items: level.items.filter((_, idx) => idx !== index),
+              }
+            : level,
+        ),
+      );
+    } catch (err) {
+      console.error("Failed to delete folder", err);
+      alert("Failed to delete folder. Please try again.");
+    }
   };
 
   const handleUploadClick = (docName = "", sectionName = "") => {
+    if (!activeLevelId) return;
     navigate({
       pathname: "/documents/upload",
       search: createSearchParams({
@@ -97,6 +236,41 @@ const DocumentLibrary = () => {
       }).toString(),
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
+          <p className="text-slate-500 font-medium">
+            Loading Document Library...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
+        <div className="flex flex-col items-center gap-4 text-center max-w-md p-6 bg-white rounded-xl shadow-lg border border-red-100">
+          <div className="p-3 bg-red-100 rounded-full">
+            <AlertCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900">
+            Unable to load library
+          </h3>
+          <p className="text-slate-500">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-2 max-w-6xl mx-auto min-h-screen bg-slate-50/50">
@@ -124,13 +298,13 @@ const DocumentLibrary = () => {
           </div>
 
           <button
-  type="button"
-  onClick={handleUploadClick}
-  className="
+            type="button"
+            onClick={() => handleUploadClick()}
+            className="
     inline-flex items-center gap-2
     px-4 py-2.5
     rounded-lg
-    bg-indigo-600 text-white
+    bg-indigo-600 text-gray-600
     text-sm font-semibold
     shadow-sm
     hover:bg-indigo-700
@@ -140,19 +314,18 @@ const DocumentLibrary = () => {
     active:scale-95
     whitespace-nowrap
   "
->
-  <Plus className="w-4 h-4" />
-  Upload Document
-</button>
-
+          >
+            <Plus className="w-4 h-4" />
+            Upload Document
+          </button>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Navigation Sidebar (The Pyramid) - Sticky on Desktop */}
         <div className="lg:w-1/3 lg:sticky lg:top-6 h-fit space-y-3">
-          {DOC_LEVELS.map((level) => {
-            const Icon = level.icon;
+          {levels.map((level) => {
+            const Icon = level.icon || File; // Fallback icon
             const isActive = activeLevelId === level.id;
             return (
               <button
@@ -203,11 +376,11 @@ const DocumentLibrary = () => {
         </div>
 
         {/* Content Area - Scrollable with fixed max height */}
-        <div className="lg:w-2/3 bg-gray-50 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40 flex flex-col h-[calc(100vh-200px)] lg:h-[calc(100vh-160px)] min-h-[500px] overflow-hidden">
+        <div className="lg:w-2/3 bg-gray-50 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40 flex flex-col h-[calc(100vh-200px)] lg:h-[calc(100vh-160px)] min-h-125 overflow-hidden">
           <div className="p-6 border-b border-slate-100 bg-linear-to-r from-slate-50 to-white">
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <FolderOpen className="w-6 h-6 text-indigo-600" />
-              {activeData.title}
+              {activeData.title || "Loading..."}
             </h2>
             <p className="text-sm font-medium text-slate-600 mt-1">
               Browse documents in Level {activeData.level}
@@ -215,12 +388,17 @@ const DocumentLibrary = () => {
           </div>
 
           <div className="p-6 bg-white overflow-y-auto custom-scrollbar flex-1">
-            {/* Handle levels with direct items (Level 1, 2) */}
-            {activeData.items && (
+            {/* Loading State for Subcategories */}
+            {loadingSub ? (
+              <div className="flex flex-col items-center justify-center h-40 gap-3 text-slate-400">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+                <span className="text-sm">Loading folders...</span>
+              </div>
+            ) : activeData.items && activeData.items.length > 0 ? (
               <div className="grid grid-cols-1 gap-3">
                 {activeData.items.map((doc, idx) => (
                   <DocumentRow
-                    key={idx}
+                    key={`${activeLevelId}-${idx}`} // Use combined key to force re-render on level switch if needed
                     index={idx}
                     name={doc.name}
                     side={doc.side}
@@ -234,9 +412,20 @@ const DocumentLibrary = () => {
                 {/* ADD ITEM BUTTON */}
                 <button
                   onClick={handleAddItem}
-                  className="flex items-center justify-center h-[56px] border-2 border-dashed border-indigo-400 rounded-xl text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 transition-all"
+                  className="flex items-center justify-center h-14 border-2 border-dashed border-indigo-400 rounded-xl text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 transition-all"
                 >
                   <span className="text-xl font-bold">ADD FOLDER</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-40 gap-3 text-slate-400">
+                <FolderOpen className="w-12 h-12 text-slate-200" />
+                <p>No subcategories found.</p>
+                <button
+                  onClick={handleAddItem}
+                  className="mt-2 text-indigo-600 font-medium hover:text-indigo-800"
+                >
+                  Create First Folder
                 </button>
               </div>
             )}
@@ -253,7 +442,7 @@ const DocumentRow = ({ index, name, onView, onUpload, onEdit, onDelete }) => (
     className="group flex items-center justify-between p-3 rounded-xl border border-slate-200/80 bg-white hover:border-indigo-200 hover:bg-indigo-50 transition-all cursor-pointer hover:shadow-sm"
   >
     <div className="flex items-center gap-3">
-      <div className="p-2.5 bg-slate-100 text-slate-600 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-all duration-200 shadow-sm group-hover:shadow-indigo-200">
+      <div className="p-2.5 bg-slate-100 text-slate-600 rounded-lg group-hover:bg-indigo-600 group-hover:text-gray-600 transition-all duration-200 shadow-sm group-hover:shadow-indigo-200">
         <File className="w-4 h-4" />
       </div>
       <div>

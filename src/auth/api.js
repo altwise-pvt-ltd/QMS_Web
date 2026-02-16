@@ -24,7 +24,7 @@ api.interceptors.request.use((config) => {
     token = localStorage.getItem("accessToken");
   }
 
-  if (token) {
+  if (token && !config.skipAuth) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;

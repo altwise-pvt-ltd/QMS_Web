@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FileText, Download, Eye, ArrowLeft } from "lucide-react";
 import { db } from "../../../db";
+import ImageWithFallback from "../../../components/ui/ImageWithFallback";
 
 const MinutesOfMeetingPreview = ({
   meeting,
@@ -338,7 +339,7 @@ const MinutesOfMeetingPreview = ({
               <div className="max-w-4xl mx-auto">
                 <div className="flex flex-col items-center border-b-2 border-gray-800 pb-6 mb-6">
                   {companyInfo?.logo && (
-                    <img
+                    <ImageWithFallback
                       src={companyInfo.logo}
                       alt="Company Logo"
                       className="h-20 mb-3 object-contain"

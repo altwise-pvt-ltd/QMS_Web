@@ -1,8 +1,10 @@
 import React from "react";
 import { Upload, FileText, X, Eye } from "lucide-react";
+import ImageWithFallback from "../../../../components/ui/ImageWithFallback";
 
 const PersonalDocuments = ({
   formData,
+  existingDocuments,
   handleFileChange,
   handleFileRemove,
 }) => {
@@ -23,7 +25,7 @@ const PersonalDocuments = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {formData.passportPhoto.preview ? (
-                    <img
+                    <ImageWithFallback
                       src={formData.passportPhoto.preview}
                       alt="Passport"
                       className="w-12 h-12 rounded-lg object-cover border border-gray-200"
@@ -35,7 +37,9 @@ const PersonalDocuments = ({
                     <span className="text-sm text-gray-700 block font-medium">
                       {formData.passportPhoto.name}
                     </span>
-                    <span className="text-xs text-green-500">File selected</span>
+                    <span className="text-xs text-green-500">
+                      File selected
+                    </span>
                   </div>
                 </div>
                 <div className="flex gap-2">

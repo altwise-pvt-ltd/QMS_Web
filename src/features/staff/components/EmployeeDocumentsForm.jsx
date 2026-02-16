@@ -20,7 +20,9 @@ const EmployeeDocumentsForm = ({ initialData }) => {
     cv: null,
 
     // Qualification Documents (dynamic array)
-    qualifications: [{ title: "", collegeName: "", graduationYear: "", file: null }],
+    qualifications: [
+      { title: "", collegeName: "", graduationYear: "", file: null },
+    ],
 
     // Appointment Documents (dynamic array)
     appointmentDocuments: [{ title: "", file: null }],
@@ -48,13 +50,113 @@ const EmployeeDocumentsForm = ({ initialData }) => {
   });
 
   // Populate form when editing existing staff
+  // Populate form when editing existing staff
+  const [existingDocuments, setExistingDocuments] = useState({
+    passportPhoto: null,
+    cv: null,
+    qualifications: [],
+    appointmentDocuments: [],
+    medicalRecords: [],
+    vaccinationRecords: [],
+    trainingRecords: [],
+  });
+
+  // Populate form when editing existing staff
   useEffect(() => {
-    if (initialData) {
-      // Populate with existing data if available
-      setFormData((prev) => ({
-        ...prev,
-        passportPhoto: initialData.photo ? { name: "Current Photo", preview: initialData.photo } : null,
-      }));
+    if (initialData?.id) {
+      // 1. Fetch full documents list from API
+      const fetchDocuments = async () => {
+        try {
+          const response = await staffService.getStaffDocuments(initialData.id);
+          const docs = response.data;
+
+          // Helper to create file object for existing files
+          const createExistingFile = (path, name = "View Document") => {
+            if (!path) return null;
+            return {
+              name: name,
+              url: staffService.getAssetUrl(path),
+              isExisting: true,
+              path: path,
+            };
+          };
+
+          // Set Existing Documents State (Read-only display)
+          setExistingDocuments({
+            passportPhoto: docs.passportPhoto
+              ? createExistingFile(docs.passportPhoto, "Passport Photo")
+              : null,
+            cv: docs.resumePath
+              ? createExistingFile(docs.resumePath, "CV / Resume")
+              : null,
+            qualifications:
+              docs.qualifications?.map((q) => ({
+                title: q.documentTitle,
+                collegeName: q.collegeName || "",
+                graduationYear: q.graduationYear || "",
+                file: createExistingFile(q.documentPath, q.documentTitle),
+              })) || [],
+            appointmentDocuments:
+              docs.appointments?.map((a) => ({
+                title: a.documentTitle,
+                file: createExistingFile(a.documentPath, a.documentTitle),
+              })) || [],
+            medicalRecords:
+              docs.medicals?.map((m) => ({
+                title: m.recordTitle,
+                issueDate: m.issueDate ? m.issueDate.split("T")[0] : "",
+                certificate: createExistingFile(
+                  m.medicalCertificatePath,
+                  m.recordTitle,
+                ),
+              })) || [],
+            vaccinationRecords:
+              docs.vaccinations?.map((v) => ({
+                name: v.certificateName,
+                date: v.doseDate ? v.doseDate.split("T")[0] : "",
+                file: createExistingFile(
+                  v.vaccinationDocumentPath,
+                  v.certificateName,
+                ),
+              })) || [],
+            trainingRecords:
+              docs.trainings?.map((t) => ({
+                title: t.trainingTitle,
+                inductionTraining: createExistingFile(
+                  t.inductionTrainingPath,
+                  "Induction Training",
+                ),
+                competencyTraining: createExistingFile(
+                  t.competencyTrainingPath,
+                  "Competency Training",
+                ),
+              })) || [],
+          });
+
+          // Reset Form Data for new entries (keep inputs clean)
+          setFormData({
+            passportPhoto: null,
+            cv: null,
+            qualifications: [
+              { title: "", collegeName: "", graduationYear: "", file: null },
+            ],
+            appointmentDocuments: [{ title: "", file: null }],
+            medicalRecords: [{ title: "", certificate: null, issueDate: "" }],
+            vaccinationRecords: [{ name: "", date: "", file: null }],
+            trainingRecords: [
+              {
+                title: "",
+                inductionTraining: null,
+                competencyTraining: null,
+              },
+            ],
+          });
+        } catch (error) {
+          console.error("Error fetching staff documents:", error);
+        }
+      };
+
+      fetchDocuments();
     }
   }, [initialData]);
 
@@ -83,7 +185,14 @@ const EmployeeDocumentsForm = ({ initialData }) => {
         subField === "competencyTraining"
       ) {
         updatedArray[index][subField] = file;
-      } else if (subField === "title" || subField === "name") {
+      } else if (
+        subField === "title" ||
+        subField === "name" ||
+        subField === "collegeName" ||
+        subField === "graduationYear" ||
+        subField === "issueDate" ||
+        subField === "date"
+      ) {
         updatedArray[index][subField] = value;
       }
       setFormData((prev) => ({ ...prev, [fieldName]: updatedArray }));
@@ -274,6 +383,7 @@ const EmployeeDocumentsForm = ({ initialData }) => {
       }
 
       // 1. Personal Documents
+      // 1. Personal Documents
       if (formData.passportPhoto?.file) {
         data.append("PassportPhoto", formData.passportPhoto.file);
       }
@@ -282,12 +392,14 @@ const EmployeeDocumentsForm = ({ initialData }) => {
       }
 
       // Helper to append array of objects
-      const appendArray = (array, prefix, fileField = "file") => {
+      const appendArray = (array, prefix, fileField = "file", keyMap = {}) => {
         array.forEach((item, index) => {
           Object.keys(item).forEach((key) => {
             if (item[key]) {
               // Ensure we use the correct indexing syntax for ASP.NET Core / Standard Model Binding
-              // e.g., Qualifications[0].Title
+              // e.g., Qualifications[0].DocumentTitle
+              const backendKey = keyMap[key] || key;
+
               if (key === fileField) {
                 // For files, we might need a specific naming convention or just map them
                 // often it's "Qualifications[0].File"
@@ -302,19 +414,33 @@ const EmployeeDocumentsForm = ({ initialData }) => {
 
       // 2. Qualifications
       // formData.qualifications: { title, collegeName, graduationYear, file }
-      appendArray(formData.qualifications, "Qualifications", "file");
+      appendArray(formData.qualifications, "Qualifications", "file", {
+        title: "DocumentTitle",
+        file: "File",
+      });
 
       // 3. Appointment Documents
       // formData.appointmentDocuments: { title, file }
-      appendArray(formData.appointmentDocuments, "AppointmentDocuments", "file");
+      appendArray(formData.appointmentDocuments, "Appointments", "file", {
+        title: "DocumentTitle",
+        file: "File",
+      });
 
       // 4. Medical Records
       // formData.medicalRecords: { title, certificate (file), issueDate }
-      appendArray(formData.medicalRecords, "MedicalRecords", "certificate");
+      appendArray(formData.medicalRecords, "Medicals", "certificate", {
+        title: "RecordTitle",
+        issueDate: "IssueDate",
+        certificate: "File",
+      });
 
       // 5. Vaccination Records
       // formData.vaccinationRecords: { name, date, file }
-      appendArray(formData.vaccinationRecords, "VaccinationRecords", "file");
+      appendArray(formData.vaccinationRecords, "Vaccinations", "file", {
+        name: "CertificateName",
+        date: "DoseDate",
+        file: "File",
+      });
 
       // 6. Training Records
       // formData.trainingRecords: { title, inductionTraining (file), competencyTraining (file) }
@@ -337,10 +463,12 @@ const EmployeeDocumentsForm = ({ initialData }) => {
         alert("Documents submitted successfully!");
         console.log("Response:", response.data);
       }
-
     } catch (error) {
       console.error("Error submitting documents:", error);
-      alert("Failed to submit documents. " + (error.response?.data?.message || error.message));
+      alert(
+        "Failed to submit documents. " +
+        (error.response?.data?.message || error.message),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -353,12 +481,14 @@ const EmployeeDocumentsForm = ({ initialData }) => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <PersonalDocuments
           formData={formData}
+          existingDocuments={existingDocuments}
           handleFileChange={handleFileChange}
           handleFileRemove={handleFileRemove}
         />
 
         <QualificationDocuments
           formData={formData}
+          existingDocuments={existingDocuments}
           handleFileChange={handleFileChange}
           handleFileRemove={handleFileRemove}
           handleInputChange={handleInputChange}
@@ -368,6 +498,7 @@ const EmployeeDocumentsForm = ({ initialData }) => {
 
         <AppointmentDocuments
           formData={formData}
+          existingDocuments={existingDocuments}
           handleFileChange={handleFileChange}
           handleFileRemove={handleFileRemove}
           addAppointmentDocument={addAppointmentDocument}
@@ -376,6 +507,7 @@ const EmployeeDocumentsForm = ({ initialData }) => {
 
         <MedicalRecords
           formData={formData}
+          existingDocuments={existingDocuments}
           handleFileChange={handleFileChange}
           handleFileRemove={handleFileRemove}
           handleInputChange={handleInputChange}
@@ -385,6 +517,7 @@ const EmployeeDocumentsForm = ({ initialData }) => {
 
         <VaccinationRecords
           formData={formData}
+          existingDocuments={existingDocuments}
           handleFileChange={handleFileChange}
           handleFileRemove={handleFileRemove}
           handleInputChange={handleInputChange}
@@ -394,6 +527,7 @@ const EmployeeDocumentsForm = ({ initialData }) => {
 
         <TrainingRecords
           formData={formData}
+          existingDocuments={existingDocuments}
           handleFileChange={handleFileChange}
           handleFileRemove={handleFileRemove}
           handleInputChange={handleInputChange}

@@ -3,6 +3,7 @@ import { Upload, FileText, X, Plus, Trash2 } from "lucide-react";
 
 const QualificationDocuments = ({
   formData,
+  existingDocuments,
   handleFileChange,
   handleFileRemove,
   handleInputChange,
@@ -24,6 +25,43 @@ const QualificationDocuments = ({
           Add Document
         </button>
       </div>
+
+      {/* Existing Documents List */}
+      {existingDocuments?.qualifications?.length > 0 && (
+        <div className="mb-6 space-y-2">
+          <h3 className="text-sm font-medium text-gray-700 mb-2">
+            Existing Qualifications
+          </h3>
+          <div className="grid grid-cols-1 gap-2">
+            {existingDocuments.qualifications.map((doc, idx) => (
+              <div
+                key={idx}
+                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
+              >
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    {doc.title}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {doc.collegeName} • {doc.graduationYear}
+                  </p>
+                </div>
+                {doc.file?.url && (
+                  <a
+                    href={doc.file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    <FileText size={14} />
+                    View
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-4">
         {formData.qualifications.map((qual, index) => (
@@ -60,7 +98,8 @@ const QualificationDocuments = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  College/University Name <span className="text-red-500">*</span>
+                  College/University Name{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -85,7 +124,12 @@ const QualificationDocuments = ({
                   max={new Date().getFullYear()}
                   value={qual.graduationYear}
                   onChange={(e) =>
-                    handleInputChange(e, "qualifications", index, "graduationYear")
+                    handleInputChange(
+                      e,
+                      "qualifications",
+                      index,
+                      "graduationYear",
+                    )
                   }
                   placeholder="YYYY"
                   className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm"
@@ -106,7 +150,9 @@ const QualificationDocuments = ({
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleFileRemove("qualifications", index, "file")}
+                      onClick={() =>
+                        handleFileRemove("qualifications", index, "file")
+                      }
                       className="p-1 text-red-500 hover:bg-red-50 rounded"
                     >
                       <X size={16} />

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { User, Mail, ShieldCheck, Loader2 } from "lucide-react";
-import { getDepartmentWiseStaff, getStaffByDepartmentName } from "../services/departmentService";
+import { getDepartmentWiseStaff } from "../services/departmentService";
+import ImageWithFallback from "../../../components/ui/ImageWithFallback";
 
 /**
  * DepartmentView - Displays a list of employees for a specific department
- * 
+ *
  * @param {Object} props
  * @param {string|number} props.deptId - The ID of the department to filter employees for
  */
@@ -30,8 +31,7 @@ export const DepartmentView = ({ deptId, deptName }) => {
                 const fullList = Array.isArray(responseData) ? responseData : (responseData?.value || []);
 
                 // Find the specific department we need using the ID
-                // Note: Using flexible ID comparison (==) as one might be string, other number
-                const targetDept = fullList.find(d => d.departmentId == deptId);
+                const targetDept = fullList.find(d => String(d.departmentId) === String(deptId));
 
                 let rawStaff = [];
                 if (targetDept && targetDept.staffList) {
@@ -97,8 +97,8 @@ export const DepartmentView = ({ deptId, deptName }) => {
                 <div className="space-y-3">
                     {staff.map(emp => (
                         <div key={emp.id} className="flex items-center gap-3 p-3 bg-slate-50/50 rounded-2xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-100 transition-all group">
-                            <img
-                                src={emp.avatar || `https://ui-avatars.com/api/?name=${emp.name}`}
+                            <ImageWithFallback
+                                src={emp.avatar}
                                 alt={emp.name}
                                 className="w-10 h-10 rounded-xl border-2 border-white shadow-sm object-cover"
                             />

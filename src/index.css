@@ -23,7 +23,6 @@ a {
 
 a:hover {
   color: #535bf2;
-  
 }
 
 body {
@@ -60,11 +59,8 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-
-
 /* ================= PRINT MODE ================= */
 @media print {
-
   body {
     background: white !important;
   }
@@ -121,7 +117,6 @@ button:focus-visible {
 }
 
 @media print {
-
   /* 🔴 HIDE APP CHROME */
   aside,
   nav,

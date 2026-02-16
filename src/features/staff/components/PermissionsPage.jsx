@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import staffService from "../services/staffService";
+import ImageWithFallback from "../../../components/ui/ImageWithFallback";
 
 // --- Mock Data ---
 const INITIAL_USERS = [
@@ -197,7 +199,7 @@ const PermissionsPage = ({ staff = null, standalone = true }) => {
           className={cn(
             "bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col transition-all duration-300",
             standalone
-              ? "w-[450px] animate-in slide-in-from-right-10"
+              ? "w-112.5 animate-in slide-in-from-right-10"
               : "flex-1 max-w-4xl mx-auto",
           )}
         >
@@ -205,8 +207,20 @@ const PermissionsPage = ({ staff = null, standalone = true }) => {
           <div className="p-6 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-gray-600 font-bold text-lg shadow-lg shadow-indigo-200">
-                  {selectedUser.avatar}
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg shadow-indigo-200">
+                  {selectedUser.photo ? (
+                    <ImageWithFallback
+                      src={selectedUser.photo}
+                      alt={selectedUser.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+                      {selectedUser.avatar ||
+                        selectedUser.name?.charAt(0) ||
+                        "S"}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-slate-800">
@@ -239,7 +253,7 @@ const PermissionsPage = ({ staff = null, standalone = true }) => {
               <button className="flex-1 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 shadow-sm transition-all">
                 Reset Password
               </button>
-              <button className="flex-1 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-rose-600 hover:bg-rose-50 border-rose-200 shadow-sm transition-all">
+              <button className="flex-1 py-2 bg-white border border-rose-200 rounded-lg text-xs font-bold text-rose-600 hover:bg-rose-50 border-rose-200 shadow-sm transition-all">
                 Deactivate User
               </button>
             </div>
@@ -288,7 +302,7 @@ const PermissionsPage = ({ staff = null, standalone = true }) => {
                             checked={isEnabled}
                             onChange={() => togglePermission(right.id)}
                           />
-                          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                         </div>
                       </label>
                     );
