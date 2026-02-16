@@ -15,7 +15,7 @@ import { useEffect } from "react";
 import { getDepartments } from "../../department/services/departmentService";
 import instrumentService from "../services/instrumentService";
 
-const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
+const InstrumentForm = ({ isOpen, onClose, onAdd, editingInstrument }) => {
     const [formData, setFormData] = useState({
         name: "",
         department: "",
@@ -32,27 +32,6 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
 
     const [departments, setDepartments] = useState([]);
 
-    useEffect(() => {
-        const fetchDepartments = async () => {
-            try {
-                const depts = await getDepartments();
-                setDepartments(depts);
-            } catch (error) {
-                console.error("Error fetching departments:", error);
-            }
-        };
-        fetchDepartments();
-    }, []);
-
-    if (!isOpen) return null;
-
-    const handleFileChange = (e, field) => {
-        const file = e.target.files[0];
-        if (file) {
-            setFormData(prev => ({ ...prev, [field]: file }));
-        }
-    };
-
     const resetForm = () => {
         setFormData({
             name: "",
@@ -68,6 +47,47 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
             expiryDate: ""
         });
     };
+
+    const handleFileChange = (e, field) => {
+        const file = e.target.files[0];
+        if (file) {
+            setFormData(prev => ({ ...prev, [field]: file }));
+        }
+    };
+
+    useEffect(() => {
+        const fetchDepartments = async () => {
+            try {
+                const depts = await getDepartments();
+                setDepartments(depts);
+            } catch (error) {
+                console.error("Error fetching departments:", error);
+            }
+        };
+        fetchDepartments();
+    }, []);
+
+    useEffect(() => {
+        if (editingInstrument) {
+            setFormData({
+                name: editingInstrument.name || "",
+                department: editingInstrument.department || "",
+                photo: editingInstrument.photo || null,
+                purchaseOrder: editingInstrument.purchaseOrder || null,
+                billReceipt: editingInstrument.billReceipt || null,
+                installationReport: editingInstrument.installationReport || null,
+                iqOqPq: editingInstrument.iqOqPq || null,
+                userManual: editingInstrument.userManual || null,
+                calibrationCert: editingInstrument.calibrationCert || null,
+                maintenanceText: editingInstrument.maintenanceText || "",
+                expiryDate: (editingInstrument.expiryDate || "").split('T')[0]
+            });
+        } else {
+            resetForm();
+        }
+    }, [editingInstrument, isOpen]);
+
+    if (!isOpen) return null;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -109,9 +129,15 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
             if (formData.userManual) payload.append("UserOperationsManualFile", formData.userManual);
             if (formData.calibrationCert) payload.append("LatestCalibrationCert", formData.calibrationCert);
 
-            await instrumentService.createInstrument(payload);
+            if (editingInstrument) {
+                payload.append("InstrumentCalibrationId", editingInstrument.instrumentCalibrationId);
+                await instrumentService.updateInstrumentCalibration(editingInstrument.instrumentCalibrationId, payload);
+                alert("Instrument updated successfully!");
+            } else {
+                await instrumentService.createInstrument(payload);
+                alert("Instrument registered successfully!");
+            }
 
-            alert("Instrument registered successfully!");
             onAdd();
             resetForm();
             onClose();
@@ -153,8 +179,8 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
                 {/* Header - CAPA Style */}
                 <div className="flex items-center justify-between px-8 py-5 border-b bg-white">
                     <div>
-                        <h2 className="text-xl font-bold text-slate-800">New Instrument Registration</h2>
-                        <p className="text-sm text-slate-500 mt-0.5">Define equipment biodata and documentation</p>
+                        <h2 className="text-xl font-bold text-slate-800">{editingInstrument ? 'Edit Instrument' : 'New Instrument Registration'}</h2>
+                        <p className="text-sm text-slate-500 mt-0.5">{editingInstrument ? 'Update equipment biodata and documentation' : 'Define equipment biodata and documentation'}</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -281,9 +307,9 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
                     <button
                         form="instrument-form"
                         type="submit"
-                        className="px-10 py-2.5 bg-slate-900 text-black rounded-md text-sm font-bold hover:bg-black transition-all shadow-sm active:scale-95 uppercase tracking-widest"
+                        className="px-10 py-2.5 bg-slate-900 text-white rounded-md text-sm font-bold hover:bg-black transition-all shadow-sm active:scale-95 uppercase tracking-widest"
                     >
-                        Submit Registration
+                        {editingInstrument ? 'Update Changes' : 'Submit Registration'}
                     </button>
                 </div>
             </div>

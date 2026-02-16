@@ -52,6 +52,38 @@ export const instrumentService = {
             throw error;
         }
     },
+    /**
+     * Update an instrument calibration record.
+     * @param {Object} instrumentData - The updated instrument data (FormData).
+     */
+    updateInstrumentCalibration: async (id, instrumentData) => {
+        try {
+            const response = await api.put(
+                `/InstrumentCalibration/UpdateInstrumentCalibration/${id}`,
+                instrumentData,
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error updating instrument:", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Delete an instrument calibration record.
+     * @param {number|string} id - The instrument ID.
+     */
+    deleteInstrument: async (id) => {
+        try {
+            const response = await api.delete(
+                `/InstrumentCalibration/DeleteInstrumentCalibration/${id}`,
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error deleting instrument:", error);
+            throw error;
+        }
+    },
 };
 
 export default instrumentService;

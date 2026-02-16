@@ -19,6 +19,7 @@ const Instrument = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
+    const [editingInstrument, setEditingInstrument] = useState(null);
 
     const fetchInstruments = async () => {
         try {
@@ -30,20 +31,40 @@ const Instrument = () => {
             const data = Array.isArray(response) ? response : (response?.data || []);
             const baseUrl = "https://qmsapi.altwise.in/"; // Base URL for uploaded files
 
+            const formatFilePath = (path) => {
+                if (!path || path === "N/A") return "N/A";
+                if (typeof path !== 'string') return "N/A";
+                if (path.startsWith("http")) return path;
+
+                // Handle Windows absolute paths or messy strings returned by some API versions
+                let cleanPath = path;
+                const markers = ["UploadedInstruments/", "Upload/", "Uploads/"];
+                for (const marker of markers) {
+                    if (path.includes(marker)) {
+                        cleanPath = path.substring(path.indexOf(marker));
+                        break;
+                    }
+                }
+
+                // Remove leading slash if it exists to avoid double slash
+                cleanPath = cleanPath.startsWith("/") ? cleanPath.substring(1) : cleanPath;
+                return `${baseUrl}${cleanPath}`;
+            };
+
             const normalizedData = data.map(item => ({
                 ...item,
                 id: item.instrumentCalibrationId || item.id || Date.now(),
                 name: item.instrumentNomenclature || item.instrumentName || item.name || "Unnamed Instrument",
                 department: item.operatingDepartment || item.departmentName || item.department || "General",
                 expiryDate: item.expiryDate || item.nextCalibrationDate || "",
-                // Document mappings for the detail view
-                photo: item.equipmentPhotographFilePath ? `${baseUrl}${item.equipmentPhotographFilePath}` : null,
-                purchaseOrder: item.purchaseOrderFileName || "N/A",
-                billReceipt: item.billReceiptFileName || "N/A",
-                installationReport: item.installationReportFileName || "N/A",
-                iqOqPq: item.iqOqPqProtocolFileName || "N/A",
-                userManual: item.userOperationsManualFileName || "N/A",
-                calibrationCert: item.latestCalibrationCertFileName || "N/A",
+                // Document mappings for the detail view - Use *FilePath for full URLs or helper for messy paths
+                photo: formatFilePath(item.equipmentPhotographFilePath || item.equipmentPhotographFileName),
+                purchaseOrder: formatFilePath(item.purchaseOrderFilePath || item.purchaseOrderFileName),
+                billReceipt: formatFilePath(item.billReceiptFilePath || item.billReceiptFileName),
+                installationReport: formatFilePath(item.installationReportFilePath || item.installationReportFileName),
+                iqOqPq: formatFilePath(item.iqOqPqProtocolFilePath || item.iqOqPqProtocolFileName),
+                userManual: formatFilePath(item.userOperationsManualFilePath || item.userOperationsManualFileName),
+                calibrationCert: formatFilePath(item.latestCalibrationCertFilePath || item.latestCalibrationCertFileName),
                 maintenanceText: item.preventiveMaintenanceNotes || ""
             }));
 
@@ -55,12 +76,29 @@ const Instrument = () => {
         }
     };
 
+    const handleDeleteInstrument = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this instrument?")) return;
+        try {
+            await instrumentService.deleteInstrument(id);
+            alert("Instrument deleted successfully!");
+            fetchInstruments();
+        } catch (error) {
+            console.error("Error deleting instrument:", error);
+            alert("Failed to delete instrument.");
+        }
+    };
+
     useEffect(() => {
         fetchInstruments();
     }, []);
 
     const handleAddInstrument = () => {
         fetchInstruments();
+    };
+
+    const handleEditInstrument = (instrument) => {
+        setEditingInstrument(instrument);
+        setIsFormOpen(true);
     };
 
     const filteredInstruments = instruments.filter(inst =>
@@ -78,10 +116,12 @@ const Instrument = () => {
         return diff < 30; // within 30 days
     }).length;
 
+    const activeCount = instruments.filter(inst => (inst.status || "Active") === "Active").length;
+
     const stats = [
         { label: "Total Assets", value: totalInstruments, icon: Zap, color: "text-indigo-600", bg: "bg-indigo-50" },
         { label: "Calibration Due", value: pendingCalibrations, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-        { label: "Maintenance Status", value: "Optimal", icon: Activity, color: "text-emerald-600", bg: "bg-emerald-50" },
+        { label: "Active Status", value: activeCount, icon: Activity, color: "text-emerald-600", bg: "bg-emerald-50" },
     ];
 
     return (
@@ -98,7 +138,7 @@ const Instrument = () => {
 
                     <button
                         onClick={() => setIsFormOpen(true)}
-                        className="group flex items-center justify-center gap-2 px-10 py-5 bg-indigo-600 text-black rounded-[24px] font-black shadow-2xl shadow-indigo-200 hover:bg-slate-900 "
+                        className="group flex items-center justify-center gap-2 px-10 py-5 bg-indigo-600 text-white rounded-[24px] font-black shadow-2xl shadow-indigo-200 hover:bg-slate-900 "
                     >
                         <Plus className="group-hover:rotate-180 transition-transform duration-500" size={24} />
                         Register New Instrument
@@ -132,7 +172,7 @@ const Instrument = () => {
                         <input
                             type="text"
                             placeholder="Search by instrument name or department..."
-                            className="w-full pl-16 pr-8 py-5 bg-white border border-slate-100 rounded-[28px] shadow-sm outline-none focus:ring-4 focus:ring-indigo-50 +focus:border-indigo-600 transition-all font-semibold italic text-slate-800 whitespace-nowrap overflow-hidden"
+                            className="w-full pl-16 pr-8 py-5 bg-white border border-slate-100 rounded-[28px] shadow-sm outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-600 transition-all font-semibold italic text-slate-800 whitespace-nowrap overflow-hidden"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -155,14 +195,22 @@ const Instrument = () => {
                         Synchronizing with Calibration Database...
                     </div>
                 ) : (
-                    <InstrumentList instruments={filteredInstruments} />
+                    <InstrumentList
+                        instruments={filteredInstruments}
+                        onDelete={handleDeleteInstrument}
+                        onEdit={handleEditInstrument}
+                    />
                 )}
             </div>
 
             <InstrumentForm
                 isOpen={isFormOpen}
-                onClose={() => setIsFormOpen(false)}
+                onClose={() => {
+                    setIsFormOpen(false);
+                    setEditingInstrument(null);
+                }}
                 onAdd={handleAddInstrument}
+                editingInstrument={editingInstrument}
             />
         </div>
     );
