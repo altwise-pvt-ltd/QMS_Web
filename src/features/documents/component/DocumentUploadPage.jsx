@@ -11,7 +11,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import DocumentUploadForm from "./DocumentUploadForm";
-import { createDocument } from "../../../services/documentService";
+import { documentService } from "../services/documentService";
 
 export default function DocumentUploadPage() {
   const navigate = useNavigate();
@@ -27,6 +27,8 @@ export default function DocumentUploadPage() {
   const context = {
     level: searchParams.get("level"),
     category: searchParams.get("category"),
+    categoryId: searchParams.get("categoryId"), // Assuming ID is also passed or can be derived
+    subCategoryId: searchParams.get("subCategoryId"), // Assuming ID is also passed
     subCategory: searchParams.get("subCategory"),
     section: searchParams.get("section"),
   };
@@ -47,23 +49,18 @@ export default function DocumentUploadPage() {
       setUploadProgress(30);
 
       // Call the actual service
-      await createDocument({
+      await documentService.uploadDocument({
         file: formData.file,
-        metadata: {
-          level: context.level || "level-1", // Use level from URL context
-          category: context.category || "",
-          subCategory: context.subCategory || "",
-          description: formData.description || "",
-          department: formData.department,
-          author: formData.author || user?.name || "Anonymous",
-          version: formData.version,
-          effectiveDate: formData.effectiveDate,
-          expiryDate: formData.expiryDate,
-          uploadedBy: {
-            name: user?.name || "Anonymous",
-            id: user?.id || "unknown",
-          },
-        },
+        categoryId: Number(context.categoryId) || 1,
+        subCategoryId: Number(context.subCategoryId) || 1,
+        departmentId: Number(formData.departmentId) || 1,
+        description: formData.description || "",
+        author: formData.author || user?.name || "Anonymous",
+        version: formData.version || "1.0",
+        effectiveDate: formData.effectiveDate,
+        expiryDate: formData.expiryDate,
+        createdBy: Number(user?.id) || 1,
+        updatedBy: Number(user?.id) || 1,
       });
 
       // Stage 3: Processing metadata
@@ -172,9 +169,8 @@ export default function DocumentUploadPage() {
 
             <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
               <div
-                className={`h-full transition-all duration-500 ease-out ${
-                  showSuccess ? "bg-emerald-500" : "bg-indigo-600"
-                }`}
+                className={`h-full transition-all duration-500 ease-out ${showSuccess ? "bg-emerald-500" : "bg-indigo-600"
+                  }`}
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>

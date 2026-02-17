@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { LEVEL_CONFIG } from "./data.js";
 import documentService from "./services/documentService";
+import { useAuth } from "../../auth/AuthContext";
 import {
   transformCategory,
   transformSubCategory,
@@ -26,6 +27,7 @@ const DocumentLibrary = () => {
   const [loadingSub, setLoadingSub] = useState(false);
 
   const navigate = useNavigate();
+  const { user } = useAuth();
   // Ref to track the current active level for race condition handling
   const activeLevelRef = useRef(null);
 
@@ -135,11 +137,10 @@ const DocumentLibrary = () => {
 
     // Optimistic update or wait for API? Let's wait for API to ensure ID is correct
     try {
-      // Assuming 'test' user for now as per request example, or we can look up current user if available
       const payload = {
-        documentCategoryId: activeData.id,
+        documentCategoryId: Number(activeData.id),
         documentSubCategoryName: name,
-        createdBy: "test", // TODO: Replace with actual user name from auth store if available
+        createdBy: Number(user?.id) || 1, // Use actual user ID or fallback to 1
       };
 
       const newSubCategory = await documentService.createSubCategory(payload);
@@ -149,9 +150,9 @@ const DocumentLibrary = () => {
         prevLevels.map((level) =>
           level.id === activeLevelId
             ? {
-                ...level,
-                items: [...(level.items || []), transformedItem],
-              }
+              ...level,
+              items: [...(level.items || []), transformedItem],
+            }
             : level,
         ),
       );
@@ -169,11 +170,11 @@ const DocumentLibrary = () => {
       const itemToEdit = activeData.items[index];
 
       const payload = {
-        documentCategoryId: activeData.id,
-        documentSubCategoryId: itemToEdit.id,
+        documentCategoryId: Number(activeData.id),
+        documentSubCategoryId: Number(itemToEdit.id),
         documentSubCategoryName: newName,
-        createdBy: "test", // TODO: Replace with actual user
-        updatedBy: "test", // TODO: Replace with actual user
+        createdBy: Number(user?.id) || 1,
+        updatedBy: Number(user?.id) || 1,
       };
 
       await documentService.updateSubCategory(payload);
@@ -183,11 +184,11 @@ const DocumentLibrary = () => {
         prevLevels.map((level) =>
           level.id === activeLevelId
             ? {
-                ...level,
-                items: level.items.map((item, idx) =>
-                  idx === index ? { ...item, name: newName } : item,
-                ),
-              }
+              ...level,
+              items: level.items.map((item, idx) =>
+                idx === index ? { ...item, name: newName } : item,
+              ),
+            }
             : level,
         ),
       );
@@ -212,9 +213,9 @@ const DocumentLibrary = () => {
         prevLevels.map((level) =>
           level.id === activeLevelId
             ? {
-                ...level,
-                items: level.items.filter((_, idx) => idx !== index),
-              }
+              ...level,
+              items: level.items.filter((_, idx) => idx !== index),
+            }
             : level,
         ),
       );
@@ -331,44 +332,39 @@ const DocumentLibrary = () => {
               <button
                 key={level.id}
                 onClick={() => setActiveLevelId(level.id)}
-                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center gap-4 group ${
-                  isActive
-                    ? "bg-indigo-50/40 border-indigo-600 shadow-md ring-1 ring-indigo-600/20"
-                    : "bg-white border-slate-200 hover:border-indigo-400 hover:bg-slate-50/80 hover:shadow-sm"
-                }`}
+                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center gap-4 group ${isActive
+                  ? "bg-indigo-50/40 border-indigo-600 shadow-md ring-1 ring-indigo-600/20"
+                  : "bg-white border-slate-200 hover:border-indigo-400 hover:bg-slate-50/80 hover:shadow-sm"
+                  }`}
               >
                 <div className={`p-3 rounded-lg shadow-sm ${level.color}`}>
                   <Icon className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
                   <span
-                    className={`text-xs font-bold uppercase tracking-wider ${
-                      isActive ? "text-indigo-700/70" : "text-slate-500"
-                    }`}
+                    className={`text-xs font-bold uppercase tracking-wider ${isActive ? "text-indigo-700/70" : "text-slate-500"
+                      }`}
                   >
                     Level {level.level}
                   </span>
                   <h3
-                    className={`font-semibold ${
-                      isActive ? "text-indigo-800" : "text-slate-800"
-                    }`}
+                    className={`font-semibold ${isActive ? "text-indigo-800" : "text-slate-800"
+                      }`}
                   >
                     {level.title}
                   </h3>
                   <p
-                    className={`text-xs mt-1 ${
-                      isActive ? "text-indigo-700/70" : "text-slate-500"
-                    }`}
+                    className={`text-xs mt-1 ${isActive ? "text-indigo-700/70" : "text-slate-500"
+                      }`}
                   >
                     {level.description}
                   </p>
                 </div>
                 <ChevronRight
-                  className={`w-5 h-5 transition-transform ${
-                    isActive
-                      ? "text-indigo-600 rotate-90 lg:rotate-0"
-                      : "text-slate-400 group-hover:text-indigo-400"
-                  }`}
+                  className={`w-5 h-5 transition-transform ${isActive
+                    ? "text-indigo-600 rotate-90 lg:rotate-0"
+                    : "text-slate-400 group-hover:text-indigo-400"
+                    }`}
                 />
               </button>
             );

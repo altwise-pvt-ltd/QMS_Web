@@ -14,7 +14,8 @@ export default function DocumentUploadForm({
 }) {
   // 1. Initialize State
   const [formData, setFormData] = useState({
-    department: defaultDepartment,
+    departmentId: "",
+    departmentName: defaultDepartment,
     author: initialData.author || "",
     version: initialData.version || "1.0",
     description: initialData.description || "",
@@ -32,12 +33,25 @@ export default function DocumentUploadForm({
       try {
         const depts = await getDepartments();
         setDepartments(depts);
+
+        // If default department is provided by name, find its ID
+        if (defaultDepartment) {
+          const dept = depts.find(
+            (d) => (d.departmentName || d.name) === defaultDepartment,
+          );
+          if (dept) {
+            setFormData((prev) => ({
+              ...prev,
+              departmentId: dept.id || dept.departmentId,
+            }));
+          }
+        }
       } catch (error) {
         console.error("Error fetching departments:", error);
       }
     };
     fetchDepartments();
-  }, []);
+  }, [defaultDepartment]);
 
   // 3. Handlers
   const handleFileChange = (e) => {
@@ -52,7 +66,7 @@ export default function DocumentUploadForm({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.file || !formData.department || !formData.author) return;
+    if (!formData.file || !formData.departmentId || !formData.author) return;
 
     // Call the parent function passed via props
     if (onSubmit) {
@@ -182,14 +196,23 @@ export default function DocumentUploadForm({
             <select
               required
               className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
-              value={formData.department}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, department: e.target.value }))
-              }
+              value={formData.departmentId}
+              onChange={(e) => {
+                const deptId = e.target.value;
+                const deptName = e.target.options[e.target.selectedIndex].text;
+                setFormData((prev) => ({
+                  ...prev,
+                  departmentId: deptId,
+                  departmentName: deptName,
+                }));
+              }}
             >
               <option value="">Select Department</option>
               {departments.map((dept) => (
-                <option key={dept.id || dept.departmentId} value={dept.departmentName || dept.name}>
+                <option
+                  key={dept.id || dept.departmentId}
+                  value={dept.id || dept.departmentId}
+                >
                   {dept.departmentName || dept.name}
                 </option>
               ))}
