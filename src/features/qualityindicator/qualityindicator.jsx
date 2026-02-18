@@ -15,6 +15,7 @@ import { QUALITY_INDICATORS, CATEGORIES } from "./qi_data";
 import QalityIndicatorForm from "./qalityindicatorform";
 import { db } from "../../db";
 import { useEffect } from "react";
+import riService from "../risk_indicator/services/riService";
 
 const QualityIndicator = () => {
   const [view, setView] = useState("dashboard"); // "dashboard" or "form"
@@ -83,8 +84,19 @@ const QualityIndicator = () => {
         setIndicators(indicators.map(i => i.id === editingIndicator.id ? updatedIndicator : i));
       } else {
         // Add new
+        const indicatorData = {
+          indicatorName: newName,
+          category: newCategory,
+          threshold: parseFloat(newThreshold) || 0,
+          severity: parseInt(newSeverity) || 1,
+        };
+
+        // 🚀 Call Backend API
+        const apiResponse = await riService.createQualityIndicator(indicatorData);
+        console.log("Create quality indicator API response:", apiResponse);
+
         const newIndicator = {
-          id: `new-${Date.now()}`,
+          id: apiResponse?.id || `new-${Date.now()}`,
           name: newName,
           category: newCategory,
           count: 0,

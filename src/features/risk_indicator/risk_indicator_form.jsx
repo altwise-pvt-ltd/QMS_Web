@@ -8,101 +8,102 @@ import RIFormHeader from "./components/RIFormHeader";
 import RIFormSidebar from "./components/RIFormSidebar";
 import RIReportTable from "./components/RIReportTable";
 
-const RiskIndicatorForm = ({ onBack, indicators = RISK_INDICATORS }) => {
-    const [selectedMonth, setSelectedMonth] = useState("JAN 2026");
-    const [selectedIndicators, setSelectedIndicators] = useState(
-        indicators.map((i) => i.id),
+const RiskIndicatorForm = ({ onBack, indicators = [], categories = [] }) => {
+  const [selectedMonth, setSelectedMonth] = useState("JAN 2026");
+  const [selectedIndicators, setSelectedIndicators] = useState(
+    indicators.map((i) => i.id),
+  );
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [metadata, setMetadata] = useState({
+    documentNo: "ADC--L--23",
+    documentName: "RISK INDICATOR CHART FORM",
+    issueNo: "01",
+    issueDate: "01.07.2023",
+    status: "Controlled",
+    page: "1 of 1",
+    amendmentNo: "00",
+    amendmentDate: "",
+  });
+  const reportRef = useRef(null);
+
+  const toggleIndicator = (id) => {
+    setSelectedIndicators((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [metadata, setMetadata] = useState({
-        documentNo: "ADC--L--23",
-        documentName: "RISK INDICATOR CHART FORM",
-        issueNo: "01",
-        issueDate: "01.07.2023",
-        status: "Controlled",
-        page: "1 of 1",
-        amendmentNo: "00",
-        amendmentDate: "",
-    });
-    const reportRef = useRef(null);
+  };
 
-    const toggleIndicator = (id) => {
-        setSelectedIndicators((prev) =>
-            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-        );
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownloadPdf = () => {
+    const element = reportRef.current;
+    const opt = {
+      margin: [10, 5, 10, 5],
+      filename: `Risk_Indicators_${selectedMonth.replace(" ", "_")}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
     };
+    html2pdf().set(opt).from(element).save();
+  };
 
-    const handlePrint = () => {
-        window.print();
-    };
+  const displayedIndicators = indicators.filter((i) =>
+    selectedIndicators.includes(i.id),
+  );
 
-    const handleDownloadPdf = () => {
-        const element = reportRef.current;
-        const opt = {
-            margin: [10, 5, 10, 5],
-            filename: `Risk_Indicators_${selectedMonth.replace(" ", "_")}.pdf`,
-            image: { type: "jpeg", quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
-        };
-        html2pdf().set(opt).from(element).save();
-    };
+  return (
+    <div className="space-y-6 animate-in slide-in-from-right duration-500 pb-20">
+      <RIFormHeader
+        onBack={onBack}
+        onDownload={handleDownloadPdf}
+        onPrint={handlePrint}
+        title="Risk Indicator Chart Form"
+      />
 
-    const displayedIndicators = indicators.filter((i) =>
-        selectedIndicators.includes(i.id),
-    );
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div
+          className={`transition-all duration-300 ${isSidebarCollapsed ? "w-0 overflow-hidden opacity-0" : "w-full lg:w-1/4"}`}
+        >
+          <RIFormSidebar
+            selectedMonth={selectedMonth}
+            setSelectedMonth={setSelectedMonth}
+            selectedIndicators={selectedIndicators}
+            indicators={indicators}
+            toggleIndicator={toggleIndicator}
+            onSelectAll={() =>
+              setSelectedIndicators(indicators.map((i) => i.id))
+            }
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          />
+        </div>
 
-    return (
-        <div className="space-y-6 animate-in slide-in-from-right duration-500 pb-20">
-            <RIFormHeader
-                onBack={onBack}
-                onDownload={handleDownloadPdf}
-                onPrint={handlePrint}
-                title="Risk Indicator Chart Form"
-            />
+        <div
+          className={`transition-all duration-300 ${isSidebarCollapsed ? "w-full" : "w-full lg:w-3/4"}`}
+        >
+          {isSidebarCollapsed && (
+            <button
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="mb-4 flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold text-indigo-600 shadow-sm hover:shadow-md transition-all no-print"
+            >
+              <ChevronRight size={14} />
+              Show Sidebar
+            </button>
+          )}
+          <RIReportTable
+            ref={reportRef}
+            selectedMonth={selectedMonth}
+            displayedIndicators={displayedIndicators}
+            categories={categories}
+            metadata={metadata}
+          />
+        </div>
+      </div>
 
-            <div className="flex flex-col lg:flex-row gap-6">
-                <div
-                    className={`transition-all duration-300 ${isSidebarCollapsed ? "w-0 overflow-hidden opacity-0" : "w-full lg:w-1/4"}`}
-                >
-                    <RIFormSidebar
-                        selectedMonth={selectedMonth}
-                        setSelectedMonth={setSelectedMonth}
-                        selectedIndicators={selectedIndicators}
-                        indicators={indicators}
-                        toggleIndicator={toggleIndicator}
-                        onSelectAll={() =>
-                            setSelectedIndicators(indicators.map((i) => i.id))
-                        }
-                        isCollapsed={isSidebarCollapsed}
-                        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                    />
-                </div>
-
-                <div
-                    className={`transition-all duration-300 ${isSidebarCollapsed ? "w-full" : "w-full lg:w-3/4"}`}
-                >
-                    {isSidebarCollapsed && (
-                        <button
-                            onClick={() => setIsSidebarCollapsed(false)}
-                            className="mb-4 flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold text-indigo-600 shadow-sm hover:shadow-md transition-all no-print"
-                        >
-                            <ChevronRight size={14} />
-                            Show Sidebar
-                        </button>
-                    )}
-                    <RIReportTable
-                        ref={reportRef}
-                        selectedMonth={selectedMonth}
-                        displayedIndicators={displayedIndicators}
-                        metadata={metadata}
-                    />
-                </div>
-            </div>
-
-            <style
-                dangerouslySetInnerHTML={{
-                    __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
         }
@@ -117,11 +118,11 @@ const RiskIndicatorForm = ({ onBack, indicators = RISK_INDICATORS }) => {
           background: #cbd5e1;
         }
       `,
-                }}
-            />
-            <style
-                dangerouslySetInnerHTML={{
-                    __html: `
+        }}
+      />
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @media print {
           @page {
             size: A3 landscape !important;
@@ -177,10 +178,10 @@ const RiskIndicatorForm = ({ onBack, indicators = RISK_INDICATORS }) => {
           }
         }
       `,
-                }}
-            />
-        </div>
-    );
+        }}
+      />
+    </div>
+  );
 };
 
 export default RiskIndicatorForm;

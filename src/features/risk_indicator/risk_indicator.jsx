@@ -10,10 +10,10 @@ import {
     Search,
     ShieldAlert,
 } from "lucide-react";
-import { RISK_INDICATORS, CATEGORIES } from "./risk_indicator_data";
 import RiskIndicatorForm from "./risk_indicator_form";
 import { db } from "../../db";
 import { useEffect } from "react";
+import riService from "./services/riService";
 
 const RiskIndicator = () => {
     const [view, setView] = useState("dashboard"); // "dashboard" or "form"
@@ -29,34 +29,78 @@ const RiskIndicator = () => {
     const [newCategoryName, setNewCategoryName] = useState("");
 
     useEffect(() => {
-        loadIndicators();
-        loadCategories();
+        const init = async () => {
+            const currentCategories = await loadCategories();
+            await loadIndicators(currentCategories);
+        };
+        init();
     }, []);
 
     const loadCategories = async () => {
         try {
-            let data = await db.risk_categories.toArray();
-            if (data.length === 0) {
-                // Initial seeding if empty
-                const initialCategories = CATEGORIES.map(cat => ({ name: cat }));
-                await db.risk_categories.bulkAdd(initialCategories);
-                data = await db.risk_categories.toArray();
+            // 🚀 Fetch from Backend API
+            const apiData = await riService.getAllCategories();
+            console.log("Risk categories from API received:", apiData);
+
+            if (apiData && Array.isArray(apiData) && apiData.length > 0) {
+                // Map API data to our structure safely
+                const formattedCategories = apiData.map((cat, index) => {
+                    let itemName = "Unknown Category";
+
+                    if (typeof cat === 'string') {
+                        itemName = cat;
+                    } else if (cat && typeof cat === 'object') {
+                        // Priority to riskCategoryName as indicated by error logs
+                        itemName = cat.riskCategoryName || cat.categoryName || cat.name || "Unknown";
+
+                        // ABSOLUTE PROTECTION: ensure we never pass an object to React children
+                        if (typeof itemName !== 'string') {
+                            itemName = String(itemName || "Unknown");
+                        }
+                    }
+
+                    return {
+                        id: cat.riskIndicatorCategoryId || cat.id || `api-${index}`,
+                        name: itemName
+                    };
+                });
+
+                console.log("Formatted Categories for state:", formattedCategories);
+                setCategories(formattedCategories);
+
+                // Sync to local DB safely
+                try {
+                    // Use a transaction for atomic operation
+                    await db.transaction('rw', db.risk_categories, async () => {
+                        await db.risk_categories.clear();
+                        await db.risk_categories.bulkPut(formattedCategories);
+                    });
+                    console.log("Local DB synced with API categories");
+                } catch (dbErr) {
+                    console.error("Failed to sync categories to local DB:", dbErr);
+                }
+                return formattedCategories;
+            } else {
+                // Fallback to local DB or defaults if API is empty
+                return await syncFromLocalDB();
             }
-
-            // Deduplicate by name if any duplicates exist in DB
-            const seenNames = new Set();
-            const uniqueCategories = data.filter(cat => {
-                const name = cat.name.trim();
-                if (seenNames.has(name.toLowerCase())) return false;
-                seenNames.add(name.toLowerCase());
-                return true;
-            });
-
-            setCategories(uniqueCategories);
         } catch (error) {
-            console.error("Error loading categories:", error);
-            setCategories(CATEGORIES.map((cat, i) => ({ id: i, name: cat })));
+            console.error("Error loading categories from API:", error);
+            return await syncFromLocalDB();
         }
+    };
+
+    const syncFromLocalDB = async () => {
+        let localData = await db.risk_categories.toArray();
+
+        // Final sanity check on local data to prevent crashes if bad data exists
+        const safeData = localData.map(cat => ({
+            ...cat,
+            name: typeof cat.name === 'string' ? cat.name : "Recovered Category"
+        }));
+
+        setCategories(safeData);
+        return safeData;
     };
 
     const handleAddCategory = async () => {
@@ -70,29 +114,71 @@ const RiskIndicator = () => {
         }
 
         try {
-            const id = await db.risk_categories.add({ name: trimmedName });
-            const newCat = { id, name: trimmedName };
+            // 🚀 Call Backend API with exact requested structure
+            const apiResponse = await riService.createCategory({
+                riskIndicatorCategoryId: 0,
+                riskCategoryName: trimmedName,
+                riCategory: "string"
+            });
+
+            console.log("Create category API response:", apiResponse);
+
+            // Add to local state and DB
+            const newCat = {
+                id: apiResponse?.riskIndicatorCategoryId || apiResponse?.id || Date.now(),
+                name: trimmedName
+            };
+
+            await db.risk_categories.add(newCat);
             setCategories([...categories, newCat]);
             setNewCategoryName("");
             setIsAddingCategory(false);
         } catch (error) {
-            console.error("Error adding category:", error);
+            console.error("Error adding category via API:", error);
+            // Still add locally if API fails (optional, depending on requirements)
+            alert("Failed to create category on server. Please try again.");
         }
     };
 
-    const loadIndicators = async () => {
+    const loadIndicators = async (currentCategories = categories) => {
         try {
             setLoading(true);
-            const data = await db.risk_indicators.toArray();
-            if (data.length === 0) {
-                // Initial seeding if empty
-                await db.risk_indicators.bulkAdd(RISK_INDICATORS);
-                setIndicators(RISK_INDICATORS);
+            // 🚀 Fetch from Backend API
+            const apiData = await riService.getAllRiskIndicators();
+            console.log("Risk indicators from API:", apiData);
+
+            if (apiData && Array.isArray(apiData) && apiData.length > 0) {
+                const formattedIndicators = apiData.map(ri => {
+                    // Find category name by ID
+                    const catId = ri.riskIndicatorCategoryId?.toString();
+                    const cat = currentCategories.find(c => c.id?.toString() === catId);
+
+                    return {
+                        id: ri.riskIndicatorId || `api-ri-${Math.random()}`,
+                        riskIndicatorId: ri.riskIndicatorId,
+                        name: ri.riskName || "Untitled Risk",
+                        category: cat ? cat.name : (ri.riskCategoryName || "General"),
+                        count: 0, // 👈 Fix: API doesn't provide current count, defaulting to 0
+                        hasCapa: ri.status === "true" || ri.status === true,
+                        incidents: [],
+                        threshold: ri.thresholdCount || 0,
+                        severity: ri.severity || 1,
+                    };
+                });
+                setIndicators(formattedIndicators);
+
+                // Sync to local DB
+                await db.risk_indicators.clear();
+                await db.risk_indicators.bulkAdd(formattedIndicators);
             } else {
-                setIndicators(data);
+                // Fallback to local DB
+                const localData = await db.risk_indicators.toArray();
+                setIndicators(localData);
             }
         } catch (error) {
-            console.error("Error loading indicators:", error);
+            console.error("Error loading indicators from API:", error);
+            const localData = await db.risk_indicators.toArray();
+            setIndicators(localData);
         } finally {
             setLoading(false);
         }
@@ -122,6 +208,23 @@ const RiskIndicator = () => {
 
         try {
             if (editingIndicator) {
+                // Find category object for update
+                const categoryObj = categories.find(c => c.name === newCategory);
+
+                const apiId = editingIndicator.riskIndicatorId || (typeof editingIndicator.id === 'number' ? editingIndicator.id : 0);
+
+                // 🚀 Update with API using the specific Update endpoint
+                const updateData = {
+                    riskIndicatorId: apiId,
+                    riskIndicatorCategoryId: categoryObj?.id?.toString() || "1",
+                    riskName: newName,
+                    thresholdCount: parseInt(newThreshold) || 0,
+                    severity: parseInt(newSeverity) || 0,
+                    status: editingIndicator.hasCapa ? "true" : "false"
+                };
+
+                await riService.updateRiskIndicator(apiId, updateData);
+
                 // Update existing
                 const updatedIndicator = {
                     ...editingIndicator,
@@ -133,9 +236,25 @@ const RiskIndicator = () => {
                 await db.risk_indicators.put(updatedIndicator);
                 setIndicators(indicators.map(i => i.id === editingIndicator.id ? updatedIndicator : i));
             } else {
-                // Add new
+                // Find the category object to get its numeric ID
+                const categoryObj = categories.find(c => c.name === newCategory);
+
+                // 🚀 Add new with exact requested structure
+                const indicatorData = {
+                    riskIndicatorId: 0,
+                    riskIndicatorCategoryId: categoryObj?.id?.toString() || "1",
+                    riskName: newName,
+                    thresholdCount: parseInt(newThreshold) || 0,
+                    severity: parseInt(newSeverity) || 0,
+                    status: "false"
+                };
+
+                // 🚀 Call Backend API
+                const apiResponse = await riService.createRiskIndicator(indicatorData);
+                console.log("Create risk indicator API response:", apiResponse);
+
                 const newIndicator = {
-                    id: `risk-new-${Date.now()}`,
+                    id: apiResponse?.riskIndicatorId || apiResponse?.id || `risk-new-${Date.now()}`,
                     name: newName,
                     category: newCategory,
                     count: 0,
@@ -149,8 +268,14 @@ const RiskIndicator = () => {
             }
             setIsModalOpen(false);
             setEditingIndicator(null);
+            // Explicitly clear form fields
+            setNewName("");
+            setNewCategory("");
+            setNewThreshold("");
+            setNewSeverity("1");
         } catch (error) {
             console.error("Error saving indicator:", error);
+            alert("Failed to save indicator on server.");
         }
     };
 
@@ -191,9 +316,7 @@ const RiskIndicator = () => {
         const colors = getColorClasses(color);
 
         return (
-            <div
-                className={`bg-white p-6 rounded-xl border-2 ${colors.border} ${colors.hover} transition-all group`}
-            >
+            <div className={`bg-white p-6 rounded-xl border-2 ${colors.border} ${colors.hover} transition-all group`}>
                 <div className="flex items-start justify-between mb-4">
                     <div className={`p-2.5 rounded-lg ${colors.bg}`}>
                         <Icon className={`w-5 h-5 ${colors.text}`} strokeWidth={2.5} />
@@ -217,11 +340,11 @@ const RiskIndicator = () => {
 
         const getSeverityStyles = (severity) => {
             const s = parseInt(severity);
-            if (s >= 5) return "bg-rose-500 text-black shadow-rose-100";
-            if (s >= 4) return "bg-orange-500 text-black shadow-orange-100";
+            if (s >= 5) return "bg-rose-500 text-white shadow-rose-100";
+            if (s >= 4) return "bg-orange-500 text-white shadow-orange-100";
             if (s >= 3) return "bg-amber-500 text-black shadow-amber-100";
-            if (s >= 2) return "bg-blue-500 text-black shadow-blue-100";
-            return "bg-emerald-500 text-black shadow-emerald-100";
+            if (s >= 2) return "bg-blue-500 text-white shadow-blue-100";
+            return "bg-emerald-500 text-white shadow-emerald-100";
         };
 
         return (
@@ -230,20 +353,17 @@ const RiskIndicator = () => {
                     setEditingIndicator(indicator);
                     setIsModalOpen(true);
                 }}
-                className={`bg-white group rounded-2xl border-2 transition-all p-5 flex flex-col justify-between h-full hover:-translate-y-1 shadow-sm hover:shadow-xl cursor-pointer ${isOverThreshold ? "border-rose-200" : "border-slate-100"}`}
+                className={`bg-white group rounded-2xl border-2 transition-all p-5 flex flex-col justify-between h-full hover:-translate-y-1 shadow-sm hover:shadow-xl cursor-pointer ${isOverThreshold ? "border-rose-200" : "border-slate-100"
+                    }`}
             >
                 <div>
                     <div className="flex justify-between items-start mb-4">
-                        <span
-                            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-50 text-slate-600 border border-slate-100`}
-                        >
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-50 text-slate-600 border border-slate-100`}>
                             {indicator.category}
                         </span>
                         <div className="flex items-center gap-2">
                             {indicator.severity && (
-                                <span
-                                    className={`px-2 py-0.5 rounded-lg text-[10px] font-black shadow-sm ${getSeverityStyles(indicator.severity)}`}
-                                >
+                                <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black shadow-sm ${getSeverityStyles(indicator.severity)}`}>
                                     LVL {indicator.severity}
                                 </span>
                             )}
@@ -254,19 +374,14 @@ const RiskIndicator = () => {
                             )}
                         </div>
                     </div>
-                    <h4 className="text-slate-800 font-bold text-lg mb-2 group-hover:text-indigo-600 transition-colors leading-tight">
+                    <h3 className="text-slate-800 font-bold text-lg mb-2 group-hover:text-indigo-600 transition-colors leading-tight">
                         {indicator.name}
-                    </h4>
-
+                    </h3>
                     <div className="flex gap-4 items-center mt-2">
                         {indicator.threshold !== undefined && indicator.threshold > 0 && (
                             <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                                    Threshold
-                                </p>
-                                <p className="text-xs font-black text-slate-700">
-                                    {indicator.threshold}
-                                </p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Threshold</p>
+                                <p className="text-xs font-black text-slate-700">{indicator.threshold}</p>
                             </div>
                         )}
                     </div>
@@ -274,26 +389,19 @@ const RiskIndicator = () => {
 
                 <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between">
                     <div>
-                        <p className="text-slate-400 text-[10px] font-medium uppercase tracking-widest mb-1">
-                            Risk Count
-                        </p>
+                        <p className="text-slate-400 text-[10px] font-medium uppercase tracking-widest mb-1">Risk Count</p>
                         <div className="flex items-center gap-2">
-                            <span
-                                className={`text-3xl font-black tracking-tighter ${isOverThreshold ? "text-rose-600" : "text-slate-800"}`}
-                            >
+                            <span className={`text-3xl font-black tracking-tighter ${isOverThreshold ? "text-rose-600" : "text-slate-800"}`}>
                                 {indicator.count}
                             </span>
                             {isOverThreshold ? (
                                 <AlertCircle size={18} className="text-rose-500 animate-pulse" />
                             ) : (
-                                <TrendingUp
-                                    size={16}
-                                    className={indicator.count > 10 ? "text-rose-500" : "text-emerald-500"}
-                                />
+                                <TrendingUp size={16} className={indicator.count > 10 ? "text-rose-500" : "text-emerald-500"} />
                             )}
                         </div>
                     </div>
-                    <button className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-black transition-all shadow-sm">
+                    <button className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
                         <ChevronRight size={20} />
                     </button>
                 </div>
@@ -309,6 +417,7 @@ const RiskIndicator = () => {
         return (
             <RiskIndicatorForm
                 indicators={indicators}
+                categories={categories}
                 onBack={() => setView("dashboard")}
             />
         );
@@ -323,9 +432,7 @@ const RiskIndicator = () => {
                         <ShieldAlert className="text-indigo-600" />
                         Risk Indicators
                     </h1>
-                    <p className="text-slate-500 mt-1 font-medium">
-                        Identifying and monitoring potential risks in laboratory operations
-                    </p>
+                    <p className="text-slate-500 mt-1 font-medium">Identifying and monitoring potential risks in laboratory operations</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -366,7 +473,7 @@ const RiskIndicator = () => {
                     <div className="flex flex-wrap items-center bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 gap-1 w-full xl:w-auto">
                         <button
                             onClick={() => setSelectedCategory("All")}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === "All" ? "bg-indigo-600 text-black shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === "All" ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
                         >
                             All
                         </button>
@@ -374,7 +481,7 @@ const RiskIndicator = () => {
                             <button
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.name)}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === cat.name ? "bg-indigo-600 text-black shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
+                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === cat.name ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
                             >
                                 {cat.name}
                             </button>
@@ -383,16 +490,13 @@ const RiskIndicator = () => {
 
                     <div className="flex flex-col gap-3 w-full xl:w-96">
                         <div className="relative w-full">
-                            <Search
-                                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                                size={18}
-                            />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
                             <input
                                 type="text"
                                 placeholder="Search risk factors..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-white rounded-2xl border border-slate-200 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-hidden transition-all text-xs font-medium"
+                                className="w-full pl-12 pr-4 py-3 bg-white rounded-2xl border border-slate-200 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-xs font-medium"
                             />
                         </div>
 
@@ -404,13 +508,13 @@ const RiskIndicator = () => {
                                         placeholder="Enter category name..."
                                         value={newCategoryName}
                                         onChange={(e) => setNewCategoryName(e.target.value)}
-                                        className="flex-1 px-4 py-2 bg-white rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-hidden transition-all"
+                                        className="flex-1 px-4 py-2 bg-white rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                         autoFocus
                                         onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
                                     />
                                     <button
                                         onClick={handleAddCategory}
-                                        className="px-4 py-2 bg-indigo-600 text-black text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm"
+                                        className="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm"
                                     >
                                         Add
                                     </button>
@@ -449,12 +553,8 @@ const RiskIndicator = () => {
                         <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all mb-4">
                             <Plus size={28} />
                         </div>
-                        <p className="text-slate-500 font-bold group-hover:text-indigo-600 transition-colors">
-                            Add Risk Indicator
-                        </p>
-                        <p className="text-slate-400 text-xs mt-1">
-                            Define new potential risk
-                        </p>
+                        <p className="text-slate-500 font-bold group-hover:text-indigo-600 transition-colors">Add Risk Indicator</p>
+                        <p className="text-slate-400 text-xs mt-1">Define new potential risk</p>
                     </div>
 
                     {filteredIndicators.map((indicator) => (
@@ -473,9 +573,7 @@ const RiskIndicator = () => {
                                     <h2 className="text-3xl font-black text-slate-800 mb-2 italic">
                                         {editingIndicator ? "Update Risk Metric" : "Configure Risk Metric"}
                                     </h2>
-                                    <p className="text-slate-500 text-sm font-medium">
-                                        Establish risk categories and potential impact levels
-                                    </p>
+                                    <p className="text-slate-500 text-sm font-medium">Establish risk categories and potential impact levels</p>
                                 </div>
                                 <div className="p-3 bg-indigo-50 rounded-2xl text-indigo-600">
                                     <ShieldAlert size={24} />
@@ -513,7 +611,7 @@ const RiskIndicator = () => {
                                         placeholder="e.g. Data leakage via email"
                                         value={newName}
                                         onChange={(e) => setNewName(e.target.value)}
-                                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-hidden font-bold text-slate-800"
+                                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800"
                                     />
                                 </div>
 
@@ -527,7 +625,7 @@ const RiskIndicator = () => {
                                             placeholder="e.g. 5"
                                             value={newThreshold}
                                             onChange={(e) => setNewThreshold(e.target.value)}
-                                            className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-hidden font-bold text-slate-800"
+                                            className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800"
                                         />
                                     </div>
                                     <div>
@@ -537,7 +635,7 @@ const RiskIndicator = () => {
                                         <select
                                             value={newSeverity}
                                             onChange={(e) => setNewSeverity(e.target.value)}
-                                            className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-hidden font-bold text-slate-800 appearance-none cursor-pointer"
+                                            className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800 appearance-none cursor-pointer"
                                         >
                                             <option value="1">1 (Low)</option>
                                             <option value="2">2</option>
@@ -547,8 +645,6 @@ const RiskIndicator = () => {
                                         </select>
                                     </div>
                                 </div>
-
-
                             </div>
 
                             <div className="flex gap-4 mt-10">
@@ -564,7 +660,7 @@ const RiskIndicator = () => {
                                 <button
                                     onClick={handleSaveIndicator}
                                     disabled={!newName || !newCategory}
-                                    className="flex-1 py-4 bg-indigo-600 text-gray-600 font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                                    className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                                 >
                                     {editingIndicator ? "Update Risk Metric" : "Define Risk Metric"}
                                 </button>
@@ -573,6 +669,7 @@ const RiskIndicator = () => {
                     </div>
                 </div>
             )}
+
             <style
                 dangerouslySetInnerHTML={{
                     __html: `

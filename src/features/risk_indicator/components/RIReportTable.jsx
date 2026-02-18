@@ -1,16 +1,15 @@
 import React, { forwardRef } from "react";
-import { CATEGORIES } from "../risk_indicator_data";
 import RIFormFooter from "./RIFormFooter";
 
 const RIReportTable = forwardRef(
-    ({ selectedMonth, displayedIndicators, metadata }, ref) => {
+    ({ selectedMonth, displayedIndicators, categories, metadata }, ref) => {
         const days = Array.from({ length: 31 }, (_, i) =>
             String(i + 1).padStart(2, "0"),
         );
 
-        const renderCategoryRows = (category) => {
+        const renderCategoryRows = (categoryName) => {
             const categoryIndicators = displayedIndicators.filter(
-                (i) => i.category === category,
+                (i) => i.category === categoryName,
             );
 
             if (categoryIndicators.length === 0) return null;
@@ -22,7 +21,7 @@ const RIReportTable = forwardRef(
                             rowSpan={categoryIndicators.length}
                             className="border-r border-slate-300 py-2 px-1 text-center font-bold text-[10px] bg-slate-50 [writing-mode:vertical-rl] rotate-180"
                         >
-                            {category}
+                            {categoryName}
                         </td>
                     )}
                     <td className="border-r border-slate-300 px-3 text-[10px] font-medium text-slate-700 min-w-[200px]">
@@ -94,7 +93,7 @@ const RIReportTable = forwardRef(
                             </tr>
                         </thead>
                         <tbody>
-                            {CATEGORIES.map((category) => renderCategoryRows(category))}
+                            {categories.map((cat) => renderCategoryRows(cat.name))}
                             <tr className="h-12 border-t-2 border-slate-800">
                                 <td
                                     colSpan={33}
