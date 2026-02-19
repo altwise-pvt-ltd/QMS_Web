@@ -96,7 +96,7 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
         </div>
         <button
           onClick={onAddNew}
-          className="bg-blue-600 text-gray-600 px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-md transition-all"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-md transition-all"
         >
           <Plus size={18} /> Add New Staff
         </button>
@@ -169,11 +169,10 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
 
                   <td className="p-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        staff.status === "Competent"
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${staff.status === "Competent"
                           ? "bg-green-100 text-green-700"
                           : "bg-amber-100 text-amber-700"
-                      }`}
+                        }`}
                     >
                       {staff.status}
                     </span>

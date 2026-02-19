@@ -113,12 +113,10 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
         jobTitle: formData.jobTitle,
       };
 
-      let response;
-      if (initialData) {
-        response = await staffService.updateStaff(payload);
-      } else {
-        response = await staffService.createStaff(payload);
-      }
+      console.log("Submitting staff payload:", payload);
+
+      const response = await staffService.createStaff(payload);
+
       if (response.data) {
         alert(
           initialData
@@ -214,11 +212,11 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               name="mobileNumber"
               value={formData.mobileNumber}
               onChange={handleChange}
-              maxLength={10}
-              placeholder="e.g. 9876543210"
-              className={`w-full border rounded-lg p-2.5 outline-none transition-all ${errors.mobileNumber ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-500"}`}
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              placeholder="+91 98765 43210"
+              pattern="[+\-]?[0-9\s\-()]+"
+              title="Please enter a valid phone number"
             />
-            <ErrorMsg name="mobileNumber" />
           </div>
 
           {/* Department */}
@@ -262,16 +260,41 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-red-200 hover:text-red-400"
+            className="
+      px-5 py-2.5
+      text-sm font-medium
+      text-gray-700
+      bg-white
+      border border-gray-300
+      rounded-lg
+      transition-colors duration-200
+      hover:bg-red-50 hover:text-red-600 hover:border-red-300
+      focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2
+    "
           >
             Cancel
           </button>
+
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`px-5 py-2.5 text-sm font-medium rounded-lg flex items-center gap-2 transition-all ${isSubmitting ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 text-gray-600 hover:bg-blue-700 shadow-sm"}`}
+            className={`
+      px-5 py-2.5
+      text-sm font-medium
+      rounded-lg
+      flex items-center gap-2
+      transition-colors  duration-200
+      ${isSubmitting
+                ? "bg-blue-400 text-gray-600 cursor-not-allowed"
+                : "bg-blue-600 text-gray-600 hover:bg-blue-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              }
+    `}
           >
-            {isSubmitting ? <Spinner size={18} /> : <Save size={18} />}
+            {isSubmitting ? (
+              <Spinner size={18} className="text-gray-600" />
+            ) : (
+              <Save size={18} />
+            )}
             {isSubmitting
               ? "Saving..."
               : initialData
@@ -279,6 +302,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
                 : "Create Employee"}
           </button>
         </div>
+
       </form>
     </div>
   );

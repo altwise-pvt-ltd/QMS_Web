@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Upload, FileText, Calendar, CheckCircle2, AlertCircle, ArrowLeft, Send, ClipboardList, Info, Users, UserPlus } from 'lucide-react';
 import { db } from '../../../db';
+import { getDepartments } from '../../department/services/departmentService';
+import staffService from '../../staff/services/staffService';
 
 // Import questions from quedata.js
 import { CAPA_QUESTIONS } from '../quedata.js';
@@ -31,19 +33,7 @@ const SUBCATEGORY_MAP = {
 };
 
 
-const DEPARTMENTS = [
-  "Quality Assurance",
-  "Pre-Analytical",
-  "Analytical - Clinical Chemistry",
-  "Analytical - Hematology",
-  "Analytical - Microbiology",
-  "Analytical - Immunology",
-  "Post-Analytical",
-  "Phlebotomy",
-  "Sample Reception",
-  "IT Support",
-  "Management"
-];
+
 
 const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCustomQuestion }) => {
   const [localAnswers, setLocalAnswers] = useState({});
@@ -302,6 +292,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   const [closureVerification, setClosureVerification] = useState('');
   const [responsibility, setResponsibility] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [staffList, setStaffList] = useState([]);
   const [taggedStaff, setTaggedStaff] = useState([]);
   const [showStaffDropdown, setShowStaffDropdown] = useState(false);
@@ -311,14 +302,33 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   useEffect(() => {
     const fetchStaff = async () => {
       try {
-        const staff = await db.staff.toArray();
-        setStaffList(staff);
+        const response = await staffService.getAllStaff();
+        const data = response.data || [];
+        const mappedStaff = data.map(s => ({
+          id: s.staffId || s.id,
+          name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || s.staffName || "Unnamed Staff",
+          role: s.jobTitle || "Staff",
+          dept: departments.find(d => (d.id || d.departmentId) === s.departmentId)?.name || departments.find(d => (d.id || d.departmentId) === s.departmentId)?.departmentName || "General"
+        }));
+        setStaffList(mappedStaff);
       } catch (error) {
         console.error("Error fetching staff:", error);
       }
     };
     fetchStaff();
-  }, []);
+
+    const fetchDepartments = async () => {
+      try {
+        const depts = await getDepartments();
+        setDepartments(depts);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    };
+    if (departments.length === 0) {
+      fetchDepartments();
+    }
+  }, [departments]); // Re-run when departments array changes to fix mapping
 
   // Pre-fill if selectedNC exists
   useEffect(() => {
@@ -463,7 +473,11 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all appearance-none bg-white font-medium"
               >
                 <option value="">e.g., Pathology</option>
-                {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                {departments.map(d => (
+                  <option key={d.id || d.departmentId} value={d.departmentName || d.name}>
+                    {d.departmentName || d.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

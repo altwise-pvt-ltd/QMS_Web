@@ -9,8 +9,6 @@ export const QUALITY_INDICATORS = [
     capaId: "CAPA-2026-001",
     threshold: 10,
     severity: 3,
-    minValue: 0,
-    maxValue: 15,
     incidents: [
       { date: "2026-01-05", value: 1 },
       { date: "2026-01-29", value: 2 },
@@ -124,8 +122,6 @@ export const QUALITY_INDICATORS = [
     capaId: "CAPA-2026-005",
     threshold: 5,
     severity: 5,
-    minValue: 0,
-    maxValue: 5,
     incidents: [
       { date: "2026-01-12", value: 2 },
       { date: "2026-01-23", value: 1 },
@@ -197,8 +193,6 @@ export const QUALITY_INDICATORS = [
     capaId: "CAPA-2026-030",
     threshold: 15,
     severity: 4,
-    minValue: 0,
-    maxValue: 20,
     incidents: [],
   },
   {

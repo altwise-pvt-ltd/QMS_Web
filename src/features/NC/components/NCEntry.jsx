@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { NC_OPTIONS } from "../data/NcCategories";
 import { FileText as FileIcon, UploadCloud, Eye, Trash2, Users, UserPlus, X } from "lucide-react";
 import { db } from "../../../db";
+import { getDepartments } from "../../department/services/departmentService";
+import staffService from "../../staff/services/staffService";
 import UploadPreviewModal from "../../documents/component/UploadPreviewModal";
 
 const NCEntry = ({ entry, onUpdate }) => {
@@ -10,18 +12,39 @@ const NCEntry = ({ entry, onUpdate }) => {
   const [staffList, setStaffList] = useState([]);
   const [showStaffDropdown, setShowStaffDropdown] = useState(false);
   const [staffSearch, setStaffSearch] = useState("");
+  const [departments, setDepartments] = useState([]);
 
   useEffect(() => {
     const fetchStaff = async () => {
       try {
-        const staff = await db.staff.toArray();
-        setStaffList(staff);
+        const response = await staffService.getAllStaff();
+        const data = response.data || [];
+        const mappedStaff = data.map(s => ({
+          id: s.staffId || s.id,
+          name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || s.staffName || "Unnamed Staff",
+          role: s.jobTitle || "Staff",
+          dept: departments.find(d => (d.id || d.departmentId) === s.departmentId)?.name || departments.find(d => (d.id || d.departmentId) === s.departmentId)?.departmentName || "General"
+        }));
+        setStaffList(mappedStaff);
       } catch (error) {
         console.error("Error fetching staff:", error);
       }
     };
     fetchStaff();
-  }, []);
+
+    const fetchDepartments = async () => {
+      try {
+        const depts = await getDepartments();
+        setDepartments(depts);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    };
+
+    if (departments.length === 0) {
+      fetchDepartments();
+    }
+  }, [departments]);
 
   useEffect(() => {
     if (!entry.category) {
@@ -65,14 +88,19 @@ const NCEntry = ({ entry, onUpdate }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Department
             </label>
-            <input
-              type="text"
+            <select
               value={entry.department}
               onChange={(e) => onUpdate(entry.id, "department", e.target.value)}
-              placeholder="e.g., Pathology"
-              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border rounded-md bg-white focus:ring-2 focus:ring-blue-500"
               required
-            />
+            >
+              <option value="">Select Department</option>
+              {departments.map((dept) => (
+                <option key={dept.id || dept.departmentId} value={dept.departmentName || dept.name}>
+                  {dept.departmentName || dept.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* NC Category */}

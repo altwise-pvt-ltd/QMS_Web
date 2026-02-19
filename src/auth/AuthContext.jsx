@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { loginUser, getProfile } from "./authService";
+import api from "./api";
 import {
   setCredentials,
   logout as logoutAction,

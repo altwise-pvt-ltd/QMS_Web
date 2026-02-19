@@ -9,17 +9,96 @@ import {
     Clock,
     AlertCircle
 } from "lucide-react";
+import { useEffect } from "react";
 import InstrumentForm from "./components/Instrumentform";
 import InstrumentList from "./components/Instrument_list";
-import { INSTRUMENTS } from "./Instrument_data";
+import instrumentService from "./services/instrumentService";
 
 const Instrument = () => {
-    const [instruments, setInstruments] = useState(INSTRUMENTS);
+    const [instruments, setInstruments] = useState([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [editingInstrument, setEditingInstrument] = useState(null);
 
-    const handleAddInstrument = (newInstrument) => {
-        setInstruments([newInstrument, ...instruments]);
+    const fetchInstruments = async () => {
+        try {
+            setLoading(true);
+            const response = await instrumentService.getInstruments();
+
+            // Normalize API response to match local state expectations
+            // The API uses 'instrumentNomenclature' and 'equipmentPhotographFilePath'
+            const data = Array.isArray(response) ? response : (response?.data || []);
+            const baseUrl = "https://qmsapi.altwise.in/"; // Base URL for uploaded files
+
+            const formatFilePath = (path) => {
+                if (!path || path === "N/A") return "N/A";
+                if (typeof path !== 'string') return "N/A";
+                if (path.startsWith("http")) return path;
+
+                // Handle Windows absolute paths or messy strings returned by some API versions
+                let cleanPath = path;
+                const markers = ["UploadedInstruments/", "Upload/", "Uploads/"];
+                for (const marker of markers) {
+                    if (path.includes(marker)) {
+                        cleanPath = path.substring(path.indexOf(marker));
+                        break;
+                    }
+                }
+
+                // Remove leading slash if it exists to avoid double slash
+                cleanPath = cleanPath.startsWith("/") ? cleanPath.substring(1) : cleanPath;
+                return `${baseUrl}${cleanPath}`;
+            };
+
+            const normalizedData = data.map(item => ({
+                ...item,
+                id: item.instrumentCalibrationId || item.id || Date.now(),
+                name: item.instrumentNomenclature || item.instrumentName || item.name || "Unnamed Instrument",
+                department: item.operatingDepartment || item.departmentName || item.department || "General",
+                expiryDate: item.expiryDate || item.nextCalibrationDate || "",
+                // Document mappings for the detail view - Use *FilePath for full URLs or helper for messy paths
+                photo: formatFilePath(item.equipmentPhotographFilePath || item.equipmentPhotographFileName),
+                purchaseOrder: formatFilePath(item.purchaseOrderFilePath || item.purchaseOrderFileName),
+                billReceipt: formatFilePath(item.billReceiptFilePath || item.billReceiptFileName),
+                installationReport: formatFilePath(item.installationReportFilePath || item.installationReportFileName),
+                iqOqPq: formatFilePath(item.iqOqPqProtocolFilePath || item.iqOqPqProtocolFileName),
+                userManual: formatFilePath(item.userOperationsManualFilePath || item.userOperationsManualFileName),
+                calibrationCert: formatFilePath(item.latestCalibrationCertFilePath || item.latestCalibrationCertFileName),
+                maintenanceText: item.preventiveMaintenanceNotes || ""
+            }));
+
+            setInstruments(normalizedData);
+        } catch (error) {
+            console.error("Error fetching instruments:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteInstrument = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this instrument?")) return;
+        try {
+            await instrumentService.deleteInstrument(id);
+            alert("Instrument deleted successfully!");
+            fetchInstruments();
+        } catch (error) {
+            console.error("Error deleting instrument:", error);
+            alert("Failed to delete instrument.");
+        }
+    };
+
+    useEffect(() => {
+        fetchInstruments();
+    }, []);
+
+    const handleAddInstrument = () => {
+        fetchInstruments();
+    };
+
+    const handleEditInstrument = (instrument) => {
+        setEditingInstrument(instrument);
+        setIsFormOpen(true);
     };
 
     const filteredInstruments = instruments.filter(inst =>
@@ -37,10 +116,12 @@ const Instrument = () => {
         return diff < 30; // within 30 days
     }).length;
 
+    const activeCount = instruments.filter(inst => (inst.status || "Active") === "Active").length;
+
     const stats = [
         { label: "Total Assets", value: totalInstruments, icon: Zap, color: "text-indigo-600", bg: "bg-indigo-50" },
         { label: "Calibration Due", value: pendingCalibrations, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-        { label: "Maintenance Status", value: "Optimal", icon: Activity, color: "text-emerald-600", bg: "bg-emerald-50" },
+        { label: "Active Status", value: activeCount, icon: Activity, color: "text-emerald-600", bg: "bg-emerald-50" },
     ];
 
     return (
@@ -57,7 +138,7 @@ const Instrument = () => {
 
                     <button
                         onClick={() => setIsFormOpen(true)}
-                        className="group flex items-center justify-center gap-2 px-10 py-5 bg-indigo-600 text-black rounded-[24px] font-black shadow-2xl shadow-indigo-200 hover:bg-slate-900 "
+                        className="group flex items-center justify-center gap-2 px-10 py-5 bg-indigo-600 text-white rounded-[24px] font-black shadow-2xl shadow-indigo-200 hover:bg-slate-900 "
                     >
                         <Plus className="group-hover:rotate-180 transition-transform duration-500" size={24} />
                         Register New Instrument
@@ -109,13 +190,27 @@ const Instrument = () => {
                     </div>
                 </div>
 
-                <InstrumentList instruments={filteredInstruments} />
+                {loading ? (
+                    <div className="py-20 text-center text-slate-400 font-bold animate-pulse">
+                        Synchronizing with Calibration Database...
+                    </div>
+                ) : (
+                    <InstrumentList
+                        instruments={filteredInstruments}
+                        onDelete={handleDeleteInstrument}
+                        onEdit={handleEditInstrument}
+                    />
+                )}
             </div>
 
             <InstrumentForm
                 isOpen={isFormOpen}
-                onClose={() => setIsFormOpen(false)}
+                onClose={() => {
+                    setIsFormOpen(false);
+                    setEditingInstrument(null);
+                }}
                 onAdd={handleAddInstrument}
+                editingInstrument={editingInstrument}
             />
         </div>
     );

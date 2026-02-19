@@ -11,9 +11,11 @@ import {
     Info,
     ClipboardCheck
 } from "lucide-react";
-import { DEPARTMENTS } from "../Instrument_data";
+import { useEffect } from "react";
+import { getDepartments } from "../../department/services/departmentService";
+import instrumentService from "../services/instrumentService";
 
-const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
+const InstrumentForm = ({ isOpen, onClose, onAdd, editingInstrument }) => {
     const [formData, setFormData] = useState({
         name: "",
         department: "",
@@ -28,14 +30,7 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
         expiryDate: ""
     });
 
-    if (!isOpen) return null;
-
-    const handleFileChange = (e, field) => {
-        const file = e.target.files[0];
-        if (file) {
-            setFormData(prev => ({ ...prev, [field]: file }));
-        }
-    };
+    const [departments, setDepartments] = useState([]);
 
     const resetForm = () => {
         setFormData({
@@ -53,45 +48,125 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleFileChange = (e, field) => {
+        const file = e.target.files[0];
+        if (file) {
+            setFormData(prev => ({ ...prev, [field]: file }));
+        }
+    };
+
+    useEffect(() => {
+        const fetchDepartments = async () => {
+            try {
+                const depts = await getDepartments();
+                setDepartments(depts);
+            } catch (error) {
+                console.error("Error fetching departments:", error);
+            }
+        };
+        fetchDepartments();
+    }, []);
+
+    useEffect(() => {
+        if (editingInstrument) {
+            setFormData({
+                name: editingInstrument.name || "",
+                department: editingInstrument.department || "",
+                photo: editingInstrument.photo || null,
+                purchaseOrder: editingInstrument.purchaseOrder || null,
+                billReceipt: editingInstrument.billReceipt || null,
+                installationReport: editingInstrument.installationReport || null,
+                iqOqPq: editingInstrument.iqOqPq || null,
+                userManual: editingInstrument.userManual || null,
+                calibrationCert: editingInstrument.calibrationCert || null,
+                maintenanceText: editingInstrument.maintenanceText || "",
+                expiryDate: (editingInstrument.expiryDate || "").split('T')[0]
+            });
+        } else {
+            resetForm();
+        }
+    }, [editingInstrument, isOpen]);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.name || !formData.department) {
-            alert("Please fill in the required fields.");
+
+        // Comprehensive Validation
+        const missingFields = [];
+        if (!formData.name) missingFields.push("Instrument Nomenclature");
+        if (!formData.department) missingFields.push("Operating Department");
+        if (!formData.maintenanceText) missingFields.push("Maintenance Notes");
+        if (!formData.expiryDate) missingFields.push("Expiry Date");
+
+        // File Validations
+        if (!formData.purchaseOrder) missingFields.push("Purchase Order");
+        if (!formData.billReceipt) missingFields.push("Bill Receipt");
+        if (!formData.installationReport) missingFields.push("Installation Report");
+        if (!formData.iqOqPq) missingFields.push("IQ/OQ/PQ Protocol");
+        if (!formData.userManual) missingFields.push("User Manual");
+        if (!formData.photo) missingFields.push("Equipment Photograph");
+        if (!formData.calibrationCert) missingFields.push("Calibration Certificate");
+
+        if (missingFields.length > 0) {
+            alert(`Please provide the following required information:\n\n• ${missingFields.join("\n• ")}`);
             return;
         }
 
-        const newInstrument = {
-            ...formData,
-            id: Date.now(),
-            status: "Active",
-            // For persistence in the same session demo
-            photo: formData.photo ? URL.createObjectURL(formData.photo) : null,
-            purchaseOrder: formData.purchaseOrder?.name || "N/A",
-            billReceipt: formData.billReceipt?.name || "N/A",
-            installationReport: formData.installationReport?.name || "N/A",
-            iqOqPq: formData.iqOqPq?.name || "N/A",
-            userManual: formData.userManual?.name || "N/A",
-            calibrationCert: formData.calibrationCert?.name || "N/A",
-        };
-        onAdd(newInstrument);
-        resetForm();
-        onClose();
+        try {
+            const payload = new FormData();
+            payload.append("InstrumentNomenclature", formData.name);
+            payload.append("OperatingDepartment", formData.department);
+            payload.append("PreventiveMaintenanceNotes", formData.maintenanceText);
+            payload.append("ExpiryDate", formData.expiryDate);
+            payload.append("Status", "Active");
+
+            if (formData.photo) payload.append("EquipmentPhotographFile", formData.photo);
+            if (formData.purchaseOrder) payload.append("PurchaseOrderFile", formData.purchaseOrder);
+            if (formData.billReceipt) payload.append("BillReceiptFile", formData.billReceipt);
+            if (formData.installationReport) payload.append("InstallationReportFile", formData.installationReport);
+            if (formData.iqOqPq) payload.append("IqOqPqProtocolFile", formData.iqOqPq);
+            if (formData.userManual) payload.append("UserOperationsManualFile", formData.userManual);
+            if (formData.calibrationCert) payload.append("LatestCalibrationCert", formData.calibrationCert);
+
+            if (editingInstrument) {
+                payload.append("InstrumentCalibrationId", editingInstrument.instrumentCalibrationId);
+                await instrumentService.updateInstrumentCalibration(editingInstrument.instrumentCalibrationId, payload);
+                alert("Instrument updated successfully!");
+            } else {
+                await instrumentService.createInstrument(payload);
+                alert("Instrument registered successfully!");
+            }
+
+            onAdd();
+            resetForm();
+            onClose();
+        } catch (error) {
+            console.error("Failed to register instrument:", error);
+            const errorData = error.response?.data;
+            const errorMessage = errorData?.errors
+                ? Object.entries(errorData.errors)
+                    .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
+                    .join("\n")
+                : errorData?.title || "Failed to register instrument. Please ensure all required fields and documents are provided.";
+            alert(`Registration Error:\n${errorMessage}`);
+        }
     };
 
-    const VerticalFileField = ({ label, field, hint, accept = ".pdf,image/*", typeLabel = "PDF" }) => (
+    const VerticalFileField = ({ label, field, hint, accept = ".pdf,image/*", typeLabel = "PDF", required = false }) => (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-200 rounded-lg bg-white group hover:border-indigo-200 transition-all gap-4">
             <div className="flex items-center gap-4 min-w-0 flex-1">
-                <div className={`w-10 h-10 rounded-lg shrink-0 flex items-center justify-center transition-colors ${formData[field] ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                <div className={`w-10 h-10 rounded-lg shrink-0 flex items-center justify-center transition-colors ${formData[field] ? 'bg-emerald-100 text-emerald-600' : (required ? 'bg-rose-50 text-rose-400' : 'bg-slate-100 text-slate-400')}`}>
                     {field === 'photo' ? <Camera size={18} /> : <Upload size={18} />}
                 </div>
                 <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-slate-700 truncate">{label}</p>
+                    <p className="text-sm font-bold text-slate-700 truncate">{label} {required && <span className="text-rose-500">*</span>}</p>
                     <p className="text-[10px] text-slate-400 font-medium italic truncate">
                         {formData[field] instanceof File ? formData[field].name : (formData[field] ? 'File attached' : (hint || `No ${typeLabel} attached`))}
                     </p>
                 </div>
             </div>
-            <label className="shrink-0 px-4 py-2 border border-slate-300 rounded-md text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-600 transition-all text-center">
+            <label className={`shrink-0 px-4 py-2 border rounded-md text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all text-center ${formData[field] ? 'border-emerald-200 text-emerald-600 hover:bg-emerald-50' : 'border-slate-300 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-600'}`}>
                 {formData[field] ? `Change ${typeLabel}` : `Add ${typeLabel}`}
                 <input type="file" accept={accept} className="hidden" onChange={(e) => handleFileChange(e, field)} />
             </label>
@@ -104,8 +179,8 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
                 {/* Header - CAPA Style */}
                 <div className="flex items-center justify-between px-8 py-5 border-b bg-white">
                     <div>
-                        <h2 className="text-xl font-bold text-slate-800">New Instrument Registration</h2>
-                        <p className="text-sm text-slate-500 mt-0.5">Define equipment biodata and documentation</p>
+                        <h2 className="text-xl font-bold text-slate-800">{editingInstrument ? 'Edit Instrument' : 'New Instrument Registration'}</h2>
+                        <p className="text-sm text-slate-500 mt-0.5">{editingInstrument ? 'Update equipment biodata and documentation' : 'Define equipment biodata and documentation'}</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -147,8 +222,10 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
                                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                                 >
                                     <option value="" disabled>Select Department</option>
-                                    {DEPARTMENTS.map(dept => (
-                                        <option key={dept} value={dept}>{dept}</option>
+                                    {departments.map(dept => (
+                                        <option key={dept.id || dept.departmentId} value={dept.departmentName || dept.name}>
+                                            {dept.departmentName || dept.name}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -163,9 +240,9 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
                                 <FileText size={16} className="text-indigo-600" />
                                 <h3 className="text-sm font-black uppercase tracking-widest text-slate-700">Audit Proofs</h3>
                             </div>
-                            <VerticalFileField label="Purchase Order / Agreement" field="purchaseOrder" />
-                            <VerticalFileField label="Bill Receipt" field="billReceipt" />
-                            <VerticalFileField label="Installation Report" field="installationReport" />
+                            <VerticalFileField label="Purchase Order / Agreement" field="purchaseOrder" required />
+                            <VerticalFileField label="Bill Receipt" field="billReceipt" required />
+                            <VerticalFileField label="Installation Report" field="installationReport" required />
                         </div>
 
                         {/* Column 2: Manuals & Standards */}
@@ -174,9 +251,9 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
                                 <ClipboardCheck size={16} className="text-indigo-600" />
                                 <h3 className="text-sm font-black uppercase tracking-widest text-slate-700">Standards</h3>
                             </div>
-                            <VerticalFileField label="IQ OQ PQ Protocol" field="iqOqPq" />
-                            <VerticalFileField label="User Operations Manual" field="userManual" />
-                            <VerticalFileField label="Equipment Photograph" field="photo" hint="Upload image only" accept="image/*" typeLabel="Image" />
+                            <VerticalFileField label="IQ OQ PQ Protocol" field="iqOqPq" required />
+                            <VerticalFileField label="User Operations Manual" field="userManual" required />
+                            <VerticalFileField label="Equipment Photograph" field="photo" hint="Upload image only" accept="image/*" typeLabel="Image" required />
                         </div>
                     </div>
 
@@ -189,11 +266,12 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <VerticalFileField label="Latest Calibration Cert" field="calibrationCert" />
+                                <VerticalFileField label="Latest Calibration Cert" field="calibrationCert" required />
                                 <div className="space-y-1.5">
-                                    <label className="text-sm font-semibold text-slate-700 block">Valid Until (Expiry Date)</label>
+                                    <label className="text-sm font-semibold text-slate-700 block">Valid Until (Expiry Date) <span className="text-rose-500">*</span></label>
                                     <input
                                         type="date"
+                                        required
                                         className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-slate-800"
                                         value={formData.expiryDate}
                                         onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
@@ -204,8 +282,9 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
                                 </div>
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-slate-700 block">Preventive Maintenance Notes</label>
+                                <label className="text-sm font-semibold text-slate-700 block">Preventive Maintenance Notes <span className="text-rose-500">*</span></label>
                                 <textarea
+                                    required
                                     placeholder="Enter details about maintenance schedule, handling instructions etc..."
                                     className="w-full px-4 py-3 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-slate-800 h-full min-h-[140px] resize-none"
                                     value={formData.maintenanceText}
@@ -228,9 +307,9 @@ const InstrumentForm = ({ isOpen, onClose, onAdd }) => {
                     <button
                         form="instrument-form"
                         type="submit"
-                        className="px-10 py-2.5 bg-slate-900 text-black rounded-md text-sm font-bold hover:bg-black transition-all shadow-sm active:scale-95 uppercase tracking-widest"
+                        className="px-10 py-2.5 bg-slate-900 text-white rounded-md text-sm font-bold hover:bg-black transition-all shadow-sm active:scale-95 uppercase tracking-widest"
                     >
-                        Submit Registration
+                        {editingInstrument ? 'Update Changes' : 'Submit Registration'}
                     </button>
                 </div>
             </div>
