@@ -17,19 +17,23 @@ import {
 import Pagination from "@mui/material/Pagination";
 import {
   openDocument,
-  deleteDocument,
+  deleteDocument as deleteDocumentLegacy,
 } from "../../../services/documentService";
 
 const ITEMS_PER_PAGE = 10;
 
-const SavedDocumentsTable = ({ documents = [], onDocumentDeleted }) => {
+const SavedDocumentsTable = ({
+  documents = [],
+  onDocumentDeleted,
+  onDelete,
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const handleViewDocument = (doc) => {
     try {
       // Check if this is a real uploaded document (has fileUrl from Cloudflare)
       if (!doc?.fileUrl) {
         alert(
-          `This is a template document. No file URL is available.\n\nDocument: ${doc.name}\n\nTo view actual documents, please upload them first.`
+          `This is a template document. No file URL is available.\n\nDocument: ${doc.name}\n\nTo view actual documents, please upload them first.`,
         );
         return;
       }
@@ -41,7 +45,7 @@ const SavedDocumentsTable = ({ documents = [], onDocumentDeleted }) => {
         !doc.fileUrl.startsWith("http")
       ) {
         alert(
-          `This is a template/mock document with a placeholder URL.\n\nDocument: ${doc.name}\n\nPlease upload real documents to view them.`
+          `This is a template/mock document with a placeholder URL.\n\nDocument: ${doc.name}\n\nPlease upload real documents to view them.`,
         );
         return;
       }
@@ -58,7 +62,7 @@ const SavedDocumentsTable = ({ documents = [], onDocumentDeleted }) => {
     try {
       if (!doc?.fileUrl) {
         alert(
-          `Download URL not available for this document.\n\nDocument: ${doc.name}\n\nThis may be a template document.`
+          `Download URL not available for this document.\n\nDocument: ${doc.name}\n\nThis may be a template document.`,
         );
         return;
       }
@@ -70,7 +74,7 @@ const SavedDocumentsTable = ({ documents = [], onDocumentDeleted }) => {
         !doc.fileUrl.startsWith("http")
       ) {
         alert(
-          `This is a template document with no real file.\n\nDocument: ${doc.name}\n\nPlease upload actual documents to download them.`
+          `This is a template document with no real file.\n\nDocument: ${doc.name}\n\nPlease upload actual documents to download them.`,
         );
         return;
       }
@@ -95,7 +99,12 @@ const SavedDocumentsTable = ({ documents = [], onDocumentDeleted }) => {
     }
 
     try {
-      await deleteDocument(doc.id);
+      if (onDelete) {
+        await onDelete(doc);
+      } else {
+        await deleteDocumentLegacy(doc.id);
+      }
+
       alert("Document deleted successfully!");
       // Notify parent component to refresh the list
       if (onDocumentDeleted) {
@@ -157,7 +166,7 @@ const SavedDocumentsTable = ({ documents = [], onDocumentDeleted }) => {
 
       {/* ✅ ONLY horizontal scroll lives here */}
       <div className="overflow-x-auto overflow-y-hidden flex-1 min-w-0">
-        <table className="min-w-[1100px] w-full text-left border-collapse">
+        <table className="min-w-275 w-full text-left border-collapse">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr className="text-xs font-semibold uppercase text-slate-500">
               <th className="p-4">ID</th>
@@ -214,7 +223,7 @@ const SavedDocumentsTable = ({ documents = [], onDocumentDeleted }) => {
                 <td className="p-4">
                   <span
                     className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${getStatusStyle(
-                      doc.status
+                      doc.status,
                     )}`}
                   >
                     {getStatusIcon(doc.status)}

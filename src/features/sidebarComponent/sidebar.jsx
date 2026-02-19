@@ -294,7 +294,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
 
             {/* 10. Instrument Calibration */}
             <li>
-              <Link to="/intrusment" className={menuItemClass("/intrusment")}>
+              <Link to="/instrument" className={menuItemClass("/instrument")}>
                 <Activity className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${

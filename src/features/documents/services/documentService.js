@@ -135,6 +135,44 @@ const documentService = {
     CACHE.categories = null;
     CACHE.subCategories = {};
   },
+
+  /**
+   * Fetches documents for a specific category and subcategory.
+   * @param {number|string} categoryId
+   * @param {number|string} subCategoryId
+   * @returns {Promise<Array>} List of documents
+   */
+  getDocumentsByCategoryAndSubCategory: async (categoryId, subCategoryId) => {
+    try {
+      const response = await api.get(
+        `/DocumentLibrary/GetDocumentsByCategoryAndSubCategory/${categoryId}/${subCategoryId}`
+      );
+      return response.data || [];
+    } catch (error) {
+      console.error(
+        `Error fetching documents for cat: ${categoryId}, sub: ${subCategoryId}`,
+        error
+      );
+      throw error;
+    }
+  },
+
+  /**
+   * Deletes a document.
+   * @param {number|string} documentId
+   * @returns {Promise<Object>} Response data
+   */
+  deleteDocument: async (documentId) => {
+    try {
+      const response = await api.delete(
+        `/DocumentLibrary/DeleteDocument/${documentId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      throw error;
+    }
+  },
 };
 
 export default documentService;
