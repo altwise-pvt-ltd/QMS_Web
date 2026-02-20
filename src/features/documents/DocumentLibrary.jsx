@@ -121,12 +121,14 @@ const DocumentLibrary = () => {
 
   const activeData = levels.find((l) => l.id === activeLevelId) || {};
 
-  const handleViewClick = (docName) => {
+  const handleViewClick = (subCategoryId, subCategoryName) => {
     navigate({
       pathname: "/documents/view",
       search: createSearchParams({
+        categoryId: activeData.id,
+        subCategoryId: subCategoryId.toString(),
         category: activeData.title,
-        subCategory: docName,
+        subCategory: subCategoryName,
       }).toString(),
     });
   };
@@ -396,9 +398,10 @@ const DocumentLibrary = () => {
                   <DocumentRow
                     key={`${activeLevelId}-${idx}`} // Use combined key to force re-render on level switch if needed
                     index={idx}
+                    id={doc.id}
                     name={doc.name}
                     side={doc.side}
-                    onView={handleViewClick}
+                    onView={(id, name) => handleViewClick(id, name)}
                     onUpload={handleUploadClick}
                     onEdit={handleEditItem}
                     onDelete={handleDeleteItem}
@@ -432,9 +435,17 @@ const DocumentLibrary = () => {
   );
 };
 
-const DocumentRow = ({ index, name, onView, onUpload, onEdit, onDelete }) => (
+const DocumentRow = ({
+  index,
+  id,
+  name,
+  onView,
+  onUpload,
+  onEdit,
+  onDelete,
+}) => (
   <div
-    onClick={() => onView(name)}
+    onClick={() => onView(id, name)}
     className="group flex items-center justify-between p-3 rounded-xl border border-slate-200/80 bg-white hover:border-indigo-200 hover:bg-indigo-50 transition-all cursor-pointer hover:shadow-sm"
   >
     <div className="flex items-center gap-3">
