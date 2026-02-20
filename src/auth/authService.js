@@ -49,6 +49,7 @@ export const getProfile = async (token = null) => {
     : {};
 
   const response = await api.get("/AdminUser/GetProfile", config);
+  console.log("Profile Data received from API:", response.data);
   return response.data;
 };
 
