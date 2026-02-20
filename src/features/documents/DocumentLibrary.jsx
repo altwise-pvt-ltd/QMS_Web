@@ -7,7 +7,6 @@ import {
   ChevronRight,
   ArrowRight,
   Plus,
-  Loader2,
   AlertCircle,
 } from "lucide-react";
 import { LEVEL_CONFIG } from "./data.js";
@@ -17,6 +16,7 @@ import {
   transformCategory,
   transformSubCategory,
 } from "./services/documentTransformer";
+import { Skeleton } from "../../components/ui/Skeleton";
 
 const DocumentLibrary = () => {
   const [levels, setLevels] = useState([]);
@@ -152,9 +152,9 @@ const DocumentLibrary = () => {
         prevLevels.map((level) =>
           level.id === activeLevelId
             ? {
-              ...level,
-              items: [...(level.items || []), transformedItem],
-            }
+                ...level,
+                items: [...(level.items || []), transformedItem],
+              }
             : level,
         ),
       );
@@ -186,11 +186,11 @@ const DocumentLibrary = () => {
         prevLevels.map((level) =>
           level.id === activeLevelId
             ? {
-              ...level,
-              items: level.items.map((item, idx) =>
-                idx === index ? { ...item, name: newName } : item,
-              ),
-            }
+                ...level,
+                items: level.items.map((item, idx) =>
+                  idx === index ? { ...item, name: newName } : item,
+                ),
+              }
             : level,
         ),
       );
@@ -215,9 +215,9 @@ const DocumentLibrary = () => {
         prevLevels.map((level) =>
           level.id === activeLevelId
             ? {
-              ...level,
-              items: level.items.filter((_, idx) => idx !== index),
-            }
+                ...level,
+                items: level.items.filter((_, idx) => idx !== index),
+              }
             : level,
         ),
       );
@@ -239,19 +239,6 @@ const DocumentLibrary = () => {
       }).toString(),
     });
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
-          <p className="text-slate-500 font-medium">
-            Loading Document Library...
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -327,50 +314,59 @@ const DocumentLibrary = () => {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Navigation Sidebar (The Pyramid) - Sticky on Desktop */}
         <div className="lg:w-1/3 lg:sticky lg:top-6 h-fit space-y-3">
-          {levels.map((level) => {
-            const Icon = level.icon || File; // Fallback icon
-            const isActive = activeLevelId === level.id;
-            return (
-              <button
-                key={level.id}
-                onClick={() => setActiveLevelId(level.id)}
-                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center gap-4 group ${isActive
-                  ? "bg-indigo-50/40 border-indigo-600 shadow-md ring-1 ring-indigo-600/20"
-                  : "bg-white border-slate-200 hover:border-indigo-400 hover:bg-slate-50/80 hover:shadow-sm"
+          {isLoading ? (
+            <SidebarSkeleton />
+          ) : (
+            levels.map((level) => {
+              const Icon = level.icon || File; // Fallback icon
+              const isActive = activeLevelId === level.id;
+              return (
+                <button
+                  key={level.id}
+                  onClick={() => setActiveLevelId(level.id)}
+                  className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center gap-4 group ${
+                    isActive
+                      ? "bg-indigo-50/40 border-indigo-600 shadow-md ring-1 ring-indigo-600/20"
+                      : "bg-white border-slate-200 hover:border-indigo-400 hover:bg-slate-50/80 hover:shadow-sm"
                   }`}
-              >
-                <div className={`p-3 rounded-lg shadow-sm ${level.color}`}>
-                  <Icon className="w-6 h-6" />
-                </div>
-                <div className="flex-1">
-                  <span
-                    className={`text-xs font-bold uppercase tracking-wider ${isActive ? "text-indigo-700/70" : "text-slate-500"
+                >
+                  <div className={`p-3 rounded-lg shadow-sm ${level.color}`}>
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1">
+                    <span
+                      className={`text-xs font-bold uppercase tracking-wider ${
+                        isActive ? "text-indigo-700/70" : "text-slate-500"
                       }`}
-                  >
-                    Level {level.level}
-                  </span>
-                  <h3
-                    className={`font-semibold ${isActive ? "text-indigo-800" : "text-slate-800"
+                    >
+                      Level {level.level}
+                    </span>
+                    <h3
+                      className={`font-semibold ${
+                        isActive ? "text-indigo-800" : "text-slate-800"
                       }`}
-                  >
-                    {level.title}
-                  </h3>
-                  <p
-                    className={`text-xs mt-1 ${isActive ? "text-indigo-700/70" : "text-slate-500"
+                    >
+                      {level.title}
+                    </h3>
+                    <p
+                      className={`text-xs mt-1 ${
+                        isActive ? "text-indigo-700/70" : "text-slate-500"
                       }`}
-                  >
-                    {level.description}
-                  </p>
-                </div>
-                <ChevronRight
-                  className={`w-5 h-5 transition-transform ${isActive
-                    ? "text-indigo-600 rotate-90 lg:rotate-0"
-                    : "text-slate-400 group-hover:text-indigo-400"
+                    >
+                      {level.description}
+                    </p>
+                  </div>
+                  <ChevronRight
+                    className={`w-5 h-5 transition-transform ${
+                      isActive
+                        ? "text-indigo-600 rotate-90 lg:rotate-0"
+                        : "text-slate-400 group-hover:text-indigo-400"
                     }`}
-                />
-              </button>
-            );
-          })}
+                  />
+                </button>
+              );
+            })
+          )}
         </div>
 
         {/* Content Area - Scrollable with fixed max height */}
@@ -387,10 +383,11 @@ const DocumentLibrary = () => {
 
           <div className="p-6 bg-white overflow-y-auto custom-scrollbar flex-1">
             {/* Loading State for Subcategories */}
-            {loadingSub ? (
-              <div className="flex flex-col items-center justify-center h-40 gap-3 text-slate-400">
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
-                <span className="text-sm">Loading folders...</span>
+            {isLoading || loadingSub ? (
+              <div className="grid grid-cols-1 gap-3">
+                {[...Array(6)].map((_, i) => (
+                  <FolderSkeleton key={i} />
+                ))}
               </div>
             ) : activeData.items && activeData.items.length > 0 ? (
               <div className="grid grid-cols-1 gap-3">
@@ -434,6 +431,43 @@ const DocumentLibrary = () => {
     </div>
   );
 };
+
+const SidebarSkeleton = () => (
+  <div className="space-y-3">
+    {[...Array(4)].map((_, i) => (
+      <div
+        key={i}
+        className="w-full p-4 rounded-xl border border-slate-100 bg-white flex items-center gap-4"
+      >
+        <Skeleton className="w-12 h-12 rounded-lg" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-3 w-48" />
+        </div>
+        <Skeleton className="w-5 h-5 rounded-full" />
+      </div>
+    ))}
+  </div>
+);
+
+const FolderSkeleton = () => (
+  <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-white">
+    <div className="flex items-center gap-3">
+      <Skeleton className="w-9 h-9 rounded-lg" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-2.5 w-20" />
+      </div>
+    </div>
+    <div className="flex items-center gap-2">
+      <Skeleton className="w-8 h-8 rounded-md" />
+      <Skeleton className="w-8 h-8 rounded-md" />
+      <Skeleton className="w-8 h-8 rounded-md" />
+      <Skeleton className="w-4 h-4 ml-1" />
+    </div>
+  </div>
+);
 
 const DocumentRow = ({
   index,

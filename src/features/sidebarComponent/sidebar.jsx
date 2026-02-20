@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import staffService from "../staff/services/staffService";
+<<<<<<< HEAD
 import {
   LayoutDashboard,
   FileText,
@@ -24,7 +25,11 @@ import {
   Truck,
   ShieldAlert,
 } from "lucide-react";
+=======
+import { LayoutDashboard, Settings, LogOut } from "lucide-react";
+>>>>>>> rudra_dev
 import ImageWithFallback from "../../components/ui/ImageWithFallback";
+import { sidebarConfig } from "./sidebarConfig";
 
 /**
  * Sidebar component that provides navigation across the application.
@@ -37,9 +42,9 @@ import ImageWithFallback from "../../components/ui/ImageWithFallback";
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   // Extract user data and logout function from the global AuthContext
   const { user, logout } = useAuth();
+  const location = useLocation();
 
   const [isDocsOpen, setIsDocsOpen] = useState(false);
-  const location = useLocation();
 
   /**
    * Helper to check if a specific navigation path is currently active.
@@ -48,8 +53,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
    */
   const isActive = (path) =>
     location.pathname === path || location.pathname.startsWith(path + "/");
-
-  const isDocsRoute = location.pathname.startsWith("/documents");
 
   // Automatically close submenus (like Documents) when the sidebar is collapsed
   useEffect(() => {
@@ -62,32 +65,44 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
    * @returns {string} Tailwind CSS class string.
    */
   const menuItemClass = (path) =>
-    `flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 relative overflow-hidden ${isActive(path)
-      ? "bg-indigo-100 text-indigo-700 shadow-sm"
-      : "text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 hover:shadow-sm hover:scale-[1.02]"
+    `flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 relative overflow-hidden ${
+      isCollapsed ? "justify-center" : ""
+    } ${
+      isActive(path)
+        ? "bg-indigo-100 text-indigo-700 shadow-sm"
+        : "text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 hover:shadow-sm hover:scale-[1.02]"
     }`;
+
+  // Filter sidebar items based on user roles
+  const filteredSidebarItems = sidebarConfig.filter((item) => {
+    if (!item.roles) return true;
+    return item.roles.includes(user?.role);
+  });
 
   return (
     <aside
       className={`fixed top-0 left-0 z-40 h-screen 
   bg-white text-slate-700 border-r border-indigo-100 shadow-xl
   transition-all duration-300 ease-in-out overflow-x-hidden
-  ${isCollapsed ? "w-20" : "w-72"}`}
+  ${isCollapsed ? "w-[85px]" : "w-[293px]"}`}
       aria-label="Sidebar"
     >
       <div className="h-full flex flex-col transition-all duration-300">
         {/* --- Logo Area with Animation --- */}
         <div
           onClick={toggleSidebar}
-          className={`flex items-center pt-6 mb-8 px-4 cursor-pointer group/logo transition-all duration-300 ${isCollapsed ? "gap-0" : "gap-3"}`}
+          className={`flex items-center pt-6 mb-8 cursor-pointer group/logo transition-all duration-300 ${
+            isCollapsed ? "justify-center px-0" : "gap-3 px-4"
+          }`}
           title="Click to toggle sidebar"
         >
           <div className="min-w-10 w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-500/50 group-hover/logo:shadow-indigo-500/80 group-hover/logo:scale-110 transition-all duration-300">
             Q
           </div>
           <span
-            className={`text-2xl font-bold bg-indigo-600 bg-clip-text text-transparent whitespace-nowrap overflow-hidden transition-all duration-300 ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-              }`}
+            className={`text-2xl font-bold bg-indigo-600 bg-clip-text text-transparent whitespace-nowrap overflow-hidden transition-all duration-300 ${
+              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+            }`}
           >
             QualiFlow
           </span>
@@ -96,6 +111,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         {/* --- Scrollable Main Navigation --- */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 custom-scrollbar">
           <ul className="space-y-2 font-medium pb-4">
+<<<<<<< HEAD
             {/* 1. Dashboard */}
             <li>
               <Link to="/dashboard" className={menuItemClass("/dashboard")}>
@@ -327,20 +343,52 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 </span>
               </Link>
             </li>
+=======
+            {filteredSidebarItems.map((item) => (
+              <li key={item.path}>
+                <Link to={item.path} className={menuItemClass(item.path)}>
+                  {isActive(item.path) && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-600 rounded-r-full"></span>
+                  )}
+                  <item.icon className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                  <span
+                    className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
+                      isCollapsed
+                        ? "w-0 opacity-0 ml-0"
+                        : "w-auto opacity-100 ms-3"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </Link>
+              </li>
+            ))}
+>>>>>>> rudra_dev
           </ul>
         </div>
 
         {/* --- Static Bottom Section --- */}
         <div className="p-4 border-t-2 border-indigo-100 space-y-4 bg-white">
           {/* User Profile Card */}
-          {!isCollapsed && user && (
-            <div className="px-2 py-3 bg-indigo-50 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          {user && (
+            <div
+              className={`px-2 py-3 bg-indigo-50 rounded-xl flex items-center transition-all animate-in fade-in slide-in-from-bottom-2 duration-500 ${isCollapsed ? "justify-center" : "gap-3"}`}
+            >
               <ImageWithFallback
+<<<<<<< HEAD
                 src={staffService.getAssetUrl(user.avatar) || `https://ui-avatars.com/api/?name=${user.name}&background=6366f1&color=fff`}
+=======
+                src={
+                  staffService.getAssetUrl(user.avatar) ||
+                  `https://ui-avatars.com/api/?name=${user.name}&background=6366f1&color=fff`
+                }
+>>>>>>> rudra_dev
                 alt={user.name}
                 className="w-10 h-10 rounded-lg shadow-sm border border-white object-cover"
               />
-              <div className="flex-1 overflow-hidden">
+              <div
+                className={`flex-1 overflow-hidden transition-all duration-300 ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}`}
+              >
                 <p className="text-sm font-bold text-slate-800 truncate">
                   {user.name}
                 </p>
@@ -356,10 +404,18 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               <Link to="/settings" className={menuItemClass("/settings")}>
                 <Settings className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
                 <span
+<<<<<<< HEAD
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
                     ? "w-0 opacity-0 ml-0"
                     : "w-auto opacity-100 ms-3"
                     }`}
+=======
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
+                    isCollapsed
+                      ? "w-0 opacity-0 ml-0"
+                      : "w-auto opacity-100 ms-3"
+                  }`}
+>>>>>>> rudra_dev
                 >
                   Settings
                 </span>
@@ -372,10 +428,18 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               >
                 <LogOut className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:-translate-x-1" />
                 <span
+<<<<<<< HEAD
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
                     ? "w-0 opacity-0 ml-0"
                     : "w-auto opacity-100 ms-3"
                     }`}
+=======
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
+                    isCollapsed
+                      ? "w-0 opacity-0 ml-0"
+                      : "w-auto opacity-100 ms-3"
+                  }`}
+>>>>>>> rudra_dev
                 >
                   Sign Out
                 </span>
