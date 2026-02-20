@@ -23,6 +23,7 @@ import {
   getStatusColor,
 } from "../utils/reminderUtils";
 import EventForm from "./EventForm";
+import CustomPagination from "../../../components/ui/CustomPagination";
 
 const EventList = () => {
   const [events, setEvents] = useState([]);
@@ -34,6 +35,19 @@ const EventList = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 5;
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, statusFilter, typeFilter]);
+
+  const totalPages = Math.ceil(filteredEvents.length / rowsPerPage);
+  const paginatedEvents = filteredEvents.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
 
   useEffect(() => {
     loadData();
@@ -227,7 +241,7 @@ const EventList = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredEvents.map((event) => {
+                {paginatedEvents.map((event) => {
                   const eventType = eventTypes.find(
                     (t) => t.id === event.eventTypeId,
                   );
@@ -299,6 +313,16 @@ const EventList = () => {
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6">
+          <CustomPagination
+            count={totalPages}
+            page={page}
+            onChange={(e, v) => setPage(v)}
+          />
+        </div>
+      )}
 
       {/* Event Form Modal */}
       {showForm && (

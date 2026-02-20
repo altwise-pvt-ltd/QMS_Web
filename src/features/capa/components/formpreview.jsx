@@ -1,9 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Eye, FileText, Plus, ClipboardList, CheckCircle, Search, Filter, Calendar, Download } from "lucide-react";
+import CustomPagination from "../../../components/ui/CustomPagination";
 
 const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew, onView }) => {
   const [activeTab, setActiveTab] = useState("ncs");
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 2;
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, searchTerm]);
 
   const displayData = activeTab === "ncs" ? ncs : filedCapas;
   const filteredData = displayData.filter(item => {
@@ -12,6 +19,13 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew, onVie
     const search = searchTerm.toLowerCase();
     return name.includes(search) || issueNo.includes(search);
   });
+
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+  const paginatedData = filteredData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
 
   return (
     <div className="space-y-6">
@@ -24,7 +38,7 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew, onVie
             placeholder="Search by NC name or issue number..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-20 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm font-medium"
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm font-medium"
           />
         </div>
 
@@ -32,7 +46,7 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew, onVie
 
           <button
             onClick={onCreateNew}
-            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 bg-slate-900 text-black rounded-xl text-sm font-black hover:bg-black transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-slate-200"
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-black hover:bg-black transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-slate-200"
           >
             <Plus className="w-4 h-4" />
             New CAPA Entry
@@ -94,8 +108,8 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew, onVie
             </thead>
 
             <tbody className="divide-y divide-slate-50">
-              {filteredData.length > 0 ? (
-                filteredData.map((item, index) => (
+              {paginatedData.length > 0 ? (
+                paginatedData.map((item, index) => (
                   <tr key={item.id || item.issueNo || index} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3">
@@ -117,7 +131,7 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew, onVie
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-2">
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-black ${activeTab === 'ncs' ? 'bg-indigo-500' : 'bg-emerald-500'
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white ${activeTab === 'ncs' ? 'bg-indigo-500' : 'bg-emerald-500'
                           }`}>
                           {(item.reportedBy || item.filedBy || item.responsibility || "U").charAt(0)}
                         </div>
@@ -139,7 +153,7 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew, onVie
                       {activeTab === "ncs" ? (
                         <button
                           onClick={() => onFileCapa(item)}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-black hover:bg-indigo-600 hover:text-black transition-all shadow-sm active:scale-95 group/btn"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-black hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-95 group/btn"
                         >
                           <FileText className="w-3.5 h-3.5" />
                           File CAPA
@@ -203,12 +217,30 @@ const FormPreview = ({ ncs = [], filedCapas = [], onFileCapa, onCreateNew, onVie
           </table>
         </div>
 
-        {/* Footer Info */}
-        <div className="bg-slate-50/50 p-4 border-t border-slate-100 flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
-          <div>Showing {filteredData.length} records</div>
-          <div className="flex gap-4">
-            <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /> Pending</span>
-            <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Completed</span>
+        {/* Footer Info & Pagination */}
+        <div className="bg-slate-50/50 p-4 border-t border-slate-100">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex flex-col gap-1">
+              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Showing {paginatedData.length} of {filteredData.length} records
+              </div>
+              <div className="flex gap-4">
+                <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /> Pending
+                </span>
+                <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Completed
+                </span>
+              </div>
+            </div>
+
+            {totalPages > 1 && (
+              <CustomPagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+              />
+            )}
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import DepartmentView from "./component/department_view";
 import AddDepartment from "./component/add_department";
 import { getDepartments, deleteDepartment } from "./services/departmentService";
 import staffService from "../staff/services/staffService";
+import CustomPagination from "../../components/ui/CustomPagination";
 
 const Department = () => {
     const [departments, setDepartments] = useState([]);
@@ -14,6 +15,8 @@ const Department = () => {
     const [editingDepartment, setEditingDepartment] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const rowsPerPage = 4;
 
     const fetchDepartments = async () => {
         try {
@@ -58,6 +61,10 @@ const Department = () => {
         fetchDepartments();
     }, []);
 
+    useEffect(() => {
+        setPage(1);
+    }, [searchTerm]);
+
     const handleAddDepartment = (newDept) => {
         if (editingDepartment) {
             setDepartments(departments.map(d => d.id === newDept.id ? newDept : d));
@@ -96,6 +103,12 @@ const Department = () => {
 
     const filteredDepartments = departments.filter(dept =>
         (dept.name || "").toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const totalPages = Math.ceil(filteredDepartments.length / rowsPerPage);
+    const paginatedDepartments = filteredDepartments.slice(
+        (page - 1) * rowsPerPage,
+        page * rowsPerPage
     );
 
     // Stats for overview
@@ -145,19 +158,30 @@ const Department = () => {
                         <p className="text-xs text-slate-400 font-medium">Click on a card below to switch the roster view</p>
                     </div>
 
-                    <button
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="w-full md:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all"
-                    >
-                        <Plus size={20} />
-                        Add Department
-                    </button>
+                    <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                        {totalPages > 1 && (
+                            <CustomPagination
+                                count={totalPages}
+                                page={page}
+                                onChange={(e, v) => setPage(v)}
+                                size="small"
+                                showText={false}
+                            />
+                        )}
+                        <button
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="w-full md:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all"
+                        >
+                            <Plus size={20} />
+                            Add Department
+                        </button>
+                    </div>
                 </div>
 
                 {filteredDepartments.length > 0 ? (
                     <div className="space-y-12">
                         <DepartmentCards
-                            departments={filteredDepartments}
+                            departments={paginatedDepartments}
                             selectedId={selectedDeptId}
                             onSelect={(id) => {
                                 setSelectedDeptId(id);
@@ -167,6 +191,7 @@ const Department = () => {
                             onEdit={handleEdit}
                             onDelete={handleDelete}
                         />
+
 
                         <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm p-10 animate-in slide-in-from-bottom-8 duration-500">
                             <div className="flex items-center gap-4 mb-8">

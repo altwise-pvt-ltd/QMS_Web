@@ -26,6 +26,7 @@ const QualityIndicator = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingIndicator, setEditingIndicator] = useState(null);
 
+
   useEffect(() => {
     loadIndicators();
   }, []);

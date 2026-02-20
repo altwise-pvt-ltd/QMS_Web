@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { X, Box, UserCircle, ChevronDown } from "lucide-react";
 import { addDepartment, updateDepartment } from "../services/departmentService";
 import staffService from "../../staff/services/staffService";
+import CircularLoading from "../../../components/ui/CircularLoading";
 
 /**
  * AddDepartment component - A modal for defining a new department
@@ -77,9 +78,11 @@ export const AddDepartment = ({ isOpen, onClose, onAdd, editingData }) => {
                 const data = responseData.value || responseData;
                 // Map server response to match frontend state
                 const transformedDept = {
-                    id: data.departmentId,
-                    name: data.departmentName,
-                    head: data.headOfDepartmentName,
+                    id: data.departmentId || data.id || (editingData ? editingData.id : Date.now()),
+                    name: data.departmentName || formData.name,
+                    head: (data.headOfDepartmentName && data.headOfDepartmentName !== "Not Assigned")
+                        ? data.headOfDepartmentName
+                        : (formData.head || "Not Assigned"),
                     employeeCount: editingData ? editingData.employeeCount : 0,
                     icon: editingData ? editingData.icon : "Box",
                     color: editingData ? editingData.color : "indigo"
@@ -167,9 +170,13 @@ export const AddDepartment = ({ isOpen, onClose, onAdd, editingData }) => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="flex-1 py-4 bg-indigo-600 text-black font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 py-3 bg-indigo-600 text-black font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-h-[64px]"
                             >
-                                {loading ? "Saving..." : (editingData ? "Update Dept" : "Create Dept")}
+                                {loading ? (
+                                    <CircularLoading loading={true} size={30} />
+                                ) : (
+                                    editingData ? "Update Dept" : "Create Dept"
+                                )}
                             </button>
                         </div>
                     </form>

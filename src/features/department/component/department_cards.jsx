@@ -1,22 +1,10 @@
 import {
-    Activity,
-    Zap,
-    Heart,
-    Brain,
     Box,
     UserCircle,
     Edit2,
     Trash2
 } from "lucide-react";
 
-// Icon mapping based on department icon name
-const IconMap = {
-    Activity: Activity,
-    Zap: Zap,
-    Heart: Heart,
-    Brain: Brain,
-    Box: Box
-};
 
 const ColorMap = {
     indigo: {
@@ -49,7 +37,7 @@ const ColorMap = {
  * DepartmentCard - A single department selectable card
  */
 const DepartmentCard = ({ dept, isSelected, onSelect, onEdit, onDelete }) => {
-    const Icon = IconMap[dept.icon] || Box;
+    const Icon = Box;
     const colors = ColorMap[dept.color] || ColorMap.indigo;
 
     return (
@@ -60,12 +48,6 @@ const DepartmentCard = ({ dept, isSelected, onSelect, onEdit, onDelete }) => {
                 : "border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1"
                 }`}
         >
-            {/* Selection indicator moved to top-left */}
-            {isSelected && (
-                <div className="absolute top-0 left-0 w-10 h-10 bg-indigo-600 text-white flex items-center justify-center rounded-br-2xl shadow-sm animate-in slide-in-from-top-4 slide-in-from-left-4 duration-300 z-10">
-                    <Box size={14} />
-                </div>
-            )}
 
             {/* Absolute positioned action buttons */}
             <div className="absolute top-4 right-4 flex gap-1 z-20">
