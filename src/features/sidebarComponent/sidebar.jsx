@@ -2,32 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import staffService from "../staff/services/staffService";
-<<<<<<< HEAD
-import {
-  LayoutDashboard,
-  FileText,
-  AlertTriangle,
-  ClipboardCheck,
-  Users,
-  Box,
-  Settings,
-  LogOut,
-  ChevronDown,
-  Presentation,
-  Calendar,
-  GraduationCap,
-  TrendingUp,
-  BarChart3,
-  Building2,
-  Activity,
-  ClipboardList,
-  Briefcase,
-  Truck,
-  ShieldAlert,
-} from "lucide-react";
-=======
 import { LayoutDashboard, Settings, LogOut } from "lucide-react";
->>>>>>> rudra_dev
 import ImageWithFallback from "../../components/ui/ImageWithFallback";
 import { sidebarConfig } from "./sidebarConfig";
 
@@ -111,239 +86,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         {/* --- Scrollable Main Navigation --- */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 custom-scrollbar">
           <ul className="space-y-2 font-medium pb-4">
-<<<<<<< HEAD
-            {/* 1. Dashboard */}
-            <li>
-              <Link to="/dashboard" className={menuItemClass("/dashboard")}>
-                {isActive("/dashboard") && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-                )}
-                <LayoutDashboard className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Dashboard
-                </span>
-              </Link>
-            </li>
-
-            {/* 2. Documents */}
-            <li>
-              <Link to="/documents" className={menuItemClass("/documents")}>
-                {isActive("/documents") && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-                )}
-                <FileText className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Documents
-                </span>
-              </Link>
-            </li>
-
-            {/* 3. CAPA & Incidents */}
-            <li>
-              <Link to="/capa" className={menuItemClass("/capa")}>
-                <ClipboardList className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  CAPA & Incidents
-                </span>
-              </Link>
-            </li>
-
-            {/* Entries Management */}
-            <li>
-              <Link
-                to="/entries-management"
-                className={menuItemClass("/entries-management")}
-              >
-                <ClipboardList className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Entries Management
-                </span>
-              </Link>
-            </li>
-
-            {/* 4. Compliance Calendar */}
-            <li>
-              <Link to="/compliance" className={menuItemClass("/compliance")}>
-                <Calendar className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Compliance Calendar
-                </span>
-              </Link>
-            </li>
-
-            {/* 5. Management Review */}
-            <li>
-              <Link to="/mrm" className={menuItemClass("/mrm")}>
-                {isActive("/mrm") && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-                )}
-                <Presentation className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Management Review
-                </span>
-              </Link>
-            </li>
-
-            {/* 6. Staff */}
-            <li>
-              <Link to="/staff" className={menuItemClass("/staff")}>
-                {isActive("/staff") && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></span>
-                )}
-                <Users className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Staff
-                </span>
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/quality-indicators"
-                className={menuItemClass("/quality-indicators")}
-              >
-                <BarChart3 className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Quality Indicators
-                </span>
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/risk-indicators"
-                className={menuItemClass("/risk-indicators")}
-              >
-                <AlertTriangle className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Risk Indicators
-                </span>
-              </Link>
-            </li>
-
-            {/* 8. Training */}
-            <li>
-              <Link to="/training" className={menuItemClass("/training")}>
-                <GraduationCap className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Training
-                </span>
-              </Link>
-            </li>
-
-            {/* 9. Department */}
-            <li>
-              <Link to="/department" className={menuItemClass("/department")}>
-                <Building2 className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Department
-                </span>
-              </Link>
-            </li>
-
-            {/* 10. Instrument Calibration */}
-            <li>
-              <Link to="/instrument" className={menuItemClass("/instrument")}>
-                <Activity className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Instrument Calibration
-                </span>
-              </Link>
-            </li>
-
-            {/* 11. Vendor Management */}
-            <li>
-              <Link to="/vendor" className={menuItemClass("/vendor")}>
-                <Truck className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Vendor Management
-                </span>
-              </Link>
-            </li>
-
-            {/* 12. Risk Assessment */}
-            <li>
-              <Link
-                to="/risk-assessment"
-                className={menuItemClass("/risk-assessment")}
-              >
-                <ShieldAlert className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-                <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-                >
-                  Risk Assessment
-                </span>
-              </Link>
-            </li>
-=======
             {filteredSidebarItems.map((item) => (
               <li key={item.path}>
                 <Link to={item.path} className={menuItemClass(item.path)}>
@@ -363,7 +105,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 </Link>
               </li>
             ))}
->>>>>>> rudra_dev
           </ul>
         </div>
 
@@ -375,14 +116,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               className={`px-2 py-3 bg-indigo-50 rounded-xl flex items-center transition-all animate-in fade-in slide-in-from-bottom-2 duration-500 ${isCollapsed ? "justify-center" : "gap-3"}`}
             >
               <ImageWithFallback
-<<<<<<< HEAD
-                src={staffService.getAssetUrl(user.avatar) || `https://ui-avatars.com/api/?name=${user.name}&background=6366f1&color=fff`}
-=======
                 src={
                   staffService.getAssetUrl(user.avatar) ||
                   `https://ui-avatars.com/api/?name=${user.name}&background=6366f1&color=fff`
                 }
->>>>>>> rudra_dev
                 alt={user.name}
                 className="w-10 h-10 rounded-lg shadow-sm border border-white object-cover"
               />
@@ -404,18 +141,11 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               <Link to="/settings" className={menuItemClass("/settings")}>
                 <Settings className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
                 <span
-<<<<<<< HEAD
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-=======
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
                     isCollapsed
                       ? "w-0 opacity-0 ml-0"
                       : "w-auto opacity-100 ms-3"
                   }`}
->>>>>>> rudra_dev
                 >
                   Settings
                 </span>
@@ -428,18 +158,11 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               >
                 <LogOut className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:-translate-x-1" />
                 <span
-<<<<<<< HEAD
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                    ? "w-0 opacity-0 ml-0"
-                    : "w-auto opacity-100 ms-3"
-                    }`}
-=======
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
                     isCollapsed
                       ? "w-0 opacity-0 ml-0"
                       : "w-auto opacity-100 ms-3"
                   }`}
->>>>>>> rudra_dev
                 >
                   Sign Out
                 </span>
