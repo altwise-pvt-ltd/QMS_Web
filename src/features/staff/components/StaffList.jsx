@@ -7,11 +7,14 @@ import staffService from "../services/staffService";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import ImageWithFallback from "../../../components/ui/ImageWithFallback";
 import { Link } from "react-router-dom"; // Assuming standard router link if needed, though this file uses onAddNew props
+import CustomPagination from "../../../components/ui/CustomPagination";
 
 const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
   const [staffData, setStaffData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(8);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -134,107 +137,122 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
               </tr>
             </thead>
             <tbody className="text-sm text-gray-700">
-              {staffData.map((staff) => (
-                <tr
-                  key={staff.id}
-                  className="hover:bg-blue-50/50 transition-colors border-b border-gray-50 group"
-                >
-                  <td className="p-4 flex items-center gap-3">
-                    {staff.photo ? (
-                      <ImageWithFallback
-                        src={staff.photo}
-                        alt={staff.name}
-                        className="w-10 h-10 rounded-full object-cover border border-gray-200"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                        {staff.name.charAt(0)}
+              {staffData
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage,
+                )
+                .map((staff) => (
+                  <tr
+                    key={staff.id}
+                    className="hover:bg-blue-50/50 transition-colors border-b border-gray-50 group"
+                  >
+                    <td className="p-4 flex items-center gap-3">
+                      {staff.photo ? (
+                        <ImageWithFallback
+                          src={staff.photo}
+                          alt={staff.name}
+                          className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                          {staff.name.charAt(0)}
+                        </div>
+                      )}
+                      <div>
+                        <div className="font-semibold text-gray-900">
+                          {staff.name}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {staff.role} • ID: {staff.id}
+                        </div>
                       </div>
-                    )}
-                    <div>
-                      <div className="font-semibold text-gray-900">
-                        {staff.name}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {staff.role} • ID: {staff.id}
-                      </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  <td className="p-4">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-medium">
-                      {staff.dept}
-                    </span>
-                  </td>
+                    <td className="p-4">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-medium">
+                        {staff.dept}
+                      </span>
+                    </td>
 
-                  <td className="p-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${staff.status === "Competent"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-amber-100 text-amber-700"
+                    <td className="p-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          staff.status === "Competent"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-amber-100 text-amber-700"
                         }`}
-                    >
-                      {staff.status}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <span className="text-xs text-gray-500">
-                      {staff.joinDate}
-                    </span>
-                  </td>
-
-                  <td className="p-4 text-right relative">
-                    <button
-                      onClick={(e) => toggleMenu(e, staff.id)}
-                      className="p-2 hover:bg-gray-200 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      <MoreVertical size={16} />
-                    </button>
-
-                    {openMenuId === staff.id && (
-                      <div
-                        ref={menuRef}
-                        className="absolute right-8 top-8 w-40 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden"
                       >
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenMenuId(null);
-                            onCompetence && onCompetence(staff);
-                          }}
-                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-colors"
+                        {staff.status}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-xs text-gray-500">
+                        {staff.joinDate}
+                      </span>
+                    </td>
+
+                    <td className="p-4 text-right relative">
+                      <button
+                        onClick={(e) => toggleMenu(e, staff.id)}
+                        className="p-2 hover:bg-gray-200 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+
+                      {openMenuId === staff.id && (
+                        <div
+                          ref={menuRef}
+                          className="absolute right-8 top-8 w-40 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden"
                         >
-                          <ClipboardCheck size={16} /> Competence
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenMenuId(null);
-                            onEdit && onEdit(staff);
-                          }}
-                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-colors border-t border-gray-100"
-                        >
-                          <Edit size={16} /> Edit
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenMenuId(null);
-                            onPermissions && onPermissions(staff);
-                          }}
-                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-green-600 flex items-center gap-2 transition-colors border-t border-gray-100"
-                        >
-                          <Shield size={16} /> Permissions
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(null);
+                              onCompetence && onCompetence(staff);
+                            }}
+                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-colors"
+                          >
+                            <ClipboardCheck size={16} /> Competence
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(null);
+                              onEdit && onEdit(staff);
+                            }}
+                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-colors border-t border-gray-100"
+                          >
+                            <Edit size={16} /> Edit
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(null);
+                              onPermissions && onPermissions(staff);
+                            }}
+                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-green-600 flex items-center gap-2 transition-colors border-t border-gray-100"
+                          >
+                            <Shield size={16} /> Permissions
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         )}
       </div>
+      {!loading && staffData.length > itemsPerPage && (
+        <div className="p-4 border-t border-gray-100 bg-gray-50/30">
+          <CustomPagination
+            count={Math.ceil(staffData.length / itemsPerPage)}
+            page={currentPage}
+            onChange={(e, p) => setCurrentPage(p)}
+          />
+        </div>
+      )}
     </div>
   );
 };

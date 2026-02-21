@@ -59,7 +59,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       className={`fixed top-0 left-0 z-40 h-screen 
   bg-white text-slate-700 border-r border-indigo-100 shadow-xl
   transition-all duration-300 ease-in-out overflow-x-hidden
-  ${isCollapsed ? "w-[85px]" : "w-[293px]"}`}
+  ${isCollapsed ? "w-21.25" : "w-73.25"}`}
       aria-label="Sidebar"
     >
       <div className="h-full flex flex-col transition-all duration-300">
