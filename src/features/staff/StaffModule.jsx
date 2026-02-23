@@ -133,7 +133,7 @@ const StaffModule = () => {
                 className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
               />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-[14px ] shadow-sm border-2 border-white">
+              <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-gray-600 font-bold text-[14px ] shadow-sm border-2 border-white">
                 {selectedStaff?.name?.charAt(0) || "S"}
               </div>
             )}

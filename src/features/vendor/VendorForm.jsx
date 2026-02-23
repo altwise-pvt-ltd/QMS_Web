@@ -17,6 +17,7 @@ const VendorForm = ({ vendor, onSave, onCancel, mode, loading }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [activeTab, setActiveTab] = useState("details");
 
   useEffect(() => {
     if (vendor) setFormData(vendor);
@@ -82,7 +83,7 @@ const VendorForm = ({ vendor, onSave, onCancel, mode, loading }) => {
         <button
           onClick={validateAndSave}
           disabled={loading}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
+          className="bg-indigo-600 hover:bg-indigo-700 text-gray-600 px-6 py-2.5 rounded-lg flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
         >
           <Save size={18} /> {loading ? "Saving..." : "Save Changes"}
         </button>
