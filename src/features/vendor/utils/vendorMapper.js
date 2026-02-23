@@ -15,6 +15,8 @@ export const mapApiToLocalVendor = (apiVendor, currentCount = 0) => {
     type: apiVendor.vendorType,
     address: apiVendor.address,
     status: apiVendor.status,
+    assessmentDate: apiVendor.assessmentDate || null,
+    documentMeta: apiVendor.documentMeta || null,
     evaluation: {
       quality: apiVendor.qualityScore || 0,
       delivery: apiVendor.deliveryScore || 0,
@@ -36,7 +38,6 @@ export const mapLocalToApiVendor = (localVendor) => {
   return {
     vendorManagementId: localVendor.id || 0,
     vendorName: localVendor.name,
-    assessmentDate: localVendor.assessmentDate || new Date().toISOString(),
     phoneNumber: localVendor.phone,
     emailAddress: localVendor.email,
     itemCategoryDealt: localVendor.category,
@@ -44,6 +45,8 @@ export const mapLocalToApiVendor = (localVendor) => {
     vendorType: localVendor.type,
     address: localVendor.address,
     status: localVendor.status || "Active",
+    assessmentDate: localVendor.assessmentDate || new Date().toISOString(),
+    documentMeta: localVendor.documentMeta || null,
     qualityScore: localVendor.evaluation?.quality || 0,
     deliveryScore: localVendor.evaluation?.delivery || 0,
     priceScore: localVendor.evaluation?.price || 0,

@@ -13,7 +13,7 @@
 
   --text-main: #1e293b; /* Slate 800 */
   --text-secondary: #64748b; /* Slate 500 */
-  --text-cautious: #ef4444; /* Red 500 */
+  --text-cautious: #f5bcbc; /* Red 500 */
 
   --border: #e2e8f0; /* Slate 200 */
   --border-focus: #3b82f6;
@@ -303,9 +303,26 @@ body {
   position: absolute;
   top: 4px;
   right: 4px;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  z-index: 1;
+}
+
+.remove-logo-btn:hover {
+  background-color: var(--text-cautious);
+  color: red;
+  border-color: var(--text-cautious);
+  transform: scale(1.1);
 }
 
 /* Animations */

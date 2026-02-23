@@ -12,7 +12,7 @@ import {
 import { db } from "../../db";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
-import api from "../../auth/api";
+import organizationService from "./services/organizationService";
 import "./onboarding.css";
 import ImageWithFallback from "../../components/ui/ImageWithFallback";
 
@@ -28,87 +28,91 @@ const OnboardingPage = () => {
     address: "",
   });
 
+  const { user } = useAuth();
+  const fileInputRef = useRef(null);
+
   useEffect(() => {
     const fetchCompanyInfo = async () => {
       setLoading(true);
       try {
         // 1. Try to fetch from remote API first
         console.log("Fetching organization info from server...");
-        const response = await api.get("/Organization/GetAllOrganization");
+        const data = await organizationService.getAllOrganizations();
 
-        if (
-          response.data &&
-          response.data.isSuccess &&
-          response.data.value &&
-          response.data.value.length > 0
-        ) {
-          const company = response.data.value[0]; // Take the first one for onboarding
-          console.log("Server organization found:", company);
+        if (data && data.isSuccess && data.value && data.value.length > 0) {
+          const currentUserId = user?.adminUserId || user?.id || 1;
 
-          setFormData({
-            name: company.LegalCompanyName || company.legalCompanyName || "",
-            industry: company.IndustrySector || company.industrySector || "",
-            phone: company.BusinessPhone || company.businessPhone || "",
-            websiteUrl:
-              company.CorporateWebsite || company.corporateWebsite || "",
-            address:
-              company.RegisteredAddress || company.registeredAddress || "",
-          });
+          // Find the organization that belongs to the current user
+          const company = data.value.find(
+            (org) => (org.CreatedBy || org.createdBy) == currentUserId,
+          );
 
-          // Sync to local Dexie
-          await db.company_info.clear();
-          await db.company_info.add({
-            organizationId: company.OrganizationId || company.organizationId,
-            name: company.LegalCompanyName || company.legalCompanyName,
-            industry: company.IndustrySector || company.industrySector,
-            phone: company.BusinessPhone || company.businessPhone,
-            websiteUrl: company.CorporateWebsite || company.corporateWebsite,
-            address: company.RegisteredAddress || company.registeredAddress,
-            logo: company.CompanyLogo || company.logoPath,
-            createdAt: company.CreatedAt || company.createdAt,
-          });
+          if (company) {
+            console.log(
+              "Matching server organization found for user:",
+              company,
+            );
 
-          const logo = company.CompanyLogo || company.logoPath;
-          if (logo) {
-            setLogoPreview(logo);
+            setFormData({
+              name: company.LegalCompanyName || company.legalCompanyName || "",
+              industry: company.IndustrySector || company.industrySector || "",
+              phone: company.BusinessPhone || company.businessPhone || "",
+              websiteUrl:
+                company.CorporateWebsite || company.corporateWebsite || "",
+              address:
+                company.RegisteredAddress || company.registeredAddress || "",
+            });
+
+            // Sync to local Dexie
+            await db.company_info.clear();
+            await db.company_info.add({
+              organizationId: company.OrganizationId || company.organizationId,
+              name: company.LegalCompanyName || company.legalCompanyName,
+              industry: company.IndustrySector || company.industrySector,
+              phone: company.BusinessPhone || company.businessPhone,
+              websiteUrl: company.CorporateWebsite || company.corporateWebsite,
+              address: company.RegisteredAddress || company.registeredAddress,
+              logo: company.CompanyLogo || company.logoPath,
+              createdAt: company.CreatedAt || company.createdAt,
+            });
+
+            const logo = company.CompanyLogo || company.logoPath;
+            if (logo) {
+              setLogoPreview(logo);
+            }
+          } else {
+            console.log("No organization matches the current user on server.");
+            await handleFallback();
           }
         } else {
-          // 2. Fallback to local Dexie if server is empty
           console.log("No organization on server, checking local database...");
-          const localInfo = await db.company_info.toArray();
-          if (localInfo && localInfo.length > 0) {
-            const company = localInfo[0];
-            setFormData({
-              name: company.name || "",
-              industry: company.industry || "",
-              phone: company.phone || "",
-              websiteUrl: company.websiteUrl || "",
-              address: company.address || "",
-            });
-            if (company.logo) setLogoPreview(company.logo);
-          }
+          await handleFallback();
         }
       } catch (error) {
         console.error("Failed to fetch organization info", error);
-        // Fallback to local Dexie on network error
-        const localInfo = await db.company_info.toArray();
-        if (localInfo && localInfo.length > 0) {
-          const company = localInfo[0];
-          setFormData({
-            name: company.name || "",
-            industry: company.industry || "",
-            phone: company.phone || "",
-            websiteUrl: company.websiteUrl || "",
-            address: company.address || "",
-          });
-          if (company.logo) setLogoPreview(company.logo);
-        }
+        await handleFallback();
       } finally {
         setLoading(false);
       }
     };
+
+    const handleFallback = async () => {
+      const localInfo = await db.company_info.toArray();
+      if (localInfo && localInfo.length > 0) {
+        const company = localInfo[0];
+        setFormData({
+          name: company.name || "",
+          industry: company.industry || "",
+          phone: company.phone || "",
+          websiteUrl: company.websiteUrl || "",
+          address: company.address || "",
+        });
+        if (company.logo) setLogoPreview(company.logo);
+      }
+    };
+
     fetchCompanyInfo();
-  }, []);
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -137,9 +141,6 @@ const OnboardingPage = () => {
   const removeLogo = () => {
     setLogoPreview(null);
   };
-
-  const { user } = useAuth();
-  const fileInputRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -180,21 +181,13 @@ const OnboardingPage = () => {
 
       console.log("Submitting Onboarding via FormData (with Logo File)...");
 
-      const response = await api.post(
-        "/Organization/CreateOrganization",
-        formDataToSend,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
+      const data = await organizationService.createOrganization(formDataToSend);
 
-      if (response.data.isSuccess) {
+      if (data.isSuccess) {
         console.log("Organization created successfully on server");
 
         // 3. Sync with local Dexie database for offline/quick access
-        const serverData = response.data.value;
+        const serverData = data.value;
         await db.company_info.clear();
         await db.company_info.add({
           organizationId: serverData.organizationId,
@@ -209,7 +202,7 @@ const OnboardingPage = () => {
 
         navigate("/");
       } else {
-        throw new Error(response.data.error || "Failed to create organization");
+        throw new Error(data.error || "Failed to create organization");
       }
     } catch (error) {
       console.error("Error saving company info:", error);

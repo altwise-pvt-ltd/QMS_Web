@@ -1,8 +1,47 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, Printer, Download, Share2 } from "lucide-react";
 import html2pdf from "html2pdf.js";
+import api from "../../auth/api";
+import staffService from "../staff/services/staffService";
+import ImageWithFallback from "../../components/ui/ImageWithFallback";
 
 const VendorView = ({ vendor, onCancel }) => {
+  const [orgInfo, setOrgInfo] = useState({
+    name: "Alpine Diagnostic Centre",
+    address:
+      "Plot No: A232, Road No: 21, Y-Lane, Behind Cyber Tech Solution, Nehru Nagar, Wagle Industrial Estate, Thane (W), Maharashtra – 400604",
+    phone: "",
+    website: "",
+    logoUrl: null,
+  });
+
+  useEffect(() => {
+    const fetchOrgInfo = async () => {
+      try {
+        const response = await api.get("/Organization/GetAllOrganization");
+        if (response.data?.isSuccess && response.data?.value?.length > 0) {
+          const org = response.data.value[0];
+          setOrgInfo({
+            name:
+              org.legalCompanyName ||
+              org.LegalCompanyName ||
+              "Alpine Diagnostic Centre",
+            address:
+              org.registeredAddress ||
+              org.RegisteredAddress ||
+              "Plot No: A232, Road No: 21, Y-Lane, Behind Cyber Tech Solution, Nehru Nagar, Wagle Industrial Estate, Thane (W), Maharashtra – 400604",
+            phone: org.businessPhone || org.BusinessPhone || "",
+            website: org.corporateWebsite || org.CorporateWebsite || "",
+            logoUrl: staffService.getAssetUrl(org.logoPath || org.LogoPath),
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching organization info:", error);
+      }
+    };
+    fetchOrgInfo();
+  }, []);
+
   if (!vendor) return null;
 
   const show = (v) => v || "—";
@@ -101,18 +140,42 @@ const VendorView = ({ vendor, onCancel }) => {
           <thead>
             <tr>
               <td className="p-0">
-                <div className="pdf-header text-center border-b-2 border-black px-10 py-4 mb-2">
-                  <h2 className="text-xl font-bold uppercase tracking-tight">
-                    Alpine Diagnostic Centre
-                  </h2>
-                  <p className="text-xs leading-5 mt-1">
-                    Plot No: A232, Road No: 21, Y-Lane, Behind Cyber Tech
-                    Solution,
-                    <br />
-                    Nehru Nagar, Wagle Industrial Estate, Thane (W), Maharashtra
-                    – 400604
-                  </p>
-                  <h3 className="mt-3 text-base font-bold uppercase underline decoration-1 underline-offset-4">
+                <div className="pdf-header border-b-2 border-black px-10 py-6 mb-2">
+                  <div className="flex items-center justify-between gap-6">
+                    {/* Logo Section */}
+                    {orgInfo.logoUrl && (
+                      <div className="flex-shrink-0">
+                        <ImageWithFallback
+                          src={orgInfo.logoUrl}
+                          alt="Logo"
+                          className="h-20 w-auto object-contain"
+                        />
+                      </div>
+                    )}
+
+                    {/* Organization Info Section */}
+                    <div className="flex-1 text-center">
+                      <h2 className="text-xl font-bold uppercase tracking-tight">
+                        {orgInfo.name}
+                      </h2>
+                      <p className="text-xs leading-5 mt-1 whitespace-pre-line">
+                        {orgInfo.address}
+                      </p>
+                      <div className="flex justify-center gap-4 mt-1 text-[10px] font-bold">
+                        {orgInfo.phone && <span>Phone: {orgInfo.phone}</span>}
+                        {orgInfo.website && (
+                          <span>Website: {orgInfo.website}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Placeholder to balance the logo if needed, or another element */}
+                    {orgInfo.logoUrl && (
+                      <div className="w-20 hidden md:block" />
+                    )}
+                  </div>
+
+                  <h3 className="mt-6 text-center text-base font-bold uppercase underline decoration-1 underline-offset-4">
                     Vendor Assessment Record
                   </h3>
                 </div>
@@ -187,7 +250,7 @@ const VendorView = ({ vendor, onCancel }) => {
                           Period of Assessment
                         </td>
                         <td className="border border-black p-2 font-bold">
-                          {show(vendor.assessmentDate || meta.issueDate)}
+                          {show(vendor.assessmentDate)}
                         </td>
                       </tr>
                       <tr>
@@ -421,7 +484,8 @@ const VendorView = ({ vendor, onCancel }) => {
                     </tbody>
                   </table>
                   <div className="mt-2 text-[8px] text-right text-slate-400">
-                    Proprietary Information — Alpine Diagnostic Centre © 2024
+                    Proprietary Information — {orgInfo.name} ©{" "}
+                    {new Date().getFullYear()}
                   </div>
                 </div>
               </td>
