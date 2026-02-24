@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../auth/AuthContext";
-import ncService from "../../services/ncService";
+import { ncService } from "./services/ncService";
+import { getDepartments } from "../department/services/departmentService";
 import NCHeader from "./components/NCHeader";
 import NCEntry from "./components/NCEntry";
 import NCActions from "./components/NCActions";
@@ -8,6 +9,7 @@ import NCHistoryTable from "./components/NCHistoryTable";
 import NCDetailsModal from "./components/NCDetailsModal";
 import { Alert, Snackbar, Button } from "@mui/material";
 import { History, Plus, Search, Filter } from "lucide-react";
+import { NC_OPTIONS } from "./data/NcCategories";
 
 const INITIAL_FORM_DATA = {
   documentNo: "ADC-FORM-24",
@@ -30,6 +32,7 @@ const INITIAL_FORM_DATA = {
     responsibility: "",
     taggedStaff: [],
     closureVerification: "",
+    observations: "",
     evidenceImage: null,
   },
 };
@@ -46,6 +49,8 @@ export default function DailyNCForm() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
+  const [departments, setDepartments] = useState([]);
+
   const [alertConfig, setAlertConfig] = useState({
     open: false,
     severity: "success",
@@ -55,6 +60,19 @@ export default function DailyNCForm() {
   const handleCloseAlert = () => {
     setAlertConfig((prev) => ({ ...prev, open: false }));
   };
+
+  /* Fetch Departments for ID mapping */
+  useEffect(() => {
+    const fetchDepts = async () => {
+      try {
+        const data = await getDepartments();
+        setDepartments(data);
+      } catch (err) {
+        console.error("Failed to fetch departments:", err);
+      }
+    };
+    fetchDepts();
+  }, []);
 
   /* Autofill responsibility + department */
   useEffect(() => {
@@ -83,8 +101,61 @@ export default function DailyNCForm() {
   const fetchHistory = async () => {
     try {
       setIsHistoryLoading(true);
-      const data = await ncService.getNCReports();
-      setHistoryReports(data);
+      const response = await ncService.getNCs();
+      const apiReports = response.isSuccess
+        ? response.value
+        : Array.isArray(response)
+          ? response
+          : [];
+
+      const mappedReports = apiReports.map((report) => {
+        const catIdx = parseInt(report.nonConformanceCategoryId) - 1;
+        const subIdx = parseInt(report.nonConformanceSubCategoryId) - 1;
+
+        return {
+          id: report.nonConformanceId,
+          status: report.status || "Open",
+          entry: {
+            category: NC_OPTIONS[catIdx]?.category || "Uncategorized",
+            ncDetails:
+              NC_OPTIONS[catIdx]?.subcategories[subIdx] || "No description",
+            date: report.date?.split("T")[0] || "",
+            department:
+              departments.find((d) => d.departmentId === report.departmentId)
+                ?.departmentName ||
+              departments.find((d) => d.id === report.departmentId)?.name ||
+              `Dept #${report.departmentId}`,
+            responsibility: report.responsibility,
+            dailyNcDetails: report.detailsOfNonConformance,
+            effectiveness: report.effectiveness,
+            observations: report.observations,
+            rootCause: report.rootCause,
+            correctiveAction: report.correctiveActionTaken,
+            preventiveAction: report.preventiveActionTaken,
+            closureVerification: report.closureVerification,
+            evidenceImage: report.evidenceDocumentPath
+              ? report.evidenceDocumentPath.startsWith("http")
+                ? report.evidenceDocumentPath
+                : `https://qmsapi.altwise.in/${report.evidenceDocumentPath}`
+              : null,
+            taggedStaff: report.staffIdinvolvedInIncident
+              ? [
+                  {
+                    id: report.staffIdinvolvedInIncident,
+                    name: "Staff #" + report.staffIdinvolvedInIncident,
+                  },
+                ]
+              : [],
+          },
+          submittedBy: {
+            name: "User " + (report.createdBy || ""),
+            id: report.createdBy,
+          },
+          documentNo: report.nonConformanceIssueId,
+        };
+      });
+
+      setHistoryReports(mappedReports);
     } catch (err) {
       console.error("Failed to fetch history:", err);
     } finally {
@@ -114,7 +185,7 @@ export default function DailyNCForm() {
 
   const categories = useMemo(() => {
     const set = new Set(
-      historyReports.map((r) => r.entry?.category).filter(Boolean)
+      historyReports.map((r) => r.entry?.category).filter(Boolean),
     );
     return ["All", ...Array.from(set).sort()];
   }, [historyReports]);
@@ -136,25 +207,75 @@ export default function DailyNCForm() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
 
-    const payload = {
-      ...formData,
-      lastModified: new Date().toISOString(),
-      type: "NC_RECORD",
-      status: "Submitted",
-      submittedBy: {
-        name: user?.name || "Anonymous",
-        id: user?.id || "unknown",
-        role: user?.role || "user",
-      },
-    };
+    // Finding IDs for mapping
+    const deptId =
+      departments.find(
+        (d) => (d.departmentName || d.name) === formData.entry.department,
+      )?.departmentId || "1";
+
+    // Category mapping (assuming indices + 1 for now as fallback)
+    const categoryIndex = NC_OPTIONS.findIndex(
+      (c) => c.category === formData.entry.category,
+    );
+    const categoryId =
+      categoryIndex !== -1 ? (categoryIndex + 1).toString() : "1";
+
+    const subCategoryIndex =
+      categoryIndex !== -1
+        ? NC_OPTIONS[categoryIndex].subcategories.indexOf(
+            formData.entry.ncDetails,
+          )
+        : -1;
+    const subCategoryId =
+      subCategoryIndex !== -1 ? (subCategoryIndex + 1).toString() : "1";
+
+    const staffId = formData.entry.taggedStaff?.[0]?.id || "1";
+
+    const formDataPayload = new FormData();
+
+    formDataPayload.append("NonConformanceId", "0"); // 0 for new
+    formDataPayload.append("NonConformanceIssueId", "NC");
+    formDataPayload.append("Supplier", "Internal Dept"); // Default or from user?
+    formDataPayload.append("Status", "Open");
+    formDataPayload.append("NonConformanceStatus", "Under Investigation");
+    formDataPayload.append("Date", formData.entry.date);
+    formDataPayload.append("NonConformanceIssueDate", formData.entry.date);
+    formDataPayload.append(
+      "DetailsOfNonConformance",
+      formData.entry.dailyNcDetails,
+    );
+    formDataPayload.append("DepartmentId", deptId);
+    formDataPayload.append("NonConformanceCategoryId", categoryId);
+    formDataPayload.append("NonConformanceSubCategoryId", subCategoryId);
+    formDataPayload.append("Effectiveness", formData.entry.effectiveness);
+    formDataPayload.append("Observations", formData.entry.observations);
+    formDataPayload.append("RootCause", formData.entry.rootCause);
+    formDataPayload.append(
+      "CorrectiveActionTaken",
+      formData.entry.correctiveAction,
+    );
+    formDataPayload.append(
+      "PreventiveActionTaken",
+      formData.entry.preventiveAction,
+    );
+    formDataPayload.append("StaffIdinvolvedInIncident", staffId);
+    formDataPayload.append("Responsibility", formData.entry.responsibility);
+    formDataPayload.append(
+      "ClosureVerification",
+      formData.entry.closureVerification,
+    );
+
+    if (formData.entry.evidenceImage) {
+      formDataPayload.append("EvidenceDocument", formData.entry.evidenceImage);
+    }
 
     try {
-      await ncService.saveNCReport(payload);
+      await ncService.createNC(formDataPayload);
 
       setAlertConfig({
         open: true,
         severity: "success",
-        message: "Report saved successfully!",
+        message: "Non-Conformance created successfully!",
       });
 
       setFormData({

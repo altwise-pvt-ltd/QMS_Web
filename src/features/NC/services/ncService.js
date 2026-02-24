@@ -5,12 +5,16 @@ import api from "../../../auth/api";
  */
 export const ncService = {
     /**
-     * Submit a new NC entry.
-     * @param {Object} ncData - The NC data to save.
+     * Submit a new NC entry using FormData.
+     * @param {FormData} formData - The NC data and files to save.
      */
-    createNC: async (ncData) => {
+    createNC: async (formData) => {
         try {
-            const response = await api.post("/NonConformance/CreateNonConformance", ncData);
+            const response = await api.post("/NonConformance/CreateNonConformance", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
             return response.data;
         } catch (error) {
             console.error("Error creating NC:", error);
