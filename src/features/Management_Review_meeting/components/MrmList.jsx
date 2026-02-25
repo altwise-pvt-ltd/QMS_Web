@@ -1,6 +1,6 @@
 // src/features/mrm/components/MrmList.jsx
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, ShieldCheck } from "lucide-react";
 import MeetingViewModal from "./MeetingViewModal";
 import { useMrm } from "../hooks/useMrm";
 
@@ -40,19 +40,20 @@ const MrmList = ({
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 lg:p-12 w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <ShieldCheck className="text-indigo-600" size={32} />
             Management Reviews
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-slate-500 mt-1 font-medium text-lg">
             ISO 9001:2015 Clause 9.3 - Management Review Meetings
           </p>
         </div>
         <button
           onClick={onCreate}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-gray-600 rounded-lg hover:bg-blue-700 transition-all shadow-md font-semibold text-sm lg:text-base active:scale-95"
+          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
         >
           <Plus size={20} />
           New Meeting

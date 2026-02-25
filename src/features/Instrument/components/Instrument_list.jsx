@@ -12,7 +12,11 @@ import {
   History,
   FileSearch,
   UserCircle,
-  Pencil
+  Pencil,
+  Camera,
+  Info,
+  AlertCircle,
+  CheckCircle2
 } from "lucide-react";
 
 import instrumentService from "../services/instrumentService";
@@ -96,126 +100,144 @@ const InstrumentDetailModal = ({ item, onClose }) => {
     }
   };
 
-  const DocItem = ({ label, value }) => (
-    <div
-      onClick={() => handleViewFile(label, value)}
-      className={`w-full flex items-center justify-between p-10 mt-2 rounded-[32px] border transition-all group relative overflow-hidden snap-center ${value !== "N/A"
-        ? "bg-white cursor-pointer hover:border-indigo-300 hover:shadow-2xl hover:-translate-y-1 border-slate-100"
-        : "bg-slate-50/50 cursor-default border-slate-50 opacity-20"
-        }`}
-    >
-      <div className="flex items-center gap-5 min-w-0 flex-1">
-        <div className={`w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center shadow-inner transition-colors ${value !== "N/A" ? "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-black" : "bg-white text-slate-300"
-          }`}>
-          <FileText size={24} />
+  const DocItem = ({ label, value, typeLabel = "PDF" }) => (
+    <div className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-xl bg-white group transition-all gap-4 ${value && value !== "N/A" ? 'border-slate-200 hover:border-emerald-200 shadow-sm hover:shadow-md' : 'border-slate-100 opacity-60'}`}>
+      <div className="flex items-center gap-4 min-w-0 flex-1">
+        <div className={`w-10 h-10 rounded-lg shrink-0 flex items-center justify-center transition-colors ${value && value !== "N/A" ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-300'}`}>
+          {label.toLowerCase().includes('photo') || label.toLowerCase().includes('photograph') ? <Camera size={18} /> : <FileText size={18} />}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-black uppercase text-indigo-600/60 tracking-widest leading-none mb-1.5">{label}</p>
-          <p className={`text-[15px] font-black truncate transition-colors ${value !== "N/A" ? "text-slate-900 group-hover:text-indigo-600" : "text-slate-400"
-            }`}>
-            {getFileName(value)}
+          <p className="text-sm font-bold text-slate-700 truncate">{label}</p>
+          <p className="text-[10px] text-slate-400 font-medium italic truncate">
+            {value && value !== "N/A" ? getFileName(value) : `No ${typeLabel} attached`}
           </p>
         </div>
       </div>
-
-      <div className="flex items-center ml-4 shrink-0">
-        <button className={`px-6 py-3.5 border rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${value !== "N/A"
-          ? "border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-black"
-          : "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed"
-          }`}>
-          View PDF
+      {value && value !== "N/A" && (
+        <button
+          onClick={(e) => { e.stopPropagation(); handleViewFile(label, value); }}
+          className="shrink-0 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:border-emerald-600 hover:text-emerald-600 hover:bg-emerald-50 transition-all text-center"
+        >
+          View {typeLabel}
         </button>
-      </div>
+      )}
     </div>
   );
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-5xl rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-[95vh] animate-in zoom-in-95 duration-500 border border-white/20">
-        <div className="relative h-48 bg-indigo-600">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] animate-in zoom-in-95 duration-500 border border-slate-200">
+        {/* Header - White Minimalist */}
+        <div className="flex items-center justify-between px-8 py-6 border-b bg-white">
+          <div>
+            <h2 className="text-2xl font-black text-slate-800 uppercase italic tracking-tight">{item.name}</h2>
+            <p className="text-sm text-slate-500 mt-1 font-medium italic">Detailed equipment profile and documentation archive</p>
           </div>
           <button
             onClick={onClose}
-            className="absolute top-8 right-8 w-12 h-12 bg-white/10 hover:bg-white text-black hover:text-indigo-600 rounded-2xl transition-all flex items-center justify-center backdrop-blur-md border border-white/20 z-10"
+            className="w-10 h-10 flex items-center justify-center bg-slate-100/80 hover:bg-slate-200 rounded-full transition-all text-slate-600"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
+        </div>
 
-          <div className="absolute bottom-[-40px] left-12 flex items-end gap-8">
-            {item.photo ? (
-              <img src={item.photo} alt={item.name} className="w-40 h-40 object-cover rounded-[32px] border-4 border-white shadow-2xl shadow-indigo-500/20 bg-white" />
-            ) : (
-              <div className="w-40 h-40 bg-white rounded-[32px] border-4 border-white shadow-2xl flex items-center justify-center text-slate-200">
-                <FileCheck2 size={64} />
+        <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar bg-slate-50/30">
+
+          {/* Identification Section */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-6">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <Info size={16} className="text-indigo-600" />
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">Identification</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="md:col-span-3 space-y-6">
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Instrument Nomenclature</p>
+                  <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-700">
+                    {item.name}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Operating Department</p>
+                  <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-700">
+                    {item.department}
+                  </div>
+                </div>
               </div>
-            )}
-            <div className="pb-12 space-y-1">
-              <h3 className="text-3xl font-black text-black tracking-tight uppercase italic">{item.name}</h3>
-              <div className="flex items-center gap-3">
-                <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-black text-[10px] font-black rounded-full uppercase tracking-widest border border-white/10">
-                  {item.department}
-                </span>
-                <span className={`px-3 py-1 text-[10px] font-black rounded-full uppercase tracking-widest ${isExpired ? 'bg-rose-500 text-black' : 'bg-emerald-500 text-black'}`}>
-                  {isExpired ? 'Expired' : 'Compliant'}
-                </span>
+              <div className="flex items-center justify-center p-1.5 border border-slate-100 rounded-2xl bg-white shadow-sm self-center">
+                {item.photo ? (
+                  <img src={item.photo} alt={item.name} className="w-full h-50 object-cover rounded-xl border border-slate-50" />
+                ) : (
+                  <div className="w-full h-48 flex flex-col items-center justify-center text-slate-200 bg-slate-50 rounded-xl">
+                    <Camera size={32} />
+                    <span className="text-[10px] font-black uppercase tracking-widest mt-2">No Preview</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Column 1: Audit Proofs */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <FileCheck2 size={16} className="text-indigo-600" />
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">Audit Proofs</h3>
+              </div>
+              <DocItem label="Purchase Order / Agreement" value={item.purchaseOrder} />
+              <DocItem label="Bill Receipt" value={item.billReceipt} />
+              <DocItem label="Installation Report" value={item.installationReport} />
+            </div>
+
+            {/* Column 2: Standards & Documentation */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <ClipboardCheck size={16} className="text-indigo-600" />
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">Standards</h3>
+              </div>
+              <DocItem label="IQ OQ PQ Protocol" value={item.iqOqPq} />
+              <DocItem label="User Operations Manual" value={item.userManual} />
+              <DocItem label="Equipment Photograph" value={item.photo} typeLabel="Image" />
+            </div>
+          </div>
+
+          {/* Calibration & Status Section */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-6">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <Calendar size={16} className="text-indigo-600" />
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">Calibration & Status</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <DocItem label="Latest Calibration Cert" value={item.calibrationCert} />
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Valid Until (Expiry Date)</p>
+                  <div className={`px-4 py-3 border rounded-xl font-bold flex items-center justify-between ${isExpired ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-emerald-50 border-emerald-100 text-emerald-600'}`}>
+                    <span>{formatDate(item.expiryDate)}</span>
+                    <span className="text-[10px] uppercase font-black tracking-widest">{isExpired ? 'Expired' : 'Compliant'}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Maintenance & Observation Logs</p>
+                <div className="px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-600 min-h-[120px] italic leading-relaxed">
+                  {item.maintenanceText || "No maintenance history recorded for this unit."}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-12 pt-20 pb-12 custom-scrollbar grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Left Column: Biodata & Stats */}
-          <div className="lg:col-span-4 space-y-10">
-            <div className="space-y-6">
-              <h5 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2">
-                <UserCircle size={16} /> Technical Biodata
-              </h5>
-              <div className="space-y-4">
-                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 space-y-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase">Certification Expiry</p>
-                  <p className={`font-bold ${isExpired ? 'text-rose-600' : 'text-slate-700'}`}>{formatDate(item.expiryDate)}</p>
-                </div>
-                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 space-y-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase">Current Status</p>
-                  <p className={`font-bold ${item.status === 'Active' ? 'text-emerald-600' : 'text-rose-600'}`}>{item.status || "Active"}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <h5 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2">
-                <History size={16} /> Maintenance Log
-              </h5>
-              <div className="p-8 bg-slate-50 rounded-[32px] border border-slate-100">
-                <p className="text-slate-600 font-medium italic leading-relaxed">
-                  {item.maintenanceText || "No maintenance history recorded for this unit."}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Documents & Logs */}
-          <div className="lg:col-span-8 space-y-12">
-            <div className="space-y-6">
-              <h5 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2 ml-1">
-                <FileSearch size={16} /> Document Archive
-              </h5>
-
-              {/* Vertical Scrollable Row - Shows approx 3 items */}
-              <div className="flex flex-col overflow-y-auto gap-4 max-h-[420px] pr-4 custom-scrollbar snap-y">
-                <DocItem label="Purchase Order" value={item.purchaseOrder} />
-                <DocItem label="Bill Receipt" value={item.billReceipt} />
-                <DocItem label="Installation Report" value={item.installationReport} />
-                <DocItem label="IQ/OQ/PQ Protocol" value={item.iqOqPq} />
-                <DocItem label="Operations Manual" value={item.userManual} />
-                <DocItem label="Calibration Cert" value={item.calibrationCert} />
-              </div>
-            </div>
-
-
-          </div>
+        {/* Footer */}
+        <div className="px-8 py-5 border-t bg-slate-50 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-8 py-2.5 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-black transition-all active:scale-95"
+          >
+            Close View
+          </button>
         </div>
       </div>
     </div>
@@ -247,7 +269,7 @@ const InstrumentList = ({ instruments, onDelete, onEdit }) => {
         const isExpired = new Date(item.expiryDate) < new Date();
 
         return (
-          <div key={item.id} className="group bg-white rounded-[32px] border border-slate-100 hover:border-indigo-200 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 overflow-hidden px-6 sm:px-10 py-6 grid grid-cols-12 items-center gap-4">
+          <div key={item.id} className="group bg-white rounded-[32px] border border-slate-100 hover:border-emerald-200 shadow-sm hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 overflow-hidden px-6 sm:px-10 py-6 grid grid-cols-12 items-center gap-4">
             <div className="col-span-4 flex items-center gap-3 sm:gap-6">
               {item.photo ? (
                 <img src={item.photo} alt={item.name} className="w-16 h-16 object-cover rounded-2xl shadow-sm border border-slate-50" />
@@ -257,7 +279,7 @@ const InstrumentList = ({ instruments, onDelete, onEdit }) => {
                 </div>
               )}
               <div>
-                <h4 className="text-lg font-black text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors uppercase italic">{item.name}</h4>
+                <h4 className="text-lg font-black text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors uppercase italic">{item.name}</h4>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">ID: INST-{item.id.toString().slice(-4)}</p>
               </div>
             </div>
@@ -269,7 +291,7 @@ const InstrumentList = ({ instruments, onDelete, onEdit }) => {
             </div>
 
             <div className="col-span-2 flex items-center gap-2 text-slate-600 font-bold text-sm">
-              <Calendar size={14} className="text-indigo-400" />
+              <Calendar size={14} className="text-emerald-400" />
               {formatDate(item.expiryDate)}
             </div>
 
@@ -280,14 +302,14 @@ const InstrumentList = ({ instruments, onDelete, onEdit }) => {
             <div className="col-span-3 flex items-center justify-end gap-3">
               <button
                 onClick={() => setSelectedItem(item)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-black transition-all shadow-sm group/btn"
+                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm group/btn"
               >
                 <Eye size={14} className="group-hover/btn:scale-110 transition-transform" />
                 View
               </button>
               <button
                 onClick={() => onEdit(item)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-black transition-all shadow-sm group/btn"
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm group/btn"
               >
                 <Pencil size={14} className="group-hover/btn:scale-110 transition-transform" />
                 Edit

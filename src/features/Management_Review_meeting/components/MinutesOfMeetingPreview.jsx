@@ -45,32 +45,31 @@ const MinutesOfMeetingPreview = ({
     attendees:
       attendance && attendance.length > 0
         ? attendance
-            .filter((att) => att.status === "Present")
-            .map((att) => {
-              const roleInfo = att.role || att.department;
-              return roleInfo ? `${att.username} (${roleInfo})` : att.username;
-            })
+          .filter((att) => att.status === "Present")
+          .map((att) => {
+            const roleInfo = att.role || att.department;
+            return roleInfo ? `${att.username} (${roleInfo})` : att.username;
+          })
         : Array.isArray(meeting?.invitedAttendees || meeting?.invites)
           ? (meeting?.invitedAttendees || meeting?.invites).map((att) =>
-              typeof att === "string"
-                ? att
-                : `${att.username || att.name || "Unknown"} (${
-                    att.role || att.department || "Attendee"
-                  })`,
-            )
+            typeof att === "string"
+              ? att
+              : `${att.username || att.name || "Unknown"} (${att.role || att.department || "Attendee"
+              })`,
+          )
           : typeof (
-                meeting?.invitedAttendees ||
-                meeting?.invites ||
-                meeting?.attendees
-              ) === "string"
+            meeting?.invitedAttendees ||
+            meeting?.invites ||
+            meeting?.attendees
+          ) === "string"
             ? (
-                meeting?.invitedAttendees ||
-                meeting?.invites ||
-                meeting?.attendees
-              )
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean)
+              meeting?.invitedAttendees ||
+              meeting?.invites ||
+              meeting?.attendees
+            )
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
             : [],
   };
 
@@ -199,8 +198,7 @@ const MinutesOfMeetingPreview = ({
     ${companyInfo?.logo ? `<img src="${companyInfo.logo}" alt="Logo">` : ""}
     <p class="company-name">${companyInfo?.name || "Your Company Name"}</p>
     ${companyInfo?.address ? `<p class="company-details">${companyInfo.address}</p>` : ""}
-    ${
-      companyInfo?.phone || companyInfo?.websiteUrl
+    ${companyInfo?.phone || companyInfo?.websiteUrl
         ? `
       <p class="company-details">
         ${companyInfo.phone ? `Tel: ${companyInfo.phone}` : ""}
@@ -209,23 +207,20 @@ const MinutesOfMeetingPreview = ({
       </p>
     `
         : ""
-    }
+      }
   </div>
   
   <h1>Minutes of Management Review Meeting</h1>
   
   <div class="meeting-info">
-    <p><strong>Meeting Title:</strong> ${
-      meeting?.title || "Management Review Meeting"
-    }</p>
-    <p>Management review meeting as per ${
-      meetingData.standard
-    } is scheduled on ${meetingData.date} at ${meetingData.time}.</p>
+    <p><strong>Meeting Title:</strong> ${meeting?.title || "Management Review Meeting"
+      }</p>
+    <p>Management review meeting as per ${meetingData.standard
+      } is scheduled on ${meetingData.date} at ${meetingData.time}.</p>
     <p><strong>Venue:</strong> ${meetingData.venue}</p>
     <p>Following points were discussed in the meeting. Chaired by Lab Director</p>
-    <p>As per the requirements of ${
-      meetingData.standard
-    }, the following points were included in the agenda.</p>
+    <p>As per the requirements of ${meetingData.standard
+      }, the following points were included in the agenda.</p>
     <p>The quality manager has prepared the report on various relevant review parameters</p>
   </div>
 
@@ -305,7 +300,7 @@ const MinutesOfMeetingPreview = ({
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -336,7 +331,7 @@ const MinutesOfMeetingPreview = ({
 
           {showPreview && (
             <div className="border border-gray-300 rounded-lg p-8 bg-white mb-6 overflow-auto">
-              <div className="max-w-4xl mx-auto">
+              <div className="w-full">
                 <div className="flex flex-col items-center border-b-2 border-gray-800 pb-6 mb-6">
                   {companyInfo?.logo && (
                     <ImageWithFallback

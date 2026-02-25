@@ -4,7 +4,7 @@ import {
   Filter,
   ChevronDown,
   ChevronRight,
-  ClipboardList,
+  Library,
   Plus,
 } from "lucide-react";
 import { RECORDING_CYCLES } from "../data/entriesData";
@@ -36,22 +36,23 @@ const EntryList = ({
     setPage(value);
   };
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="p-4 md:p-8 lg:p-12 w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <Library className="text-indigo-600" size={32} />
             Entries Management
           </h1>
-          <p className="text-slate-500 mt-1 font-medium">
-            Configure and manage maintenance and quality log cycles.
+          <p className="text-slate-500 mt-1 font-medium text-lg">
+            Configure and manage maintenance and quality log cycles
           </p>
         </div>
         <button
           onClick={onCreateNew}
-          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-gray-500 rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all active:scale-95"
+          className="flex items-center justify-center gap-2 px-8 py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all active:scale-95 text-sm"
         >
-          <Plus size={20} strokeWidth={3} />
+          <Plus size={20} />
           Create New Entry
         </button>
       </div>
@@ -112,7 +113,7 @@ const EntryList = ({
                     : "bg-amber-50 text-amber-600"
                   }`}
               >
-                <ClipboardList size={24} />
+                <Library size={24} />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">

@@ -83,7 +83,7 @@ const VendorView = ({ vendor, onCancel }) => {
   return (
     <div className="min-h-screen bg-slate-100 p-4 md:p-8">
       {/* TOP ACTION BAR */}
-      <div className="max-w-[900px] mx-auto mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200 no-print">
+      <div className="w-full mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200 no-print">
         <button
           onClick={onCancel}
           className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-xl font-bold"
@@ -144,7 +144,7 @@ const VendorView = ({ vendor, onCancel }) => {
                   <div className="flex items-center justify-between gap-6">
                     {/* Logo Section */}
                     {orgInfo.logoUrl && (
-                      <div className="flex-shrink-0">
+                      <div className="shrink-0">
                         <ImageWithFallback
                           src={orgInfo.logoUrl}
                           alt="Logo"

@@ -424,12 +424,12 @@ const RiskIndicator = () => {
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
+        <div className="p-4 md:p-8 lg:p-12 w-full space-y-8 animate-in fade-in duration-700">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                        <ShieldAlert className="text-indigo-600" />
+                        <ShieldAlert className="text-indigo-600" size={32} />
                         Risk Indicators
                     </h1>
                     <p className="text-slate-500 mt-1 font-medium">Identifying and monitoring potential risks in laboratory operations</p>

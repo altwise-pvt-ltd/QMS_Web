@@ -47,7 +47,19 @@ const FormPreview = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <ClipboardList className="text-indigo-600" size={32} />
+            Corrective & Preventive Action
+          </h1>
+          <p className="text-slate-500 mt-1 font-medium text-lg">
+            Manage and track quality improvement measures (CAPA)
+          </p>
+        </div>
+      </div>
       {/* Search and Filters Bar */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         <div className="relative w-full md:w-96">

@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus, Eye, Edit2, Trash2 } from "lucide-react";
+import { Plus, Eye, Edit2, Trash2, Store } from "lucide-react";
 
 const VendorList = ({
   vendors,
@@ -36,18 +36,19 @@ const VendorList = ({
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-8 animate-in fade-in duration-500">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 md:p-8 lg:p-12 w-full animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <Store className="text-indigo-600" size={32} />
             Vendor Directory
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-slate-500 mt-1 font-medium text-lg">
             Manage and monitor vendor performance assessments
           </p>
         </div>
         <button
-          className="bg-indigo-600 hover:bg-indigo-700 text-gray-600 px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5"
+          className="group flex items-center justify-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 text-sm"
           onClick={onAdd}
         >
           <Plus size={20} />
@@ -61,11 +62,10 @@ const VendorList = ({
           <button
             key={type}
             onClick={() => onFilterChange(type)}
-            className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${
-              filterType === type
-                ? "bg-white text-indigo-600 shadow-md ring-1 ring-slate-200"
-                : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
-            }`}
+            className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${filterType === type
+              ? "bg-white text-indigo-600 shadow-md ring-1 ring-slate-200"
+              : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
+              }`}
           >
             {type} Vendors
           </button>
@@ -148,11 +148,10 @@ const VendorList = ({
                       {vendor.evaluation ? (
                         <div className="flex items-center gap-2">
                           <span
-                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
-                              vendor.evaluation.status === "Accepted"
-                                ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200"
-                                : "bg-rose-100 text-rose-700 ring-1 ring-rose-200"
-                            }`}
+                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${vendor.evaluation.status === "Accepted"
+                              ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200"
+                              : "bg-rose-100 text-rose-700 ring-1 ring-rose-200"
+                              }`}
                           >
                             {vendor.evaluation.status}
                           </span>

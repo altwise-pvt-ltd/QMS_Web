@@ -152,9 +152,9 @@ const DocumentLibrary = () => {
         prevLevels.map((level) =>
           level.id === activeLevelId
             ? {
-                ...level,
-                items: [...(level.items || []), transformedItem],
-              }
+              ...level,
+              items: [...(level.items || []), transformedItem],
+            }
             : level,
         ),
       );
@@ -186,11 +186,11 @@ const DocumentLibrary = () => {
         prevLevels.map((level) =>
           level.id === activeLevelId
             ? {
-                ...level,
-                items: level.items.map((item, idx) =>
-                  idx === index ? { ...item, name: newName } : item,
-                ),
-              }
+              ...level,
+              items: level.items.map((item, idx) =>
+                idx === index ? { ...item, name: newName } : item,
+              ),
+            }
             : level,
         ),
       );
@@ -215,9 +215,9 @@ const DocumentLibrary = () => {
         prevLevels.map((level) =>
           level.id === activeLevelId
             ? {
-                ...level,
-                items: level.items.filter((_, idx) => idx !== index),
-              }
+              ...level,
+              items: level.items.filter((_, idx) => idx !== index),
+            }
             : level,
         ),
       );
@@ -263,14 +263,15 @@ const DocumentLibrary = () => {
   }
 
   return (
-    <div className="p-2 max-w-6xl mx-auto min-h-screen bg-slate-50/50">
+    <div className="p-4 md:p-8 lg:p-12 w-full min-h-screen bg-slate-50/50">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <FolderOpen className="text-indigo-600" size={32} />
             Document Library
           </h1>
-          <p className="text-slate-600">ISO 15189 Documentation Pyramid</p>
+          <p className="text-slate-500 mt-1 font-medium text-lg">ISO 15189 Documentation Pyramid</p>
         </div>
 
         {/* Action Area: Search + Upload */}
@@ -324,44 +325,39 @@ const DocumentLibrary = () => {
                 <button
                   key={level.id}
                   onClick={() => setActiveLevelId(level.id)}
-                  className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center gap-4 group ${
-                    isActive
-                      ? "bg-indigo-50/40 border-indigo-600 shadow-md ring-1 ring-indigo-600/20"
-                      : "bg-white border-slate-200 hover:border-indigo-400 hover:bg-slate-50/80 hover:shadow-sm"
-                  }`}
+                  className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center gap-4 group ${isActive
+                    ? "bg-indigo-50/40 border-indigo-600 shadow-md ring-1 ring-indigo-600/20"
+                    : "bg-white border-slate-200 hover:border-indigo-400 hover:bg-slate-50/80 hover:shadow-sm"
+                    }`}
                 >
                   <div className={`p-3 rounded-lg shadow-sm ${level.color}`}>
                     <Icon className="w-6 h-6" />
                   </div>
                   <div className="flex-1">
                     <span
-                      className={`text-xs font-bold uppercase tracking-wider ${
-                        isActive ? "text-indigo-700/70" : "text-slate-500"
-                      }`}
+                      className={`text-xs font-bold uppercase tracking-wider ${isActive ? "text-indigo-700/70" : "text-slate-500"
+                        }`}
                     >
                       Level {level.level}
                     </span>
                     <h3
-                      className={`font-semibold ${
-                        isActive ? "text-indigo-800" : "text-slate-800"
-                      }`}
+                      className={`font-semibold ${isActive ? "text-indigo-800" : "text-slate-800"
+                        }`}
                     >
                       {level.title}
                     </h3>
                     <p
-                      className={`text-xs mt-1 ${
-                        isActive ? "text-indigo-700/70" : "text-slate-500"
-                      }`}
+                      className={`text-xs mt-1 ${isActive ? "text-indigo-700/70" : "text-slate-500"
+                        }`}
                     >
                       {level.description}
                     </p>
                   </div>
                   <ChevronRight
-                    className={`w-5 h-5 transition-transform ${
-                      isActive
-                        ? "text-indigo-600 rotate-90 lg:rotate-0"
-                        : "text-slate-400 group-hover:text-indigo-400"
-                    }`}
+                    className={`w-5 h-5 transition-transform ${isActive
+                      ? "text-indigo-600 rotate-90 lg:rotate-0"
+                      : "text-slate-400 group-hover:text-indigo-400"
+                      }`}
                   />
                 </button>
               );

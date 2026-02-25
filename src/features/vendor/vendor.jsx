@@ -4,10 +4,9 @@ import VendorForm from "./VendorForm";
 import VendorView from "./VendorView";
 import { vendorService } from "./services/vendorService";
 import {
-  Building2,
+  Store,
   Plus,
   ChevronRight,
-  RefreshCcw,
   PencilLine,
   Eye,
 } from "lucide-react";
@@ -17,7 +16,7 @@ const VIEW_CONFIG = {
   list: {
     title: "Vendor Directory",
     subtitle: "Manage and evaluate approved supply-chain partners",
-    icon: Building2,
+    icon: Store,
     crumb: null,
   },
   add: {
@@ -43,9 +42,8 @@ const VIEW_CONFIG = {
 // ── Top progress bar ──────────────────────────────────────────────────────────
 const ProgressBar = ({ visible }) => (
   <div
-    className={`fixed top-0 left-0 w-full h-0.5 z-50 transition-opacity duration-300 ${
-      visible ? "opacity-100" : "opacity-0 pointer-events-none"
-    }`}
+    className={`fixed top-0 left-0 w-full h-0.5 z-50 transition-opacity duration-300 ${visible ? "opacity-100" : "opacity-0 pointer-events-none"
+      }`}
   >
     <div className="h-full bg-indigo-100">
       <div
@@ -97,17 +95,17 @@ const PageHeader = ({ view, vendorName, onAdd, loading }) => {
   return (
     <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
       <div className="flex items-center gap-3.5">
-        <div className="flex items-center justify-center w-10 h-10 bg-indigo-600 rounded-xl shadow-sm shadow-indigo-200 shrink-0">
-          <Icon className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-xl shadow-sm shadow-indigo-200 shrink-0">
+          <Icon className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h1 className="text-xl font-black text-slate-800 tracking-tight leading-tight">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">
             {cfg.title}
             {vendorName && (
               <span className="ml-2 text-indigo-600">· {vendorName}</span>
             )}
           </h1>
-          <p className="text-xs text-slate-400 font-medium mt-0.5">
+          <p className="text-slate-500 font-medium mt-1 text-lg">
             {cfg.subtitle}
           </p>
         </div>
@@ -117,11 +115,9 @@ const PageHeader = ({ view, vendorName, onAdd, loading }) => {
         <button
           onClick={onAdd}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl
-                     hover:bg-indigo-700 active:scale-95 transition-all shadow-sm shadow-indigo-200
-                     disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="group-hover:rotate-180 transition-transform duration-500" size={20} />
           Register Vendor
         </button>
       )}
@@ -200,10 +196,10 @@ const VendorModule = () => {
   const showCrumb = view !== "list";
 
   return (
-    <div className="min-h-screen bg-slate-50/40">
+    <div className="p-4 md:p-8 lg:p-12 w-full min-h-screen bg-white">
       <ProgressBar visible={loading} />
 
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
+      <main className="w-full transition-all duration-300">
         {/* Breadcrumb — only on sub-views */}
         {showCrumb && <Breadcrumb view={view} onBack={goBack} />}
 
@@ -221,13 +217,12 @@ const VendorModule = () => {
         />
 
         {/* Divider */}
-        <div className="border-t border-slate-200 mb-6" />
+        <div className="border-t border-slate-100 mb-8" />
 
         {/* View content */}
         <div
-          className={`transition-opacity duration-200 ${
-            loading ? "opacity-40 pointer-events-none" : "opacity-100"
-          }`}
+          className={`transition-opacity duration-200 ${loading ? "opacity-40 pointer-events-none" : "opacity-100"
+            }`}
         >
           {view === "list" && (
             <VendorList
@@ -274,7 +269,6 @@ const VendorModule = () => {
         </div>
       </main>
 
-      {/* Animation keyframes */}
       <style>{`
         @keyframes fadeSlideUp {
           from { opacity: 0; transform: translateY(12px); }
