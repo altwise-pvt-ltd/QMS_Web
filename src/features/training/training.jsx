@@ -9,6 +9,9 @@ import {
   AlertCircle,
   FileText,
   X,
+  TrendingUp,
+  TrendingDown,
+  Minus,
 } from "lucide-react";
 import { getAllEvents } from "../compliance_calendar/services/complianceService";
 import { db } from "../../db";
@@ -54,11 +57,6 @@ const STATUS_FILTERS = [
 ];
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
-import React from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
-
-import React from "react";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 const StatCard = ({
   title,
