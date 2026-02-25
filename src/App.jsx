@@ -36,6 +36,7 @@ import RiskAssessmentPage from "./features/risk_assessment/RiskAssessmentPage.js
 import RiskIndicator from "./features/risk_indicator/risk_indicator.jsx";
 import EntriesManagement from "./features/entries_management/EntriesManagement.jsx";
 import OnboardingPage from "./features/onboarding/OnboardingPage.jsx";
+import Settings from "./features/settings/Settings.jsx";
 
 // Layout Import
 import MainLayout from "./features/layout/MainLayout.jsx";
@@ -146,6 +147,7 @@ function App() {
               <Route path="/documents/saved" element={<SavedDocumentsPage />} />
               <Route path="/documents/view" element={<DocumentPreviewPage />} />
               <Route path="/documents/*" element={<DocumentLibrary />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/login" replace />} />
