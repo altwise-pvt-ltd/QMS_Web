@@ -48,7 +48,13 @@ const STATUS_CONFIG = {
   },
 };
 
-const STATUS_FILTERS = ["All", "pending", "in-progress", "completed", "overdue"];
+const STATUS_FILTERS = [
+  "All",
+  "pending",
+  "in-progress",
+  "completed",
+  "overdue",
+];
 
 // ── Stat card component ───────────────────────────────────────────────────────
 const StatCard = ({
@@ -288,7 +294,10 @@ const Training = () => {
             onClick={() => setIsModalOpen(true)}
             className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-gray-600 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
           >
-            <Plus className="group-hover:rotate-180 transition-transform duration-500" size={20} />
+            <Plus
+              className="group-hover:rotate-180 transition-transform duration-500"
+              size={20}
+            />
             Schedule Training
           </button>
         </div>
@@ -349,7 +358,10 @@ const Training = () => {
             </div>
 
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300"
+                size={16}
+              />
               <input
                 type="text"
                 placeholder="Search trainings..."
@@ -387,34 +399,57 @@ const Training = () => {
             <table className="w-full">
               <thead>
                 <tr className="bg-slate-50/50 text-left border-b border-slate-50">
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Requirement</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Given By</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Assignee</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Due Date</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Requirement
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Given By
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Assignee
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                    Due Date
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                    Status
+                  </th>
                   <th className="px-6 py-4"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {loading ? (
-                  Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <SkeletonRow key={i} />
+                  ))
                 ) : paginatedTrainings.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-20 text-center text-slate-400 font-bold italic">
+                    <td
+                      colSpan={6}
+                      className="py-20 text-center text-slate-400 font-bold italic"
+                    >
                       No training events found matching current criteria.
                     </td>
                   </tr>
                 ) : (
                   paginatedTrainings.map((training) => {
-                    const cfg = STATUS_CONFIG[training.status] || STATUS_CONFIG.pending;
+                    const cfg =
+                      STATUS_CONFIG[training.status] || STATUS_CONFIG.pending;
                     return (
-                      <tr key={training.id} className="group hover:bg-slate-50/50 transition-colors">
+                      <tr
+                        key={training.id}
+                        className="group hover:bg-slate-50/50 transition-colors"
+                      >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cfg.icon}`}>
+                            <div
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${cfg.icon}`}
+                            >
                               <GraduationCap size={16} />
                             </div>
-                            <span className="text-sm font-bold text-slate-800">{training.title}</span>
+                            <span className="text-sm font-bold text-slate-800">
+                              {training.title}
+                            </span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -428,12 +463,19 @@ const Training = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <span className={`text-[11px] font-black ${training.status === 'overdue' ? 'text-rose-600' : 'text-slate-600'}`}>
-                            {new Date(training.dueDate).toLocaleDateString("en-GB", { day: 'numeric', month: 'short' })}
+                          <span
+                            className={`text-[11px] font-black ${training.status === "overdue" ? "text-rose-600" : "text-slate-600"}`}
+                          >
+                            {new Date(training.dueDate).toLocaleDateString(
+                              "en-GB",
+                              { day: "numeric", month: "short" },
+                            )}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${cfg.badge}`}>
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${cfg.badge}`}
+                          >
                             {cfg.label}
                           </span>
                         </td>
@@ -453,7 +495,8 @@ const Training = () => {
           {!loading && paginatedTrainings.length > 0 && (
             <div className="p-6 border-t border-slate-50 bg-slate-50/30 flex items-center justify-between">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Showing {paginatedTrainings.length} of {filteredTrainings.length} events
+                Showing {paginatedTrainings.length} of{" "}
+                {filteredTrainings.length} events
               </p>
               <CustomPagination
                 count={totalPages}
@@ -488,4 +531,3 @@ const Training = () => {
 };
 
 export default Training;
-
