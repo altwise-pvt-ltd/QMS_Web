@@ -215,7 +215,7 @@ const PermissionsPage = ({ staff = null, standalone = true }) => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+                    <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-gray-600 font-bold text-lg">
                       {selectedUser.avatar ||
                         selectedUser.name?.charAt(0) ||
                         "S"}

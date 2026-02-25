@@ -45,18 +45,31 @@ button {
   font-weight: 500;
   font-family: inherit;
   background-color: #ffffff;
-  /* background-color: #1a1a1a; */
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition:
+    border-color 0.25s,
+    background-color 0.25s; /* Added background transition */
 }
 
 button:hover {
   border-color: #646cff;
 }
 
-button:focus,
+/* This triggers the moment you click */
+button:active {
+  background-color: #f9f9f9;
+}
+
+/* This is for keyboard navigation accessibility */
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px solid #646cff;
+  outline-offset: 2px;
+}
+
+/* Use this class for a button that 'stays' selected */
+button.selected {
+  background-color: #646cff;
+  color: white;
 }
 
 /* ================= PRINT MODE ================= */
