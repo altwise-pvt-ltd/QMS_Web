@@ -36,25 +36,8 @@ const VendorList = ({
   );
 
   return (
-    <div className="p-4 md:p-8 lg:p-12 w-full animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            <Store className="text-indigo-600" size={32} />
-            Vendor Directory
-          </h1>
-          <p className="text-slate-500 mt-1 font-medium text-lg">
-            Manage and monitor vendor performance assessments
-          </p>
-        </div>
-        <button
-          className="group flex items-center justify-center gap-2 px-8 py-4 bg-indigo-600 text-gray-600 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 text-sm"
-          onClick={onAdd}
-        >
-          <Plus size={20} />
-          Register New Vendor
-        </button>
-      </div>
+    <div className="w-full animate-in fade-in duration-500">
+
 
       {/* Filter Bar */}
       <div className="flex items-center gap-2 mb-6 bg-slate-100/50 p-1.5 rounded-2xl w-fit border border-slate-200/50 shadow-inner">
