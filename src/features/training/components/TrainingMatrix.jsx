@@ -175,7 +175,7 @@ const TrainingMatrix = () => {
       <div className="px-6 py-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 sticky top-0 bg-white z-30">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-9 h-9 bg-indigo-600 rounded-xl shadow-sm shadow-indigo-200">
-            <Layout className="w-4 h-4 text-white" />
+            <Layout className="w-4 h-4 text-gray-600" />
           </div>
           <div>
             <h3 className="text-sm font-black text-slate-800 tracking-tight uppercase">
@@ -350,3 +350,4 @@ const TrainingMatrix = () => {
 };
 
 export default TrainingMatrix;
+

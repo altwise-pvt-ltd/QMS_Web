@@ -234,7 +234,7 @@ const InstrumentDetailModal = ({ item, onClose }) => {
         <div className="px-8 py-5 border-t bg-slate-50 flex justify-end">
           <button
             onClick={onClose}
-            className="px-8 py-2.5 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-black transition-all active:scale-95"
+            className="px-8 py-2.5 bg-slate-900 text-gray-600 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-black transition-all active:scale-95"
           >
             Close View
           </button>
@@ -302,14 +302,14 @@ const InstrumentList = ({ instruments, onDelete, onEdit }) => {
             <div className="col-span-3 flex items-center justify-end gap-3">
               <button
                 onClick={() => setSelectedItem(item)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm group/btn"
+                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-gray-600 transition-all shadow-sm group/btn"
               >
                 <Eye size={14} className="group-hover/btn:scale-110 transition-transform" />
                 View
               </button>
               <button
                 onClick={() => onEdit(item)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm group/btn"
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-gray-600 transition-all shadow-sm group/btn"
               >
                 <Pencil size={14} className="group-hover/btn:scale-110 transition-transform" />
                 Edit

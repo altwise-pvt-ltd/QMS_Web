@@ -253,7 +253,7 @@ const DocumentLibrary = () => {
           <p className="text-slate-500">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="mt-2 px-4 py-2 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-colors"
           >
             Retry
           </button>
@@ -274,41 +274,19 @@ const DocumentLibrary = () => {
           <p className="text-slate-500 mt-1 font-medium text-lg">ISO 15189 Documentation Pyramid</p>
         </div>
 
-        {/* Action Area: Search + Upload */}
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          {/* Search Bar */}
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+        {/* Action Area: Search Only */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-1 justify-end">
+          {/* Search Bar - Wider */}
+          <div className="relative w-full max-w-lg">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search documents..."
+              placeholder="Search documents by level, name or keyword..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent text-sm shadow-sm transition-all"
+              className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 text-sm shadow-sm transition-all placeholder:text-slate-400 font-medium"
             />
           </div>
-
-          <button
-            type="button"
-            onClick={() => handleUploadClick()}
-            className="
-    inline-flex items-center gap-2
-    px-4 py-2.5
-    rounded-lg
-    bg-indigo-600 text-gray-600
-    text-sm font-semibold
-    shadow-sm
-    hover:bg-indigo-700
-    focus:outline-none
-    focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-    transition-colors duration-200
-    active:scale-95
-    whitespace-nowrap
-  "
-          >
-            <Plus className="w-4 h-4" />
-            Upload Document
-          </button>
         </div>
       </div>
 
@@ -552,3 +530,4 @@ const DocumentRow = ({
 );
 
 export default DocumentLibrary;
+

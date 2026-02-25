@@ -307,7 +307,7 @@ const InstrumentForm = ({ isOpen, onClose, onAdd, editingInstrument }) => {
                     <button
                         form="instrument-form"
                         type="submit"
-                        className="px-10 py-2.5 bg-slate-900 text-white rounded-md text-sm font-bold hover:bg-black transition-all shadow-sm active:scale-95 uppercase tracking-widest"
+                        className="px-10 py-2.5 bg-slate-900 text-gray-600 rounded-md text-sm font-bold hover:bg-black transition-all shadow-sm active:scale-95 uppercase tracking-widest"
                     >
                         {editingInstrument ? 'Update Changes' : 'Submit Registration'}
                     </button>
@@ -318,3 +318,4 @@ const InstrumentForm = ({ isOpen, onClose, onAdd, editingInstrument }) => {
 };
 
 export default InstrumentForm;
+

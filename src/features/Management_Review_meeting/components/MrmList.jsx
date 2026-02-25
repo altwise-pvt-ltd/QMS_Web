@@ -53,7 +53,7 @@ const MrmList = ({
         </div>
         <button
           onClick={onCreate}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
+          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-gray-600 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
         >
           <Plus size={20} />
           New Meeting
@@ -131,3 +131,4 @@ const MrmList = ({
 };
 
 export default MrmList;
+

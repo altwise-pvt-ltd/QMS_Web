@@ -97,12 +97,7 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
             Manage employees, competence, and documents.
           </p>
         </div>
-        <button
-          onClick={onAddNew}
-          className="group flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all text-sm"
-        >
-          <Plus size={18} /> Add New Staff
-        </button>
+
       </div>
 
       <div className="overflow-visible p-4 flex-1">
@@ -257,3 +252,4 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
 };
 
 export default StaffList;
+

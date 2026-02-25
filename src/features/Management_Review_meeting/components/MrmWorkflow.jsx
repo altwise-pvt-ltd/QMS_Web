@@ -308,7 +308,7 @@ const MrmWorkflow = ({ initialData, onSave, onCancel }) => {
                 >
                   <div
                     className={`w-12 h-12 rounded-2xl flex items-center justify-center border-2 transition-all shadow-md ${isActive
-                        ? "bg-indigo-600 border-indigo-600 text-white shadow-indigo-200"
+                        ? "bg-indigo-600 border-indigo-600 text-gray-600 shadow-indigo-200"
                         : isPast
                           ? "bg-green-100 border-green-200 text-green-600"
                           : "bg-white border-gray-200 text-gray-400"
@@ -392,3 +392,4 @@ const MrmWorkflow = ({ initialData, onSave, onCancel }) => {
 };
 
 export default MrmWorkflow;
+

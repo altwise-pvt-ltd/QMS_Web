@@ -177,7 +177,7 @@ const FormPreview = ({
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-2">
                         <div
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white ${
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-gray-600 ${
                             activeTab === "ncs"
                               ? "bg-indigo-500"
                               : "bg-emerald-500"
@@ -214,7 +214,7 @@ const FormPreview = ({
                       {activeTab === "ncs" ? (
                         <button
                           onClick={() => onFileCapa(item)}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-black hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-95 group/btn"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-black hover:bg-indigo-600 hover:text-gray-600 transition-all shadow-sm active:scale-95 group/btn"
                         >
                           <FileText className="w-3.5 h-3.5" />
                           File CAPA
@@ -312,3 +312,4 @@ const FormPreview = ({
 };
 
 export default FormPreview;
+

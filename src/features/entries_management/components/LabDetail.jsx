@@ -117,7 +117,7 @@ const LabDetail = ({
                       {isToday ? (
                         <button
                           onClick={onFeedData}
-                          className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg font-bold text-[10px] hover:bg-indigo-600 hover:text-white transition-all active:scale-95 shadow-sm"
+                          className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg font-bold text-[10px] hover:bg-indigo-600 hover:text-gray-600 transition-all active:scale-95 shadow-sm"
                         >
                           Update
                         </button>
@@ -155,3 +155,4 @@ const LabDetail = ({
 };
 
 export default LabDetail;
+

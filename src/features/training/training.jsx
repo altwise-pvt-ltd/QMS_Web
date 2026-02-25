@@ -286,7 +286,7 @@ const Training = () => {
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
+            className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-gray-600 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
           >
             <Plus className="group-hover:rotate-180 transition-transform duration-500" size={20} />
             Schedule Training
@@ -368,7 +368,7 @@ const Training = () => {
                 onClick={() => setFilterStatus(s)}
                 className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all
                   ${filterStatus === s
-                    ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-100"
+                    ? "bg-indigo-600 text-gray-600 border-indigo-600 shadow-md shadow-indigo-100"
                     : "bg-white text-slate-500 border-slate-200 hover:border-indigo-300 hover:text-indigo-600"
                   }`}
               >
@@ -488,3 +488,4 @@ const Training = () => {
 };
 
 export default Training;
+

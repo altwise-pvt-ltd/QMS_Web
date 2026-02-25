@@ -190,7 +190,7 @@ const VendorView = ({ vendor, onCancel }) => {
                 <div className="pdf-body px-10 py-6">
                   {/* PART A — General Organization Details */}
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-black">
-                    <span className="bg-slate-900 text-white px-2 py-0.5 text-[10px] font-black tracking-tighter">
+                    <span className="bg-slate-900 text-gray-600 px-2 py-0.5 text-[10px] font-black tracking-tighter">
                       PART A
                     </span>
                     <h4 className="font-bold uppercase text-sm tracking-tight">
@@ -274,7 +274,7 @@ const VendorView = ({ vendor, onCancel }) => {
                       style={{ pageBreakInside: "avoid" }}
                     >
                       <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-black">
-                        <span className="bg-slate-900 text-white px-2 py-0.5 text-[10px] font-black tracking-tighter">
+                        <span className="bg-slate-900 text-gray-600 px-2 py-0.5 text-[10px] font-black tracking-tighter">
                           PART B
                         </span>
                         <h4 className="font-bold uppercase text-sm tracking-tight">
@@ -284,7 +284,7 @@ const VendorView = ({ vendor, onCancel }) => {
 
                       <table className="w-full border border-black text-sm border-collapse mb-6">
                         <thead>
-                          <tr className="bg-slate-900 text-white text-[10px] uppercase font-black tracking-widest">
+                          <tr className="bg-slate-900 text-gray-600 text-[10px] uppercase font-black tracking-widest">
                             <th className="border border-black p-3 text-left w-[75%]">
                               Evaluation Criteria & Performance Indicators
                             </th>
@@ -333,7 +333,7 @@ const VendorView = ({ vendor, onCancel }) => {
                               </td>
                             </tr>
                           ))}
-                          <tr className="bg-slate-900 text-white font-black">
+                          <tr className="bg-slate-900 text-gray-600 font-black">
                             <td className="border border-black p-4 text-right uppercase tracking-widest text-xs">
                               Gross Aggregate Score
                             </td>
@@ -498,3 +498,4 @@ const VendorView = ({ vendor, onCancel }) => {
 };
 
 export default VendorView;
+

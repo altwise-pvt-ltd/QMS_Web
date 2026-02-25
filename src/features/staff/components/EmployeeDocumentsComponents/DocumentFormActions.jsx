@@ -24,7 +24,7 @@ const DocumentFormActions = ({ onSubmit, onCancel, loading }) => {
             disabled={loading}
             className="px-5 py-2.5 text-sm font-medium text-gray-600 bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? <Spinner size={18} className="text-white" /> : <Save size={18} />}
+            {loading ? <Spinner size={18} className="text-gray-600" /> : <Save size={18} />}
             {loading ? "Saving..." : "Save Documents"}
           </button>
         </div>
@@ -34,3 +34,4 @@ const DocumentFormActions = ({ onSubmit, onCancel, loading }) => {
 };
 
 export default DocumentFormActions;
+

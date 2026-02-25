@@ -134,7 +134,7 @@ const Instrument = () => {
 
         <button
           onClick={() => setIsFormOpen(true)}
-          className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
+          className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-gray-600 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
         >
           <Plus className="group-hover:rotate-180 transition-transform duration-500" size={20} />
           Register Instrument
@@ -218,3 +218,4 @@ const Instrument = () => {
 };
 
 export default Instrument;
+

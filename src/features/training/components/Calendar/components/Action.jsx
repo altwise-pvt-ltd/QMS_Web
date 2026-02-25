@@ -86,7 +86,7 @@ const Actions = ({
           relative w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all
           ${
             selectRange
-              ? "bg-indigo-600 text-white border-2 border-indigo-700 shadow-md shadow-indigo-100"
+              ? "bg-indigo-600 text-gray-600 border-2 border-indigo-700 shadow-md shadow-indigo-100"
               : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
           }
         `}
@@ -94,7 +94,7 @@ const Actions = ({
         <div className="flex items-center justify-center gap-2">
           <ArrowRightLeft
             size={14}
-            className={selectRange ? "text-white" : "text-slate-400"}
+            className={selectRange ? "text-gray-600" : "text-slate-400"}
           />
           {selectRange ? "Single Date Mode" : "Select Range Mode"}
         </div>
@@ -112,3 +112,4 @@ Actions.propTypes = {
 };
 
 export default Actions;
+

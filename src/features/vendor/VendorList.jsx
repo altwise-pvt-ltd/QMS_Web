@@ -48,7 +48,7 @@ const VendorList = ({
           </p>
         </div>
         <button
-          className="group flex items-center justify-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 text-sm"
+          className="group flex items-center justify-center gap-2 px-8 py-4 bg-indigo-600 text-gray-600 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 text-sm"
           onClick={onAdd}
         >
           <Plus size={20} />
@@ -202,3 +202,4 @@ const VendorList = ({
 };
 
 export default VendorList;
+

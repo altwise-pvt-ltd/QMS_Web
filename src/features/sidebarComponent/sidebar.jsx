@@ -71,7 +71,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           }`}
           title="Click to toggle sidebar"
         >
-          <div className="min-w-10 w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-500/50 group-hover/logo:shadow-indigo-500/80 group-hover/logo:scale-110 transition-all duration-300">
+          <div className="min-w-10 w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl text-gray-600 shadow-lg shadow-indigo-500/50 group-hover/logo:shadow-indigo-500/80 group-hover/logo:scale-110 transition-all duration-300">
             Q
           </div>
           <span
@@ -176,3 +176,4 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
 };
 
 export default Sidebar;
+

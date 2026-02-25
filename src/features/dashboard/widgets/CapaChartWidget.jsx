@@ -85,7 +85,7 @@ const CapaChartWidget = () => {
                 />
 
                 {/* Tooltip */}
-                <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1.5 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 text-gray-600 text-xs px-2 py-1.5 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                   <div className="font-bold text-center">{d.incidents}</div>
                 </div>
               </div>
@@ -112,3 +112,4 @@ const CapaChartWidget = () => {
 };
 
 export default CapaChartWidget;
+
