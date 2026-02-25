@@ -117,13 +117,12 @@ const RiskTable = ({ risks, onRowClick, selectedRiskId }) => {
                 </td>
                 <td className="px-6 py-4 text-center">
                   <span
-                    className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${
-                      risk.capaStatus === "Open"
+                    className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold ${risk.capaStatus === "Open"
                         ? "bg-red-50 text-red-700 border border-red-200"
                         : risk.capaStatus === "Resolved"
                           ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                           : "bg-slate-50 text-slate-500 border border-slate-200"
-                    }`}
+                      }`}
                   >
                     {risk.capaStatus}
                   </span>
@@ -133,38 +132,35 @@ const RiskTable = ({ risks, onRowClick, selectedRiskId }) => {
           </tbody>
           <tfoot>
             <tr>
-              <td
+              <TablePagination
                 colSpan={9}
                 className="border-t border-slate-200 px-6 py-4 bg-slate-50"
-              >
-                <TablePagination
-                  count={risks.length}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  rowsPerPage={rowsPerPage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  rowsPerPageOptions={[4, 5, 10, 25, 50]}
-                  slotProps={{
-                    root: {
-                      className:
-                        "flex items-center justify-between text-sm text-slate-600",
-                    },
-                    select: {
-                      className:
-                        "px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
-                    },
-                    selectLabel: {
-                      className: "text-sm text-slate-600 mr-2 font-medium",
-                    },
-                    displayedRows: {
-                      className: "text-sm text-slate-600 font-medium",
-                    },
-                    actions: {
-                      className: "flex gap-1",
-                    },
-                  }}
-                />
-              </td>
+                count={risks.length}
+                page={page}
+                onPageChange={handleChangePage}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                rowsPerPageOptions={[4, 5, 10, 25, 50]}
+                slotProps={{
+                  root: {
+                    className:
+                      "flex items-center justify-between text-sm text-slate-600",
+                  },
+                  select: {
+                    className:
+                      "px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
+                  },
+                  selectLabel: {
+                    className: "text-sm text-slate-600 mr-2 font-medium",
+                  },
+                  displayedRows: {
+                    className: "text-sm text-slate-600 font-medium",
+                  },
+                  actions: {
+                    className: "flex gap-1",
+                  },
+                }}
+              />
             </tr>
           </tfoot>
         </table>

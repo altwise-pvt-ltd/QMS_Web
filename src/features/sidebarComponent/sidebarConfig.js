@@ -12,6 +12,11 @@ import {
   Activity,
   Truck,
   ShieldAlert,
+  FolderOpen,
+  ShieldCheck,
+  Microscope,
+  Store,
+  Library,
 } from "lucide-react";
 
 export const sidebarConfig = [
@@ -23,7 +28,7 @@ export const sidebarConfig = [
   {
     label: "Documents",
     path: "/documents",
-    icon: FileText,
+    icon: FolderOpen,
   },
   {
     label: "CAPA & Incidents",
@@ -33,7 +38,7 @@ export const sidebarConfig = [
   {
     label: "Entries Management",
     path: "/entries-management",
-    icon: ClipboardList,
+    icon: Library,
   },
   {
     label: "Compliance Calendar",
@@ -43,7 +48,7 @@ export const sidebarConfig = [
   {
     label: "Management Review",
     path: "/mrm",
-    icon: Presentation,
+    icon: ShieldCheck,
   },
   {
     label: "Staff",
@@ -53,12 +58,12 @@ export const sidebarConfig = [
   {
     label: "Quality Indicators",
     path: "/quality-indicators",
-    icon: BarChart3,
+    icon: Activity,
   },
   {
     label: "Risk Indicators",
     path: "/risk-indicators",
-    icon: AlertTriangle,
+    icon: ShieldAlert,
   },
   {
     label: "Training",
@@ -73,12 +78,12 @@ export const sidebarConfig = [
   {
     label: "Instrument Calibration",
     path: "/instrument",
-    icon: Activity,
+    icon: Microscope,
   },
   {
     label: "Vendor Management",
     path: "/vendor",
-    icon: Truck,
+    icon: Store,
   },
   {
     label: "Risk Assessment",

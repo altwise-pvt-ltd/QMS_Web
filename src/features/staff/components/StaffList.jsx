@@ -90,20 +90,7 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
       className="bg-white rounded-xl shadow-sm border border-gray-200 h-full flex flex-col"
       style={{ minHeight: "400px" }}
     >
-      <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-xl">
-        <div>
-          <h2 className="text-xl font-bold text-gray-800">Staff Directory</h2>
-          <p className="text-sm text-gray-500">
-            Manage employees, competence, and documents.
-          </p>
-        </div>
-        <button
-          onClick={onAddNew}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-md transition-all"
-        >
-          <Plus size={18} /> Add New Staff
-        </button>
-      </div>
+
 
       <div className="overflow-visible p-2 flex-1">
         {loading ? (
@@ -177,11 +164,10 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
 
                     <td className="p-4">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          staff.status === "Competent"
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${staff.status === "Competent"
                             ? "bg-green-100 text-green-700"
                             : "bg-amber-100 text-amber-700"
-                        }`}
+                          }`}
                       >
                         {staff.status}
                       </span>

@@ -7,7 +7,8 @@ import {
     FileCheck2,
     Activity,
     Clock,
-    AlertCircle
+    AlertCircle,
+    Microscope,
 } from "lucide-react";
 import { useEffect } from "react";
 import InstrumentForm from "./components/Instrumentform";
@@ -125,15 +126,16 @@ const Instrument = () => {
     ];
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700 pb-20">
+        <div className="p-4 md:p-8 lg:p-12 w-full space-y-8 animate-in fade-in duration-700 pb-20">
             {/* Elegant Header */}
             <div className="flex flex-col gap-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="space-y-1">
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tighter flex items-center gap-4">
+                    <div>
+                        <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                            <Microscope className="text-indigo-600" size={32} />
                             Instrument Calibration
                         </h1>
-                        <p className="text-slate-500 font-medium">Monitor, register, and maintain biomedical instrument standards.</p>
+                        <p className="text-slate-500 mt-1 font-medium text-lg">Monitor, register, and maintain biomedical instrument standards.</p>
                     </div>
 
                     <button

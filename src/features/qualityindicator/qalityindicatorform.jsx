@@ -53,7 +53,7 @@ const QalityIndicatorForm = ({ onBack, indicators = QUALITY_INDICATORS }) => {
   );
 
   return (
-    <div className="space-y-6 animate-in slide-in-from-right duration-500 pb-20">
+    <div className="p-4 md:p-8 lg:p-12 w-full space-y-6 animate-in slide-in-from-right duration-500 pb-20">
       <QIFormHeader
         onBack={onBack}
         onDownload={handleDownloadPdf}

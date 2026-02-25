@@ -31,7 +31,7 @@ const LabList = ({
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-10 py-8 px-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="p-4 md:p-8 lg:p-12 w-full space-y-10 py-8 px-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
       {/* --- Minimal Header --- */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-start gap-4">

@@ -6,6 +6,8 @@ import {
   FileText,
   Briefcase,
   Shield,
+  Users,
+  Plus,
 } from "lucide-react";
 
 // Import sub-components
@@ -57,7 +59,26 @@ const StaffModule = () => {
   // --- RENDER: LIST VIEW ---
   if (view === "list") {
     return (
-      <div className="p-6 min-h-screen bg-slate-50">
+      <div className="p-4 md:p-8 lg:p-12 w-full min-h-screen bg-slate-50 space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+              <Users className="text-indigo-600" size={32} />
+              Staff Directory
+            </h1>
+            <p className="text-slate-500 mt-1 font-medium text-lg">
+              Manage employees, competence, and documents
+            </p>
+          </div>
+          <button
+            onClick={handleStartCreate}
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
+          >
+            <Plus size={20} /> Add New Staff
+          </button>
+        </div>
+
         <StaffList
           onAddNew={handleStartCreate}
           onEdit={handleEditBasic}
@@ -113,7 +134,7 @@ const StaffModule = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="p-4 md:p-8 lg:p-12 w-full min-h-screen bg-slate-50 flex flex-col">
       {/* Top Bar for Detail View */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-4">
@@ -160,11 +181,10 @@ const StaffModule = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                  isActive
-                    ? "bg-white text-blue-600 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all ${isActive
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }`}
                 aria-current={isActive ? "page" : undefined}
               >
                 <Icon size={16} />

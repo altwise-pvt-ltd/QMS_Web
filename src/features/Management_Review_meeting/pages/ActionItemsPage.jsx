@@ -44,7 +44,7 @@ const ActionItemsPage = ({ meeting, onSave, onBack, onNext }) => {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="w-full flex items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-4">
             <button
               onClick={onBack}
@@ -90,7 +90,7 @@ const ActionItemsPage = ({ meeting, onSave, onBack, onNext }) => {
       </header>
 
       <main className="flex-1 overflow-y-auto py-8 px-4 lg:py-12">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full px-4 md:px-8">
           {/* Main Action List Area */}
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">

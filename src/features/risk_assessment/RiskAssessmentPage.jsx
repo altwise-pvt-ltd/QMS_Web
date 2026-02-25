@@ -109,7 +109,7 @@ const RiskAssessmentPage = () => {
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto p-6 min-h-screen bg-slate-50/30">
+    <div className="p-4 md:p-8 lg:p-12 w-full min-h-screen bg-slate-50/30">
       {/* Header Section */}
       <div className="flex items-center justify-between mb-8">
         <div>

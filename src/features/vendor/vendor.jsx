@@ -95,7 +95,7 @@ const VendorModule = () => {
         </div>
       )}
 
-      <main className="container mx-auto px-4 py-8 transition-all duration-300">
+      <main className="w-full transition-all duration-300">
         <div
           className={`transition-opacity duration-300 ${loading ? "opacity-50" : "opacity-100"}`}
         >
