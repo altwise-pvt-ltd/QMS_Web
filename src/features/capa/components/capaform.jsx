@@ -1,11 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { X, Plus, Upload, FileText, Calendar, CheckCircle2, AlertCircle, ArrowLeft, Send, ClipboardList, Info, Users, UserPlus } from 'lucide-react';
-import { db } from '../../../db';
-import { getDepartments } from '../../department/services/departmentService';
-import staffService from '../../staff/services/staffService';
+import React, { useState, useEffect } from "react";
+import {
+  X,
+  Plus,
+  Upload,
+  FileText,
+  Calendar,
+  CheckCircle2,
+  AlertCircle,
+  ArrowLeft,
+  Send,
+  ClipboardList,
+  Info,
+  Users,
+  UserPlus,
+} from "lucide-react";
+import { db } from "../../../db";
+import { getDepartments } from "../../department/services/departmentService";
+import staffService from "../../staff/services/staffService";
 
 // Import questions from quedata.js
-import { CAPA_QUESTIONS } from '../quedata.js';
+import { CAPA_QUESTIONS } from "../quedata.js";
 
 const SUBCATEGORY_MAP = {
   "Pre-Analytical": [
@@ -13,40 +27,45 @@ const SUBCATEGORY_MAP = {
     "Typographic error",
     "Wrong sample identification",
     "Incomplete form",
-    "Sample labeling error"
+    "Sample labeling error",
   ],
-  "Analytical": [
+  Analytical: [
     "Wrong sample processed",
     "Random error",
     "Systematic error",
     "IQC failure",
-    "EQAS failure"
+    "EQAS failure",
   ],
   "Post-Analytical": [
     "Printing error",
     "Urgent sample report",
     "Critical value reporting",
     "Turnaround time (TAT)",
-    "Improper report dispatch"
+    "Improper report dispatch",
   ],
-  "others": []
+  others: [],
 };
 
-
-
-
-const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCustomQuestion }) => {
+const QuestionPopup = ({
+  isOpen,
+  onClose,
+  questions,
+  onSave,
+  answers,
+  onAddCustomQuestion,
+}) => {
   const [localAnswers, setLocalAnswers] = useState({});
   const [selectedSuggestions, setSelectedSuggestions] = useState({});
   const [newQuestionText, setNewQuestionText] = useState("");
-  const [newQuestionSuggestions, setNewQuestionSuggestions] = useState({ rootCause: '', correctiveAction: '', preventiveAction: '' });
+  // Stores manual entry for custom questions: { index: { rootCause, correctiveAction, preventiveAction } }
+  const [customSuggestions, setCustomSuggestions] = useState({});
 
   useEffect(() => {
     setLocalAnswers(answers || {});
     // Initialize suggestions selection: if an answer is present, enable its suggestions by default
     const initialSugg = {};
     if (answers) {
-      Object.keys(answers).forEach(idx => {
+      Object.keys(answers).forEach((idx) => {
         initialSugg[idx] = { rc: true, ca: true, pa: true };
       });
     }
@@ -54,25 +73,26 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
   }, [answers, isOpen, questions]);
 
   const handleAnswer = (index, value) => {
-    setLocalAnswers(prev => ({
+    setLocalAnswers((prev) => ({
       ...prev,
-      [index]: value
+      [index]: value,
     }));
 
-    // Always enable suggestions when an answer is selected (Yes or No)
-    setSelectedSuggestions(prev => ({
+    // For pre-built questions, enable selection by default
+    // For custom questions, we'll use the customSuggestions state
+    setSelectedSuggestions((prev) => ({
       ...prev,
-      [index]: { rc: true, ca: true, pa: true }
+      [index]: { rc: true, ca: true, pa: true },
     }));
   };
 
   const toggleSuggestion = (index, type) => {
-    setSelectedSuggestions(prev => ({
+    setSelectedSuggestions((prev) => ({
       ...prev,
       [index]: {
         ...prev[index],
-        [type]: !prev[index]?.[type]
-      }
+        [type]: !prev[index]?.[type],
+      },
     }));
   };
 
@@ -80,19 +100,16 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
     if (newQuestionText.trim()) {
       onAddCustomQuestion({
         question: newQuestionText.trim(),
-        suggestionsNo: {
-          rootCause: newQuestionSuggestions.rootCause.trim(),
-          correctiveAction: newQuestionSuggestions.correctiveAction.trim(),
-          preventiveAction: newQuestionSuggestions.preventiveAction.trim()
-        }
+        isCustom: true,
+        suggestionsYes: null,
+        suggestionsNo: null,
       });
       setNewQuestionText("");
-      setNewQuestionSuggestions({ rootCause: '', correctiveAction: '', preventiveAction: '' });
     }
   };
 
   const handleSave = () => {
-    onSave(localAnswers, selectedSuggestions);
+    onSave(localAnswers, selectedSuggestions, customSuggestions);
     onClose();
   };
 
@@ -107,7 +124,9 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div>
-            <h2 className="text-xl font-bold text-slate-800">Audit Questionnaire</h2>
+            <h2 className="text-xl font-bold text-slate-800">
+              Audit Questionnaire
+            </h2>
             <p className="text-sm text-slate-500 mt-0.5">
               Progress: {answeredCount} / {totalQuestions} answered
             </p>
@@ -125,66 +144,179 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
           {questions.map((question, index) => {
             const answer = localAnswers[index];
             const suggs = selectedSuggestions[index];
-            const activeSuggestions = answer === 'yes' ? question.suggestionsYes : (answer === 'no' ? question.suggestionsNo : null);
+            const isCustom = question.isCustom === true;
+            const activeSuggestions = isCustom
+              ? null
+              : answer === "yes"
+                ? question.suggestionsYes
+                : answer === "no"
+                  ? question.suggestionsNo
+                  : null;
 
             return (
-              <div key={index} className="p-4 border rounded-xl bg-white shadow-sm border-slate-200">
-                <p className="text-slate-800 font-bold mb-4">{index + 1}. {question.question || question}</p>
+              <div
+                key={index}
+                className="p-4 border rounded-xl bg-white shadow-sm border-slate-200"
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <p className="text-slate-800 font-bold">
+                    {index + 1}. {question.question || question}
+                  </p>
+                  {isCustom && (
+                    <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-indigo-50 text-indigo-500 rounded-full border border-indigo-100">
+                      Custom
+                    </span>
+                  )}
+                </div>
                 <div className="flex gap-3 mb-4">
                   <button
-                    onClick={() => handleAnswer(index, 'yes')}
-                    className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${answer === 'yes'
-                      ? 'bg-emerald-100 text-emerald-700 border-emerald-500'
-                      : 'bg-white border-slate-100 text-slate-500 hover:border-emerald-500/30'
-                      }`}
+                    onClick={() => handleAnswer(index, "yes")}
+                    className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${
+                      answer === "yes"
+                        ? "bg-emerald-100 text-emerald-700 border-emerald-500"
+                        : "bg-white border-slate-100 text-slate-500 hover:border-emerald-500/30"
+                    }`}
                   >
                     Yes
                   </button>
                   <button
-                    onClick={() => handleAnswer(index, 'no')}
-                    className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${answer === 'no'
-                      ? 'bg-rose-100 text-rose-700 border-rose-500'
-                      : 'bg-white border-slate-100 text-slate-500 hover:border-rose-500/30'
-                      }`}
+                    onClick={() => handleAnswer(index, "no")}
+                    className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${
+                      answer === "no"
+                        ? "bg-rose-100 text-rose-700 border-rose-500"
+                        : "bg-white border-slate-100 text-slate-500 hover:border-rose-500/30"
+                    }`}
                   >
                     No
                   </button>
                 </div>
 
-                {/* Dynamic Suggestion Section */}
-                {answer && activeSuggestions && (
-                  <div className={`mt-4 p-4 rounded-lg border space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 ${answer === 'yes'
-                    ? 'bg-emerald-50 border-emerald-200'
-                    : 'bg-rose-50 border-rose-200'
-                    }`}>
-                    <div className={`flex items-center gap-2 mb-1 ${answer === 'yes' ? 'text-emerald-800' : 'text-rose-800'}`}>
+                {/* Pre-built Suggestion Section */}
+                {!isCustom && answer && activeSuggestions && (
+                  <div
+                    className={`mt-4 p-4 rounded-lg border space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
+                      answer === "yes"
+                        ? "bg-emerald-50 border-emerald-200"
+                        : "bg-rose-50 border-rose-200"
+                    }`}
+                  >
+                    <div
+                      className={`flex items-center gap-2 mb-1 ${answer === "yes" ? "text-emerald-800" : "text-rose-800"}`}
+                    >
                       <Info className="w-4 h-4" />
-                      <span className="text-xs font-black uppercase tracking-wider">Suggested CAPA Actions for "{answer.toUpperCase()}"</span>
+                      <span className="text-xs font-black uppercase tracking-wider">
+                        Suggested CAPA Actions for "{answer.toUpperCase()}"
+                      </span>
                     </div>
 
                     {[
-                      { type: 'rc', label: 'Root Cause', text: activeSuggestions.rootCause },
-                      { type: 'ca', label: 'Corrective Action', text: activeSuggestions.correctiveAction },
-                      { type: 'pa', label: 'Preventive Action', text: activeSuggestions.preventiveAction }
-                    ].map(item => (
+                      {
+                        type: "rc",
+                        label: "Root Cause",
+                        text: activeSuggestions.rootCause,
+                      },
+                      {
+                        type: "ca",
+                        label: "Corrective Action",
+                        text: activeSuggestions.correctiveAction,
+                      },
+                      {
+                        type: "pa",
+                        label: "Preventive Action",
+                        text: activeSuggestions.preventiveAction,
+                      },
+                    ].map((item) => (
                       <div
                         key={item.type}
                         onClick={() => toggleSuggestion(index, item.type)}
-                        className={`p-3 rounded-md border cursor-pointer transition-all ${suggs?.[item.type]
-                          ? `bg-white shadow-sm ${answer === 'yes' ? 'border-emerald-300' : 'border-rose-300'}`
-                          : 'bg-slate-50/50 border-transparent opacity-60'
-                          }`}
+                        className={`p-3 rounded-md border cursor-pointer transition-all ${
+                          suggs?.[item.type]
+                            ? `bg-white shadow-sm ${answer === "yes" ? "border-emerald-300" : "border-rose-300"}`
+                            : "bg-slate-50/50 border-transparent opacity-60"
+                        }`}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <span className={`text-[10px] font-black uppercase ${answer === 'yes' ? 'text-emerald-600' : 'text-rose-600'}`}>{item.label}</span>
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${suggs?.[item.type]
-                            ? `${answer === 'yes' ? 'bg-emerald-500 border-emerald-500' : 'bg-rose-500 border-rose-500'} text-white`
-                            : 'border-slate-300'
-                            }`}>
-                            {suggs?.[item.type] && <CheckCircle2 className="w-3 h-3" />}
+                          <span
+                            className={`text-[10px] font-black uppercase ${answer === "yes" ? "text-emerald-600" : "text-rose-600"}`}
+                          >
+                            {item.label}
+                          </span>
+                          <div
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                              suggs?.[item.type]
+                                ? `${answer === "yes" ? "bg-emerald-500 border-emerald-500" : "bg-rose-500 border-rose-500"} text-gray-600`
+                                : "border-slate-300"
+                            }`}
+                          >
+                            {suggs?.[item.type] && (
+                              <CheckCircle2 className="w-3 h-3" />
+                            )}
                           </div>
                         </div>
-                        <p className="text-xs text-slate-600 leading-relaxed italic">"{item.text}"</p>
+                        <p className="text-xs text-slate-600 leading-relaxed italic">
+                          "{item.text}"
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Custom Question Entry Section */}
+                {isCustom && answer && (
+                  <div
+                    className={`mt-4 p-4 rounded-lg border space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
+                      answer === "yes"
+                        ? "bg-emerald-50 border-emerald-200"
+                        : "bg-rose-50 border-rose-200"
+                    }`}
+                  >
+                    <div
+                      className={`flex items-center gap-2 mb-1 ${answer === "yes" ? "text-emerald-800" : "text-rose-800"}`}
+                    >
+                      <Info className="w-4 h-4" />
+                      <span className="text-xs font-black uppercase tracking-wider">
+                        Enter your CAPA notes for "{answer.toUpperCase()}"
+                      </span>
+                    </div>
+
+                    {[
+                      {
+                        key: "rootCause",
+                        label: "Root Cause",
+                        placeholder: "e.g., Training gap...",
+                      },
+                      {
+                        key: "correctiveAction",
+                        label: "Corrective Action",
+                        placeholder: "e.g., Immediate retraining...",
+                      },
+                      {
+                        key: "preventiveAction",
+                        label: "Preventive Action",
+                        placeholder: "e.g., Update SOP...",
+                      },
+                    ].map((item) => (
+                      <div key={item.key} className="space-y-1">
+                        <span
+                          className={`text-[10px] font-black uppercase ${answer === "yes" ? "text-emerald-600" : "text-rose-600"}`}
+                        >
+                          {item.label}
+                        </span>
+                        <textarea
+                          value={customSuggestions[index]?.[item.key] || ""}
+                          onChange={(e) =>
+                            setCustomSuggestions((prev) => ({
+                              ...prev,
+                              [index]: {
+                                ...prev[index],
+                                [item.key]: e.target.value,
+                              },
+                            }))
+                          }
+                          placeholder={item.placeholder}
+                          rows={2}
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-indigo-400 font-medium resize-none text-slate-800"
+                        />
                       </div>
                     ))}
                   </div>
@@ -193,66 +325,38 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
             );
           })}
 
-          {/* Add Question Input */}
           <div className="border border-dashed border-slate-300 rounded-xl p-6 bg-slate-50/30">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-3">Add supplementary audit query</label>
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newQuestionText}
-                  onChange={(e) => setNewQuestionText(e.target.value)}
-                  placeholder="Type additional question here..."
-                  className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 font-medium"
-                />
-                <button
-                  onClick={handleAddQuestionLocal}
-                  className="px-6 py-2 bg-indigo-600 text-black rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors shadow-sm active:scale-95"
-                >
-                  Add
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Suggest Root Cause (Optional)</span>
-                  <textarea
-                    value={newQuestionSuggestions.rootCause}
-                    onChange={(e) => setNewQuestionSuggestions(prev => ({ ...prev, rootCause: e.target.value }))}
-                    placeholder="e.g., Training gap..."
-                    rows={2}
-                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-indigo-500 font-medium resize-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Suggest Corrective Action</span>
-                  <textarea
-                    value={newQuestionSuggestions.correctiveAction}
-                    onChange={(e) => setNewQuestionSuggestions(prev => ({ ...prev, correctiveAction: e.target.value }))}
-                    placeholder="e.g., Immediate retrain..."
-                    rows={2}
-                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-indigo-500 font-medium resize-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Suggest Preventive Action</span>
-                  <textarea
-                    value={newQuestionSuggestions.preventiveAction}
-                    onChange={(e) => setNewQuestionSuggestions(prev => ({ ...prev, preventiveAction: e.target.value }))}
-                    placeholder="e.g., Update SOP..."
-                    rows={2}
-                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-indigo-500 font-medium resize-none"
-                  />
-                </div>
-              </div>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-3">
+              Add supplementary audit query
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newQuestionText}
+                onChange={(e) => setNewQuestionText(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddQuestionLocal()}
+                placeholder="Type additional question here..."
+                className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 font-medium"
+              />
+              <button
+                onClick={handleAddQuestionLocal}
+                className="px-6 py-2 bg-indigo-600 text-gray-600 rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors shadow-sm active:scale-95"
+              >
+                Add
+              </button>
             </div>
+            <p className="text-[10px] text-slate-400 mt-2 italic">
+              After adding, answer Yes / No above — you'll then be prompted to
+              enter Root Cause, Corrective & Preventive Actions.
+            </p>
           </div>
         </div>
 
         {/* Footer */}
         <div className="px-6 py-4 border-t bg-slate-50 flex justify-between items-center">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight italic">
-            Suggestions will automatically be applied to the CAPA form upon saving.
+            Suggestions will automatically be applied to the CAPA form upon
+            saving.
           </p>
           <div className="flex gap-3">
             <button
@@ -275,28 +379,28 @@ const QuestionPopup = ({ isOpen, onClose, questions, onSave, answers, onAddCusto
 };
 
 const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
-  const [category, setCategory] = useState('');
-  const [subCategory, setSubCategory] = useState('');
-  const [customSubCategory, setCustomSubCategory] = useState('');
+  const [category, setCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
+  const [customSubCategory, setCustomSubCategory] = useState("");
   const [questions, setQuestions] = useState([]);
   const [questionAnswers, setQuestionAnswers] = useState({});
   const [showQuestionPopup, setShowQuestionPopup] = useState(false);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [targetDate, setTargetDate] = useState('');
-  const [department, setDepartment] = useState('');
-  const [details, setDetails] = useState('');
-  const [effectiveness, setEffectiveness] = useState('');
-  const [rootCause, setRootCause] = useState('');
-  const [correctiveAction, setCorrectiveAction] = useState('');
-  const [preventiveAction, setPreventiveAction] = useState('');
-  const [closureVerification, setClosureVerification] = useState('');
-  const [responsibility, setResponsibility] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [targetDate, setTargetDate] = useState("");
+  const [department, setDepartment] = useState("");
+  const [details, setDetails] = useState("");
+  const [effectiveness, setEffectiveness] = useState("");
+  const [rootCause, setRootCause] = useState("");
+  const [correctiveAction, setCorrectiveAction] = useState("");
+  const [preventiveAction, setPreventiveAction] = useState("");
+  const [closureVerification, setClosureVerification] = useState("");
+  const [responsibility, setResponsibility] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [staffList, setStaffList] = useState([]);
   const [taggedStaff, setTaggedStaff] = useState([]);
   const [showStaffDropdown, setShowStaffDropdown] = useState(false);
-  const [staffSearch, setStaffSearch] = useState('');
+  const [staffSearch, setStaffSearch] = useState("");
 
   // Fetch staff list
   useEffect(() => {
@@ -304,11 +408,20 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
       try {
         const response = await staffService.getAllStaff();
         const data = response.data || [];
-        const mappedStaff = data.map(s => ({
+        const mappedStaff = data.map((s) => ({
           id: s.staffId || s.id,
-          name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || s.staffName || "Unnamed Staff",
+          name:
+            `${s.firstName || ""} ${s.lastName || ""}`.trim() ||
+            s.name ||
+            s.staffName ||
+            "Unnamed Staff",
           role: s.jobTitle || "Staff",
-          dept: departments.find(d => (d.id || d.departmentId) === s.departmentId)?.name || departments.find(d => (d.id || d.departmentId) === s.departmentId)?.departmentName || "General"
+          dept:
+            departments.find((d) => (d.id || d.departmentId) === s.departmentId)
+              ?.name ||
+            departments.find((d) => (d.id || d.departmentId) === s.departmentId)
+              ?.departmentName ||
+            "General",
         }));
         setStaffList(mappedStaff);
       } catch (error) {
@@ -333,12 +446,12 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   // Pre-fill if selectedNC exists
   useEffect(() => {
     if (selectedNC) {
-      setCategory(selectedNC.category || '');
-      setSubCategory(selectedNC.subCategory || '');
-      setDepartment(selectedNC.department || '');
-      setResponsibility(selectedNC.reportedBy || '');
-      setDetails(selectedNC.name || '');
-      setEffectiveness(selectedNC.effectiveness || '');
+      setCategory(selectedNC.category || "");
+      setSubCategory(selectedNC.subCategory || "");
+      setDepartment(selectedNC.department || "");
+      setResponsibility(selectedNC.reportedBy || "");
+      setDetails(selectedNC.name || "");
+      setEffectiveness(selectedNC.effectiveness || "");
     }
   }, [selectedNC]);
 
@@ -354,53 +467,85 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   }, [category, subCategory]);
 
   const handleAddCustomQuestion = (questionObj) => {
-    setQuestions(prev => [...prev, questionObj]);
+    setQuestions((prev) => [...prev, questionObj]);
   };
 
-  const handleSaveAudit = (ans, suggConfig) => {
+  const handleSaveAudit = (ans, suggConfig, customSuggs = {}) => {
     setQuestionAnswers(ans);
 
     // Detailed Suggestion Flow Logic
     const finalSuggestions = {
       rc: [],
       ca: [],
-      pa: []
+      pa: [],
     };
 
     questions.forEach((q, idx) => {
       const userAns = ans[idx];
       const userChoices = suggConfig[idx]; // { rc: bool, ca: bool, pa: bool }
-      const activeSuggestions = userAns === 'yes' ? q.suggestionsYes : (userAns === 'no' ? q.suggestionsNo : null);
+      const isCustom = q.isCustom === true;
 
-      if (userAns && activeSuggestions && userChoices) {
-        if (userChoices.rc && activeSuggestions.rootCause) finalSuggestions.rc.push(activeSuggestions.rootCause);
-        if (userChoices.ca && activeSuggestions.correctiveAction) finalSuggestions.ca.push(activeSuggestions.correctiveAction);
-        if (userChoices.pa && activeSuggestions.preventiveAction) finalSuggestions.pa.push(activeSuggestions.preventiveAction);
+      if (userAns) {
+        if (!isCustom) {
+          // Pre-built question logic
+          const activeSuggestions =
+            userAns === "yes"
+              ? q.suggestionsYes
+              : userAns === "no"
+                ? q.suggestionsNo
+                : null;
+          if (activeSuggestions && userChoices) {
+            if (userChoices.rc && activeSuggestions.rootCause)
+              finalSuggestions.rc.push(activeSuggestions.rootCause);
+            if (userChoices.ca && activeSuggestions.correctiveAction)
+              finalSuggestions.ca.push(activeSuggestions.correctiveAction);
+            if (userChoices.pa && activeSuggestions.preventiveAction)
+              finalSuggestions.pa.push(activeSuggestions.preventiveAction);
+          }
+        } else {
+          // Custom question manual entry logic
+          const customEntry = customSuggs[idx];
+          if (customEntry) {
+            if (customEntry.rootCause)
+              finalSuggestions.rc.push(customEntry.rootCause);
+            if (customEntry.correctiveAction)
+              finalSuggestions.ca.push(customEntry.correctiveAction);
+            if (customEntry.preventiveAction)
+              finalSuggestions.pa.push(customEntry.preventiveAction);
+          }
+        }
       }
     });
 
     // Smart merge: Append only unique suggestions to current form fields
     const merge = (current, additions) => {
       if (additions.length === 0) return current;
-      const existing = current ? current.split('\n') : [];
-      const combined = [...new Set([...existing, ...additions])].filter(Boolean);
-      return combined.join('\n');
+      const existing = current ? current.split("\n") : [];
+      const combined = [...new Set([...existing, ...additions])].filter(
+        Boolean,
+      );
+      return combined.join("\n");
     };
 
-    setRootCause(prev => merge(prev, finalSuggestions.rc));
-    setCorrectiveAction(prev => merge(prev, finalSuggestions.ca));
-    setPreventiveAction(prev => merge(prev, finalSuggestions.pa));
+    setRootCause((prev) => merge(prev, finalSuggestions.rc));
+    setCorrectiveAction((prev) => merge(prev, finalSuggestions.ca));
+    setPreventiveAction((prev) => merge(prev, finalSuggestions.pa));
   };
 
   const handleSubmit = () => {
-    if (!category || (!subCategory && !customSubCategory) || !department || !responsibility) {
-      alert('Please fill in all required fields');
+    if (
+      !category ||
+      (!subCategory && !customSubCategory) ||
+      !department ||
+      !responsibility
+    ) {
+      alert("Please fill in all required fields");
       return;
     }
     const formData = {
       category,
       subCategory: category === "Other" ? customSubCategory : subCategory,
-      questions: questions.map(q => q.question || q), // Keep backward compatibility for storage
+      questions: questions.map((q) => q.question || q), // Keep backward compatibility for storage
       questionAnswers,
       date,
       targetDate,
@@ -413,12 +558,12 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
       closureVerification,
       responsibility,
       taggedStaff,
-      uploadedFiles: uploadedFiles.map(file => ({
+      uploadedFiles: uploadedFiles.map((file) => ({
         fileName: file.name,
         fileUrl: URL.createObjectURL(file),
-        fileSizeMB: (file.size / (1024 * 1024)).toFixed(2)
+        fileSizeMB: (file.size / (1024 * 1024)).toFixed(2),
       })),
-      submittedAt: new Date().toISOString()
+      submittedAt: new Date().toISOString(),
     };
     if (onSubmit) onSubmit(formData);
   };
@@ -429,7 +574,6 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="w-full bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-
         {/* Header Bar */}
         <div className="px-8 py-5 border-b flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -440,7 +584,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <h1 className="text-xl font-bold text-slate-800">
-              CAPA Entry {selectedNC ? `#${selectedNC.issueNo}` : ''}
+              CAPA Entry {selectedNC ? `#${selectedNC.issueNo}` : ""}
             </h1>
           </div>
           <button
@@ -455,7 +599,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
           {/* Top Row: Date and Department */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 block">Date</label>
+              <label className="text-sm font-semibold text-slate-700 block">
+                Date
+              </label>
               <div className="relative">
                 <input
                   type="date"
@@ -466,15 +612,20 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
               </div>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 block">Department</label>
+              <label className="text-sm font-semibold text-slate-700 block">
+                Department
+              </label>
               <select
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all appearance-none bg-white font-medium"
               >
                 <option value="">e.g., Pathology</option>
-                {departments.map(d => (
-                  <option key={d.id || d.departmentId} value={d.departmentName || d.name}>
+                {departments.map((d) => (
+                  <option
+                    key={d.id || d.departmentId}
+                    value={d.departmentName || d.name}
+                  >
                     {d.departmentName || d.name}
                   </option>
                 ))}
@@ -485,7 +636,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
           {/* Category & Sub-Category Selection (Professional Integration) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 block">Primary Category</label>
+              <label className="text-sm font-semibold text-slate-700 block">
+                Primary Category
+              </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -499,7 +652,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 block">Sub-Category</label>
+              <label className="text-sm font-semibold text-slate-700 block">
+                Sub-Category
+              </label>
               {category === "Other" ? (
                 <input
                   type="text"
@@ -516,8 +671,10 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 bg-white disabled:bg-slate-50"
                 >
                   <option value="">Select Sub-Category</option>
-                  {subCategories.map(sub => (
-                    <option key={sub} value={sub}>{sub}</option>
+                  {subCategories.map((sub) => (
+                    <option key={sub} value={sub}>
+                      {sub}
+                    </option>
                   ))}
                 </select>
               )}
@@ -525,24 +682,30 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
           </div>
 
           {/* Checklist Trigger (Simple Link style) */}
-          {category && (questions.length > 0 || subCategory || customSubCategory) && (
-            <div className="flex items-center justify-between p-4 border border-slate-100 rounded-md bg-slate-50/50">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                <span className="text-sm font-medium text-slate-700">Audit Checklist: {answeredCount} / {questions.length} completed</span>
+          {category &&
+            (questions.length > 0 || subCategory || customSubCategory) && (
+              <div className="flex items-center justify-between p-4 border border-slate-100 rounded-md bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  <span className="text-sm font-medium text-slate-700">
+                    Audit Checklist: {answeredCount} / {questions.length}{" "}
+                    completed
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowQuestionPopup(true)}
+                  className="text-sm font-bold text-indigo-600 hover:text-indigo-800 underline underline-offset-4"
+                >
+                  Open Audit Evaluation
+                </button>
               </div>
-              <button
-                onClick={() => setShowQuestionPopup(true)}
-                className="text-sm font-bold text-indigo-600 hover:text-indigo-800 underline underline-offset-4"
-              >
-                Open Audit Evaluation
-              </button>
-            </div>
-          )}
+            )}
 
           {/* Details of Daily N.C. */}
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 block">Details of incident</label>
+            <label className="text-sm font-semibold text-slate-700 block">
+              Details of incident
+            </label>
             <textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
@@ -554,7 +717,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
 
           {/* Effectiveness */}
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 block">Effectiveness</label>
+            <label className="text-sm font-semibold text-slate-700 block">
+              Effectiveness
+            </label>
             <textarea
               value={effectiveness}
               onChange={(e) => setEffectiveness(e.target.value)}
@@ -566,7 +731,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
 
           {/* Root Cause */}
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 block">Root Cause</label>
+            <label className="text-sm font-semibold text-slate-700 block">
+              Root Cause
+            </label>
             <textarea
               value={rootCause}
               onChange={(e) => setRootCause(e.target.value)}
@@ -578,7 +745,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
 
           {/* Corrective / Preventive Action Taken */}
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 block">Corrective Action Taken</label>
+            <label className="text-sm font-semibold text-slate-700 block">
+              Corrective Action Taken
+            </label>
             <textarea
               value={correctiveAction}
               onChange={(e) => setCorrectiveAction(e.target.value)}
@@ -589,7 +758,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 block">Preventive Action Taken</label>
+            <label className="text-sm font-semibold text-slate-700 block">
+              Preventive Action Taken
+            </label>
             <textarea
               value={preventiveAction}
               onChange={(e) => setPreventiveAction(e.target.value)}
@@ -606,11 +777,18 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
             </label>
             <div className="relative">
               <div className="min-h-[45px] w-full px-4 py-1.5 border border-slate-200 rounded-md focus-within:ring-1 focus-within:ring-slate-400 transition-all bg-white flex flex-wrap gap-2 items-center">
-                {taggedStaff.map(staff => (
-                  <span key={staff.id} className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs font-bold border border-slate-200">
+                {taggedStaff.map((staff) => (
+                  <span
+                    key={staff.id}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs font-bold border border-slate-200"
+                  >
                     {staff.name}
                     <button
-                      onClick={() => setTaggedStaff(prev => prev.filter(s => s.id !== staff.id))}
+                      onClick={() =>
+                        setTaggedStaff((prev) =>
+                          prev.filter((s) => s.id !== staff.id),
+                        )
+                      }
                       className="hover:text-rose-500 transition-colors"
                     >
                       <X className="w-3 h-3" />
@@ -619,7 +797,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                 ))}
                 <input
                   type="text"
-                  placeholder={taggedStaff.length === 0 ? "Search staff to tag..." : ""}
+                  placeholder={
+                    taggedStaff.length === 0 ? "Search staff to tag..." : ""
+                  }
                   className="flex-1 min-w-[120px] outline-none text-sm bg-transparent"
                   value={staffSearch}
                   onChange={(e) => {
@@ -638,35 +818,45 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                   ></div>
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-xl z-20 max-h-60 overflow-y-auto">
                     {staffList
-                      .filter(s =>
-                        s.name.toLowerCase().includes(staffSearch.toLowerCase()) &&
-                        !taggedStaff.some(ts => ts.id === s.id)
+                      .filter(
+                        (s) =>
+                          s.name
+                            .toLowerCase()
+                            .includes(staffSearch.toLowerCase()) &&
+                          !taggedStaff.some((ts) => ts.id === s.id),
                       )
-                      .map(staff => (
+                      .map((staff) => (
                         <button
                           key={staff.id}
                           className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 flex items-center justify-between group transition-colors"
                           onClick={() => {
-                            setTaggedStaff(prev => [...prev, staff]);
-                            setStaffSearch('');
+                            setTaggedStaff((prev) => [...prev, staff]);
+                            setStaffSearch("");
                             setShowStaffDropdown(false);
                           }}
                         >
                           <div className="flex flex-col">
-                            <span className="font-bold text-slate-800">{staff.name}</span>
-                            <span className="text-[10px] text-slate-500 uppercase">{staff.role} • {staff.dept}</span>
+                            <span className="font-bold text-slate-800">
+                              {staff.name}
+                            </span>
+                            <span className="text-[10px] text-slate-500 uppercase">
+                              {staff.role} • {staff.dept}
+                            </span>
                           </div>
                           <UserPlus className="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition-colors" />
                         </button>
                       ))}
-                    {staffList.filter(s =>
-                      s.name.toLowerCase().includes(staffSearch.toLowerCase()) &&
-                      !taggedStaff.some(ts => ts.id === s.id)
+                    {staffList.filter(
+                      (s) =>
+                        s.name
+                          .toLowerCase()
+                          .includes(staffSearch.toLowerCase()) &&
+                        !taggedStaff.some((ts) => ts.id === s.id),
                     ).length === 0 && (
-                        <div className="px-4 py-8 text-center text-slate-400 text-sm italic">
-                          No matching staff found
-                        </div>
-                      )}
+                      <div className="px-4 py-8 text-center text-slate-400 text-sm italic">
+                        No matching staff found
+                      </div>
+                    )}
                   </div>
                 </>
               )}
@@ -676,7 +866,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
           {/* Responsibility and Target Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 block">Responsibility</label>
+              <label className="text-sm font-semibold text-slate-700 block">
+                Responsibility
+              </label>
               <input
                 type="text"
                 value={responsibility}
@@ -686,7 +878,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 block">Target Date</label>
+              <label className="text-sm font-semibold text-slate-700 block">
+                Target Date
+              </label>
               <div className="relative">
                 <input
                   type="date"
@@ -700,7 +894,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
 
           {/* Closure Verification */}
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 block">Closure Verification</label>
+            <label className="text-sm font-semibold text-slate-700 block">
+              Closure Verification
+            </label>
             <textarea
               value={closureVerification}
               onChange={(e) => setClosureVerification(e.target.value)}
@@ -715,7 +911,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
             <div className="flex items-center justify-between">
               <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                 <Upload className="w-4 h-4" /> Supporting Evidence
-                <span className="text-xs font-normal text-slate-400">(Max 3 files, PDF only)</span>
+                <span className="text-xs font-normal text-slate-400">
+                  (Max 3 files, PDF only)
+                </span>
               </label>
               {uploadedFiles.length < 3 && (
                 <label className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md text-xs font-black cursor-pointer hover:bg-indigo-100 transition-colors uppercase tracking-wider flex items-center gap-1.5">
@@ -727,9 +925,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                     onChange={(e) => {
                       const file = e.target.files[0];
                       if (file) {
-                        setUploadedFiles(prev => [...prev, file]);
+                        setUploadedFiles((prev) => [...prev, file]);
                       }
-                      e.target.value = ''; // Reset input
+                      e.target.value = ""; // Reset input
                     }}
                   />
                 </label>
@@ -738,18 +936,29 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
 
             <div className="grid grid-cols-1 gap-3">
               {uploadedFiles.map((file, idx) => (
-                <div key={idx} className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-white shadow-sm hover:border-slate-300 transition-all">
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-white shadow-sm hover:border-slate-300 transition-all"
+                >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-slate-100 rounded-lg text-slate-500">
                       <FileText className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-700 truncate max-w-[200px] md:max-w-md">{file.name}</p>
-                      <p className="text-[10px] text-slate-400 font-medium uppercase">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                      <p className="text-sm font-bold text-slate-700 truncate max-w-[200px] md:max-w-md">
+                        {file.name}
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-medium uppercase">
+                        {(file.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
                     </div>
                   </div>
                   <button
-                    onClick={() => setUploadedFiles(prev => prev.filter((_, i) => i !== idx))}
+                    onClick={() =>
+                      setUploadedFiles((prev) =>
+                        prev.filter((_, i) => i !== idx),
+                      )
+                    }
                     className="p-2 hover:bg-rose-50 rounded-lg text-slate-400 hover:text-rose-600 transition-all"
                   >
                     <X className="w-5 h-5" />
@@ -761,7 +970,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                 <div className="flex flex-col items-center justify-center p-10 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 text-slate-400">
                   <Upload className="w-8 h-8 mb-2 opacity-20" />
                   <p className="text-sm font-medium">No files attached</p>
-                  <p className="text-[10px] uppercase font-black mt-1">Upload supporting documentation</p>
+                  <p className="text-[10px] uppercase font-black mt-1">
+                    Upload supporting documentation
+                  </p>
                 </div>
               )}
             </div>
@@ -776,7 +987,6 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
               Submit Form
             </button>
           </div>
-
         </div>
       </div>
 

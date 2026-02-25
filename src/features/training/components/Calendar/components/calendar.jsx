@@ -1,9 +1,6 @@
 import React from "react";
-import PropTypes from "prop-types";
 import Calendar from "react-calendar";
-
-// Note: Do NOT import 'react-calendar/dist/Calendar.css'.
-// We are replacing it entirely with the CSS below.
+import "./calendar-style.css"; // See CSS below
 
 const CalendarComponent = ({ setDate, date, selectRange, trainings = [] }) => {
   const getTileContent = ({ date: tileDate, view }) => {
@@ -19,11 +16,11 @@ const CalendarComponent = ({ setDate, date, selectRange, trainings = [] }) => {
 
       if (dayTrainings.length > 0) {
         return (
-          <div className="flex justify-center gap-1 mt-1">
-            {dayTrainings.slice(0, 3).map((t, i) => (
+          <div className="flex justify-center gap-1 mt-1.5">
+            {dayTrainings.slice(0, 4).map((t, i) => (
               <div
                 key={i}
-                className={`w-1.5 h-1.5 rounded-full ${
+                className={`w-1.5 h-1.5 rounded-full ring-1 ring-white ${
                   t.status === "completed"
                     ? "bg-emerald-500"
                     : t.status === "in-progress"
@@ -32,34 +29,26 @@ const CalendarComponent = ({ setDate, date, selectRange, trainings = [] }) => {
                 }`}
               />
             ))}
-            {dayTrainings.length > 3 && (
-              <div className="w-1 h-1 rounded-full bg-slate-300" />
-            )}
           </div>
         );
       }
     }
-    return null;
+    return <div className="h-3" />; // Maintain spacing
   };
 
   return (
-    <div className="p-4 bg-white rounded-xl border border-slate-200 max-w-md mx-auto">
+    <div className="calendar-wrapper ring-1 ring-slate-100 rounded-2xl overflow-hidden shadow-inner bg-slate-50/30 p-2">
       <Calendar
         onChange={setDate}
         value={date}
         selectRange={selectRange}
-        className="custom-calendar"
         tileContent={getTileContent}
+        prev2Label={null}
+        next2Label={null}
+        className="professional-calendar"
       />
     </div>
   );
-};
-
-CalendarComponent.propTypes = {
-  setDate: PropTypes.func,
-  date: PropTypes.any,
-  selectRange: PropTypes.bool,
-  trainings: PropTypes.array,
 };
 
 export default CalendarComponent;

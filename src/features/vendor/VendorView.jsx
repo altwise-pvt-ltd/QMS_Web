@@ -144,7 +144,7 @@ const VendorView = ({ vendor, onCancel }) => {
                   <div className="flex items-center justify-between gap-6">
                     {/* Logo Section */}
                     {orgInfo.logoUrl && (
-                      <div className="flex-shrink-0">
+                      <div className="shrink-0">
                         <ImageWithFallback
                           src={orgInfo.logoUrl}
                           alt="Logo"

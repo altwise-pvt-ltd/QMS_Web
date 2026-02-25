@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { NC_OPTIONS } from "../data/NcCategories";
-import { FileText as FileIcon, UploadCloud, Eye, Trash2, Users, UserPlus, X } from "lucide-react";
+import {
+  FileText as FileIcon,
+  UploadCloud,
+  Eye,
+  Trash2,
+  Users,
+  UserPlus,
+  X,
+} from "lucide-react";
 import { db } from "../../../db";
 import { getDepartments } from "../../department/services/departmentService";
 import staffService from "../../staff/services/staffService";
@@ -19,11 +27,20 @@ const NCEntry = ({ entry, onUpdate }) => {
       try {
         const response = await staffService.getAllStaff();
         const data = response.data || [];
-        const mappedStaff = data.map(s => ({
+        const mappedStaff = data.map((s) => ({
           id: s.staffId || s.id,
-          name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || s.staffName || "Unnamed Staff",
+          name:
+            `${s.firstName || ""} ${s.lastName || ""}`.trim() ||
+            s.name ||
+            s.staffName ||
+            "Unnamed Staff",
           role: s.jobTitle || "Staff",
-          dept: departments.find(d => (d.id || d.departmentId) === s.departmentId)?.name || departments.find(d => (d.id || d.departmentId) === s.departmentId)?.departmentName || "General"
+          dept:
+            departments.find((d) => (d.id || d.departmentId) === s.departmentId)
+              ?.name ||
+            departments.find((d) => (d.id || d.departmentId) === s.departmentId)
+              ?.departmentName ||
+            "General",
         }));
         setStaffList(mappedStaff);
       } catch (error) {
@@ -96,7 +113,10 @@ const NCEntry = ({ entry, onUpdate }) => {
             >
               <option value="">Select Department</option>
               {departments.map((dept) => (
-                <option key={dept.id || dept.departmentId} value={dept.departmentName || dept.name}>
+                <option
+                  key={dept.id || dept.departmentId}
+                  value={dept.departmentName || dept.name}
+                >
                   {dept.departmentName || dept.name}
                 </option>
               ))}
@@ -205,6 +225,21 @@ const NCEntry = ({ entry, onUpdate }) => {
             />
           </div>
 
+          {/* Observations */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Observations
+            </label>
+            <textarea
+              value={entry.observations}
+              onChange={(e) =>
+                onUpdate(entry.id, "observations", e.target.value)
+              }
+              rows="2"
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
           {/* Effectiveness */}
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -269,16 +304,25 @@ const NCEntry = ({ entry, onUpdate }) => {
 
           {/* Tag Staff */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
               <Users className="w-4 h-4" /> Tag Staff involved in incident
             </label>
             <div className="relative">
-              <div className="min-h-[42px] w-full px-3 py-1.5 border rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white flex flex-wrap gap-2 items-center">
-                {(entry.taggedStaff || []).map(staff => (
-                  <span key={staff.id} className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-semibold border border-blue-100">
+              <div className="min-h-10.5 w-full px-3 py-1.5 border rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white flex flex-wrap gap-2 items-center">
+                {(entry.taggedStaff || []).map((staff) => (
+                  <span
+                    key={staff.id}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-semibold border border-blue-100"
+                  >
                     {staff.name}
                     <button
-                      onClick={() => onUpdate(entry.id, "taggedStaff", entry.taggedStaff.filter(s => s.id !== staff.id))}
+                      onClick={() =>
+                        onUpdate(
+                          entry.id,
+                          "taggedStaff",
+                          entry.taggedStaff.filter((s) => s.id !== staff.id),
+                        )
+                      }
                       className="hover:text-rose-500 transition-colors"
                     >
                       <X className="w-3 h-3" />
@@ -287,8 +331,12 @@ const NCEntry = ({ entry, onUpdate }) => {
                 ))}
                 <input
                   type="text"
-                  placeholder={(entry.taggedStaff || []).length === 0 ? "Search staff to tag..." : ""}
-                  className="flex-1 min-w-[120px] outline-none text-sm bg-transparent"
+                  placeholder={
+                    (entry.taggedStaff || []).length === 0
+                      ? "Search staff to tag..."
+                      : ""
+                  }
+                  className="flex-1 min-w-30 outline-none text-sm bg-transparent"
                   value={staffSearch}
                   onChange={(e) => {
                     setStaffSearch(e.target.value);
@@ -306,35 +354,50 @@ const NCEntry = ({ entry, onUpdate }) => {
                   ></div>
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-xl z-20 max-h-48 overflow-y-auto">
                     {staffList
-                      .filter(s =>
-                        s.name.toLowerCase().includes(staffSearch.toLowerCase()) &&
-                        !(entry.taggedStaff || []).some(ts => ts.id === s.id)
+                      .filter(
+                        (s) =>
+                          s.name
+                            .toLowerCase()
+                            .includes(staffSearch.toLowerCase()) &&
+                          !(entry.taggedStaff || []).some(
+                            (ts) => ts.id === s.id,
+                          ),
                       )
-                      .map(staff => (
+                      .map((staff) => (
                         <button
                           key={staff.id}
                           className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50 flex items-center justify-between group transition-colors"
                           onClick={() => {
-                            onUpdate(entry.id, "taggedStaff", [...(entry.taggedStaff || []), staff]);
+                            onUpdate(entry.id, "taggedStaff", [
+                              ...(entry.taggedStaff || []),
+                              staff,
+                            ]);
                             setStaffSearch("");
                             setShowStaffDropdown(false);
                           }}
                         >
                           <div className="flex flex-col">
-                            <span className="font-semibold text-gray-800">{staff.name}</span>
-                            <span className="text-[10px] text-gray-500 uppercase">{staff.role} • {staff.dept}</span>
+                            <span className="font-semibold text-gray-800">
+                              {staff.name}
+                            </span>
+                            <span className="text-[10px] text-gray-500 uppercase">
+                              {staff.role} • {staff.dept}
+                            </span>
                           </div>
                           <UserPlus className="w-4 h-4 text-gray-300 group-hover:text-blue-600 transition-colors" />
                         </button>
                       ))}
-                    {staffList.filter(s =>
-                      s.name.toLowerCase().includes(staffSearch.toLowerCase()) &&
-                      !(entry.taggedStaff || []).some(ts => ts.id === s.id)
+                    {staffList.filter(
+                      (s) =>
+                        s.name
+                          .toLowerCase()
+                          .includes(staffSearch.toLowerCase()) &&
+                        !(entry.taggedStaff || []).some((ts) => ts.id === s.id),
                     ).length === 0 && (
-                        <div className="px-4 py-6 text-center text-gray-400 text-sm italic">
-                          No matching staff found
-                        </div>
-                      )}
+                      <div className="px-4 py-6 text-center text-gray-400 text-sm italic">
+                        No matching staff found
+                      </div>
+                    )}
                   </div>
                 </>
               )}
