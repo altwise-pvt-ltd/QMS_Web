@@ -11,6 +11,7 @@ import {
   Search,
   ExternalLink,
 } from "lucide-react";
+import { Skeleton } from "../../components/ui/Skeleton";
 import { QUALITY_INDICATORS, CATEGORIES } from "./qi_data";
 import QalityIndicatorForm from "./qalityindicatorform";
 import { db } from "../../db";
@@ -25,7 +26,6 @@ const QualityIndicator = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingIndicator, setEditingIndicator] = useState(null);
-
 
   useEffect(() => {
     loadIndicators();
@@ -82,7 +82,11 @@ const QualityIndicator = () => {
           severity: parseInt(newSeverity) || 1,
         };
         await db.quality_indicators.put(updatedIndicator);
-        setIndicators(indicators.map(i => i.id === editingIndicator.id ? updatedIndicator : i));
+        setIndicators(
+          indicators.map((i) =>
+            i.id === editingIndicator.id ? updatedIndicator : i,
+          ),
+        );
       } else {
         // Add new
         const indicatorData = {
@@ -93,7 +97,8 @@ const QualityIndicator = () => {
         };
 
         // 🚀 Call Backend API
-        const apiResponse = await riService.createQualityIndicator(indicatorData);
+        const apiResponse =
+          await riService.createQualityIndicator(indicatorData);
         console.log("Create quality indicator API response:", apiResponse);
 
         const newIndicator = {
@@ -197,12 +202,13 @@ const QualityIndicator = () => {
         <div>
           <div className="flex justify-between items-start mb-4">
             <span
-              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${indicator.category === "Pre-Analytical"
-                ? "bg-amber-50 text-amber-600"
-                : indicator.category === "Analytical"
-                  ? "bg-indigo-50 text-indigo-600"
-                  : "bg-emerald-50 text-emerald-600"
-                }`}
+              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                indicator.category === "Pre-Analytical"
+                  ? "bg-amber-50 text-amber-600"
+                  : indicator.category === "Analytical"
+                    ? "bg-indigo-50 text-indigo-600"
+                    : "bg-emerald-50 text-emerald-600"
+              }`}
             >
               {indicator.category}
             </span>
@@ -241,15 +247,15 @@ const QualityIndicator = () => {
             )}
             {(indicator.minValue !== undefined ||
               indicator.maxValue !== undefined) && (
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                    Range
-                  </p>
-                  <p className="text-xs font-black text-slate-700">
-                    {indicator.minValue ?? 0} - {indicator.maxValue ?? "∞"}
-                  </p>
-                </div>
-              )}
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                  Range
+                </p>
+                <p className="text-xs font-black text-slate-700">
+                  {indicator.minValue ?? 0} - {indicator.maxValue ?? "∞"}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -330,45 +336,63 @@ const QualityIndicator = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatsCard
-          title="Total Incidents (Jan)"
-          value={totalIncidents}
-          color="bg-indigo-500"
-          icon={TrendingUp}
-        />
-        <StatsCard
-          title="CAPA Investigations"
-          value={capaPending}
-          color="bg-rose-500"
-          icon={AlertCircle}
-        />
-        <StatsCard
-          title="Critical Benchmarks"
-          value={criticalIndicators}
-          color="bg-emerald-500"
-          icon={CheckCircle2}
-        />
+        {loading ? (
+          <>
+            <Skeleton className="h-40 rounded-xl" />
+            <Skeleton className="h-40 rounded-xl" />
+            <Skeleton className="h-40 rounded-xl" />
+          </>
+        ) : (
+          <>
+            <StatsCard
+              title="Total Incidents (Jan)"
+              value={totalIncidents}
+              color="bg-indigo-500"
+              icon={TrendingUp}
+            />
+            <StatsCard
+              title="CAPA Investigations"
+              value={capaPending}
+              color="bg-rose-500"
+              icon={AlertCircle}
+            />
+            <StatsCard
+              title="Critical Benchmarks"
+              value={criticalIndicators}
+              color="bg-emerald-500"
+              icon={CheckCircle2}
+            />
+          </>
+        )}
       </div>
 
       {/* Controls & Grid */}
       <div className="bg-slate-50 min-h-screen">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-          <div className="flex items-center bg-white p-1 rounded-2xl shadow-sm border border-slate-100 w-full md:w-auto">
+          <div className="flex items-center bg-white p-1 rounded-2xl shadow-sm border border-slate-100 w-full md:w-auto overflow-x-auto no-scrollbar">
             <button
               onClick={() => setSelectedCategory("All")}
-              className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === "All" ? "bg-indigo-600 text-gray-600 shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
+              className={`px-5 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${selectedCategory === "All" ? "bg-indigo-600 text-gray-600 shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
             >
               All
             </button>
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === cat ? "bg-indigo-600 text-gray-600 shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
-              >
-                {cat}
-              </button>
-            ))}
+            {loading ? (
+              <div className="flex gap-2 ml-2">
+                <Skeleton className="h-9 w-24 rounded-xl" />
+                <Skeleton className="h-9 w-24 rounded-xl" />
+                <Skeleton className="h-9 w-24 rounded-xl" />
+              </div>
+            ) : (
+              CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-5 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${selectedCategory === cat ? "bg-indigo-600 text-gray-600 shadow-lg shadow-indigo-200" : "text-slate-500 hover:text-slate-800"}`}
+                >
+                  {cat}
+                </button>
+              ))
+            )}
           </div>
 
           <div className="relative w-full md:w-80">
@@ -403,9 +427,18 @@ const QualityIndicator = () => {
             </p>
           </div>
 
-          {filteredIndicators.map((indicator) => (
-            <IndicatorCard key={indicator.id} indicator={indicator} />
-          ))}
+          {loading ? (
+            <>
+              <Skeleton className="h-[220px] rounded-2xl" />
+              <Skeleton className="h-[220px] rounded-2xl" />
+              <Skeleton className="h-[220px] rounded-2xl" />
+              <Skeleton className="h-[220px] rounded-2xl" />
+            </>
+          ) : (
+            filteredIndicators.map((indicator) => (
+              <IndicatorCard key={indicator.id} indicator={indicator} />
+            ))
+          )}
         </div>
       </div>
 
@@ -417,7 +450,9 @@ const QualityIndicator = () => {
               <div className="flex justify-between items-start mb-8">
                 <div>
                   <h2 className="text-3xl font-black text-slate-800 mb-2 italic">
-                    {editingIndicator ? "Update Quality Metric" : "Configure Quality Metric"}
+                    {editingIndicator
+                      ? "Update Quality Metric"
+                      : "Configure Quality Metric"}
                   </h2>
                   <p className="text-slate-500 text-sm font-medium">
                     Establish benchmarks and performance thresholds for QMS
@@ -439,10 +474,11 @@ const QualityIndicator = () => {
                       <button
                         key={cat}
                         onClick={() => setNewCategory(cat)}
-                        className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${newCategory === cat
-                          ? "border-indigo-600 bg-indigo-50/50 text-indigo-700"
-                          : "border-slate-100 hover:border-slate-200 text-slate-600"
-                          }`}
+                        className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
+                          newCategory === cat
+                            ? "border-indigo-600 bg-indigo-50/50 text-indigo-700"
+                            : "border-slate-100 hover:border-slate-200 text-slate-600"
+                        }`}
                       >
                         <span className="font-bold">{cat}</span>
                         {newCategory === cat && <CheckCircle2 size={18} />}
@@ -494,8 +530,6 @@ const QualityIndicator = () => {
                     </select>
                   </div>
                 </div>
-
-
               </div>
 
               <div className="flex gap-4 mt-10">
@@ -525,4 +559,3 @@ const QualityIndicator = () => {
 };
 
 export default QualityIndicator;
-

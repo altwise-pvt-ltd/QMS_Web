@@ -153,7 +153,8 @@ const RiskAssessmentPage = () => {
               </span>
               {selectedCell && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-black border border-indigo-100 shadow-sm">
-                  Matrix Point: S{selectedCell.severity} × L{selectedCell.likelihood}
+                  Matrix Point: S{selectedCell.severity} × L
+                  {selectedCell.likelihood}
                 </span>
               )}
               {(dateRange.start || dateRange.end) && (
@@ -167,14 +168,19 @@ const RiskAssessmentPage = () => {
                 </span>
               )}
               <span className="text-slate-400 text-xs ml-auto font-bold uppercase tracking-widest hidden sm:inline-block">
-                Showing <span className="text-slate-900">{filteredRisks.length}</span> / {risks.length} records
+                Showing{" "}
+                <span className="text-slate-900">{filteredRisks.length}</span> /{" "}
+                {risks.length} records
               </span>
             </div>
             <button
               onClick={clearAllFilters}
               className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 border border-slate-100 hover:border-rose-200"
             >
-              <X size={16} className="transition-transform group-hover:rotate-90" />
+              <X
+                size={16}
+                className="transition-transform group-hover:rotate-90"
+              />
               Reset
             </button>
           </div>
@@ -205,9 +211,7 @@ const RiskAssessmentPage = () => {
             <RiskTable
               risks={filteredRisks}
               onRowClick={(risk) =>
-                setSelectedRisk((prev) =>
-                  prev?.id === risk.id ? null : risk,
-                )
+                setSelectedRisk((prev) => (prev?.id === risk.id ? null : risk))
               }
               selectedRiskId={selectedRisk?.id}
             />
