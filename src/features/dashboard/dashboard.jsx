@@ -80,7 +80,7 @@ const QMSDashboard = () => {
         <BentoCard
           title="Next Audit"
           icon={Clock}
-          className="bg-linear-to-br from-indigo-500 to-purple-600 text-gray-600 border-none row-span-2"
+          className="bg-linear-to-br from-indigo-500 to-purple-600 text-white border-none row-span-2"
         >
           <NextAuditWidget />
         </BentoCard>

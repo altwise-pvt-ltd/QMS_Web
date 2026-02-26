@@ -2,7 +2,7 @@ import React from "react";
 
 const NextAuditWidget = () => {
   return (
-    <div className="@container flex flex-col h-full justify-center items-center text-center text-gray-600">
+    <div className="@container flex flex-col h-full justify-center items-center text-center text-white">
       <div className="text-sm opacity-80 uppercase tracking-wide">
         ISO 9001
       </div>

@@ -96,7 +96,7 @@ const PageHeader = ({ view, vendorName, onAdd, loading }) => {
     <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
       <div className="flex items-center gap-3.5">
         <div className="flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-xl shadow-sm shadow-indigo-200 shrink-0">
-          <Icon className="w-6 h-6 text-gray-600" />
+          <Icon className="w-6 h-6 text-white" />
         </div>
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">

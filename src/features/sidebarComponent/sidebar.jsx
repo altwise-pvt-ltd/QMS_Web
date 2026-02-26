@@ -40,12 +40,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
    * @returns {string} Tailwind CSS class string.
    */
   const menuItemClass = (path) =>
-    `flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 relative overflow-hidden ${
-      isCollapsed ? "justify-center" : ""
-    } ${
-      isActive(path)
-        ? "bg-indigo-100 text-indigo-700 shadow-sm"
-        : "text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 hover:shadow-sm hover:scale-[1.02]"
+    `flex items-center px-3 py-2.5 rounded-xl group transition-all duration-300 relative overflow-hidden ${isCollapsed ? "justify-center" : ""
+    } ${isActive(path)
+      ? "bg-indigo-100 text-indigo-700 shadow-sm"
+      : "text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 hover:shadow-sm hover:scale-[1.02]"
     }`;
 
   // Filter sidebar items based on user roles
@@ -66,18 +64,16 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         {/* --- Logo Area with Animation --- */}
         <div
           onClick={toggleSidebar}
-          className={`flex items-center pt-6 mb-8 cursor-pointer group/logo transition-all duration-300 ${
-            isCollapsed ? "justify-center px-0" : "gap-3 px-4"
-          }`}
+          className={`flex items-center pt-6 mb-8 cursor-pointer group/logo transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "gap-3 px-4"
+            }`}
           title="Click to toggle sidebar"
         >
-          <div className="min-w-10 w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl text-gray-600 shadow-lg shadow-indigo-500/50 group-hover/logo:shadow-indigo-500/80 group-hover/logo:scale-110 transition-all duration-300">
+          <div className="min-w-10 w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-500/50 group-hover/logo:shadow-indigo-500/80 group-hover/logo:scale-110 transition-all duration-300">
             Q
           </div>
           <span
-            className={`text-2xl font-bold bg-indigo-600 bg-clip-text text-transparent whitespace-nowrap overflow-hidden transition-all duration-300 ${
-              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-            }`}
+            className={`text-2xl font-bold bg-indigo-600 bg-clip-text text-transparent whitespace-nowrap overflow-hidden transition-all duration-300 ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+              }`}
           >
             QualiFlow
           </span>
@@ -94,11 +90,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                   )}
                   <item.icon className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                   <span
-                    className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                      isCollapsed
+                    className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
                         ? "w-0 opacity-0 ml-0"
                         : "w-auto opacity-100 ms-3"
-                    }`}
+                      }`}
                   >
                     {item.label}
                   </span>
@@ -141,11 +136,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               <Link to="/settings" className={menuItemClass("/settings")}>
                 <Settings className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
                 <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                    isCollapsed
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
                       ? "w-0 opacity-0 ml-0"
                       : "w-auto opacity-100 ms-3"
-                  }`}
+                    }`}
                 >
                   Settings
                 </span>
@@ -158,11 +152,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               >
                 <LogOut className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:-translate-x-1" />
                 <span
-                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${
-                    isCollapsed
+                  className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
                       ? "w-0 opacity-0 ml-0"
                       : "w-auto opacity-100 ms-3"
-                  }`}
+                    }`}
                 >
                   Sign Out
                 </span>
