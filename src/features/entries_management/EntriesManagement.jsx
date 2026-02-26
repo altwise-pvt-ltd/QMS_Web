@@ -1,19 +1,4 @@
 import React, { useState } from "react";
-import {
-  LayoutDashboard,
-  ClipboardList,
-  Plus,
-  Filter,
-  ChevronRight,
-  Search,
-  CheckCircle2,
-  X,
-  History,
-  Settings,
-  LogOut,
-  ChevronDown,
-  ChevronLeft, // Added ChevronLeft import
-} from "lucide-react";
 import EntryList from "./components/EntryList";
 import EntryForm from "./components/EntryForm";
 import LabList from "./components/LabList";

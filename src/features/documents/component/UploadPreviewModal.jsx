@@ -28,7 +28,7 @@ export default function UploadPreviewModal({ file, isOpen, onClose }) {
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <div className="flex items-center gap-4">
-            <div className="p-2.5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-200">
+            <div className="p-2.5 bg-indigo-600 rounded-xl text-gray-600 shadow-lg shadow-indigo-200">
               <ExternalLink size={22} />
             </div>
             <div>
@@ -102,3 +102,4 @@ export default function UploadPreviewModal({ file, isOpen, onClose }) {
     </div>
   );
 }
+

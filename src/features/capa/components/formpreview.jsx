@@ -47,7 +47,19 @@ const FormPreview = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <ClipboardList className="text-indigo-600" size={32} />
+            Corrective & Preventive Action
+          </h1>
+          <p className="text-slate-500 mt-1 font-medium text-lg">
+            Manage and track quality improvement measures (CAPA)
+          </p>
+        </div>
+      </div>
       {/* Search and Filters Bar */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         <div className="relative w-full md:w-96">
@@ -165,7 +177,7 @@ const FormPreview = ({
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-2">
                         <div
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white ${
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-gray-600 ${
                             activeTab === "ncs"
                               ? "bg-indigo-500"
                               : "bg-emerald-500"
@@ -202,7 +214,7 @@ const FormPreview = ({
                       {activeTab === "ncs" ? (
                         <button
                           onClick={() => onFileCapa(item)}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-black hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-95 group/btn"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-black hover:bg-indigo-600 hover:text-gray-600 transition-all shadow-sm active:scale-95 group/btn"
                         >
                           <FileText className="w-3.5 h-3.5" />
                           File CAPA
@@ -300,3 +312,4 @@ const FormPreview = ({
 };
 
 export default FormPreview;
+

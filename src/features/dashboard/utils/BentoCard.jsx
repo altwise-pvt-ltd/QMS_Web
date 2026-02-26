@@ -9,7 +9,7 @@ const BentoCard = ({ children, className = "", title, icon: Icon, action }) => (
     <div className="flex justify-between items-center mb-4">
       <div className="flex items-center gap-2">
         {Icon && <Icon className="w-5 h-5 text-indigo-500" />}
-        {title && <h3 className={`font-semibold ${className.includes('text-white') ? 'text-inherit' : 'text-slate-800'}`}>{title}</h3>}
+        {title && <h3 className={`font-semibold ${className.includes('text-gray-600') ? 'text-inherit' : 'text-slate-800'}`}>{title}</h3>}
       </div>
       {action && <div>{action}</div>}
     </div>
@@ -19,3 +19,4 @@ const BentoCard = ({ children, className = "", title, icon: Icon, action }) => (
 );
 
 export default BentoCard;
+

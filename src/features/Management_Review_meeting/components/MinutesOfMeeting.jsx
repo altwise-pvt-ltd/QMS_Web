@@ -49,7 +49,7 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8 lg:p-12 font-sans">
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="w-full px-4 md:px-8 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8">
           <div>

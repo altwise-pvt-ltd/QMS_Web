@@ -66,7 +66,7 @@ const VendorForm = ({ vendor, onSave, onCancel, mode, loading }) => {
   const isAccepted = formData.evaluation?.status === "Accepted";
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-slate-50 min-h-screen">
+    <div className="p-4 md:p-8 lg:p-12 w-full bg-slate-50 min-h-screen">
       {/* Sleek Header */}
       <div className="flex justify-between items-center mb-8">
         <div>

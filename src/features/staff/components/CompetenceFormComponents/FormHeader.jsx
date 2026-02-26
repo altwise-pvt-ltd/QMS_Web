@@ -3,7 +3,7 @@ import React from "react";
 const FormHeader = () => {
   return (
     <div className="mb-8 bg-linear-to-r from-blue-600 to-indigo-600 rounded-xl p-6 shadow-lg">
-      <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+      <h1 className="text-3xl font-bold text-gray-600 flex items-center gap-3">
         <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -15,7 +15,7 @@ const FormHeader = () => {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-white"
+            className="text-gray-600"
           >
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
@@ -34,3 +34,4 @@ const FormHeader = () => {
 };
 
 export default FormHeader;
+

@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   GraduationCap,
   Clock,
   Plus,
   Search,
   CheckCircle2,
-  ChevronRight,
   AlertCircle,
   FileText,
   X,
+  ChevronRight,
   TrendingUp,
   TrendingDown,
   Minus,
@@ -56,8 +56,7 @@ const STATUS_FILTERS = [
   "overdue",
 ];
 
-// ── Stat card ─────────────────────────────────────────────────────────────────
-
+// ── Stat card component ───────────────────────────────────────────────────────
 const StatCard = ({
   title,
   value,
@@ -73,45 +72,40 @@ const StatCard = ({
   return (
     <div
       className={`group relative bg-white rounded-2xl border transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/50 overflow-hidden
-        ${
-          isCritical
-            ? "border-rose-100 ring-4 ring-rose-50/30"
-            : "border-slate-100 hover:border-slate-200"
+        ${isCritical
+          ? "border-rose-100 ring-4 ring-rose-50/30"
+          : "border-slate-100 hover:border-slate-200"
         }`}
     >
-      {/* Top Progress Bar - Uses a subtle gradient instead of solid color */}
       <div
-        className={`h-1.5 w-full bg-gradient-to-r ${bar} opacity-80 ${isCritical ? "animate-pulse" : ""}`}
+        className={`h-1.5 w-full bg-gradient-to-r ${bar} opacity-80 ${isCritical ? "animate-pulse" : ""
+          }`}
       />
 
       <div className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            {/* Title: Increased tracking and slightly softer color for better scanability */}
             <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.15em] mb-2.5">
               {title}
             </p>
 
             <div className="flex flex-col gap-1">
               <h3
-                className={`text-3xl font-black tracking-tight leading-none ${
-                  isCritical ? "text-rose-600" : "text-slate-900"
-                }`}
+                className={`text-3xl font-black tracking-tight leading-none ${isCritical ? "text-rose-600" : "text-slate-900"
+                  }`}
               >
                 {value}
               </h3>
 
-              {/* Trend Badge: More compact and professional */}
               {trend && (
                 <div className="mt-2 flex items-center">
                   <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ring-1 ring-inset ${
-                      trendType === "up"
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ring-1 ring-inset ${trendType === "up"
                         ? "bg-emerald-50 text-emerald-600 ring-emerald-600/10"
                         : trendType === "down"
                           ? "bg-rose-50 text-rose-600 ring-rose-600/10"
                           : "bg-slate-50 text-slate-500 ring-slate-600/10"
-                    }`}
+                      }`}
                   >
                     {trendType === "up" && <TrendingUp size={10} />}
                     {trendType === "down" && <TrendingDown size={10} />}
@@ -123,17 +117,16 @@ const StatCard = ({
             </div>
           </div>
 
-          {/* Icon Section: Enhanced with a soft shadow and scale effect */}
           <div className="relative">
             <div
-              className={`absolute inset-0 rounded-xl blur-lg opacity-20 transition-all duration-500 group-hover:opacity-40 ${isCritical ? "bg-rose-400" : "bg-slate-400"}`}
+              className={`absolute inset-0 rounded-xl blur-lg opacity-20 transition-all duration-500 group-hover:opacity-40 ${isCritical ? "bg-rose-400" : "bg-slate-400"
+                }`}
             />
             <div
-              className={`relative p-3.5 rounded-xl border transition-all duration-500 transform group-hover:rotate-6 ${
-                isCritical
+              className={`relative p-3.5 rounded-xl border transition-all duration-500 transform group-hover:rotate-6 ${isCritical
                   ? "bg-rose-50 border-rose-100 text-rose-600 shadow-sm"
                   : `bg-slate-50 border-slate-100 ${accent} shadow-sm group-hover:bg-white`
-              }`}
+                }`}
             >
               <Icon className="w-5 h-5 stroke-[2.2px]" />
             </div>
@@ -141,11 +134,10 @@ const StatCard = ({
         </div>
       </div>
 
-      {/* Background Graphic: Moved to bottom-left for a different visual balance */}
       <div
         className={`absolute -left-2 -bottom-2 opacity-[0.04] transition-all duration-700 pointer-events-none group-hover:scale-125 group-hover:rotate-12 ${accent}`}
       >
-        <Icon size={72} weight="fill" />
+        <Icon size={72} />
       </div>
     </div>
   );
@@ -218,52 +210,54 @@ const Training = () => {
     }
   };
 
-  const filteredTrainings = trainings.filter((t) => {
-    const matchesSearch = t.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "All" || t.status === filterStatus;
+  const filteredTrainings = useMemo(() => {
+    return trainings.filter((t) => {
+      const matchesSearch = t.title
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesStatus = filterStatus === "All" || t.status === filterStatus;
 
-    let matchesDate = true;
-    if (date) {
-      if (Array.isArray(date)) {
-        const start = new Date(date[0]);
-        const end = new Date(date[1]);
-        const d = new Date(t.dueDate);
-        matchesDate = d >= start && d <= end;
-      } else {
-        const sel = new Date(date);
-        const d = new Date(t.dueDate);
-        matchesDate =
-          d.getDate() === sel.getDate() &&
-          d.getMonth() === sel.getMonth() &&
-          d.getFullYear() === sel.getFullYear();
+      let matchesDate = true;
+      if (date) {
+        if (Array.isArray(date)) {
+          const start = new Date(date[0]);
+          const end = new Date(date[1]);
+          const d = new Date(t.dueDate);
+          matchesDate = d >= start && d <= end;
+        } else {
+          const sel = new Date(date);
+          const d = new Date(t.dueDate);
+          matchesDate =
+            d.getDate() === sel.getDate() &&
+            d.getMonth() === sel.getMonth() &&
+            d.getFullYear() === sel.getFullYear();
+        }
       }
-    }
 
-    return matchesSearch && matchesStatus && matchesDate;
-  });
+      return matchesSearch && matchesStatus && matchesDate;
+    });
+  }, [trainings, searchTerm, filterStatus, date]);
 
-  const stats = {
-    total: trainings.length,
-    upcoming: trainings.filter((t) => {
-      const today = new Date();
-      const limit = new Date();
-      limit.setDate(today.getDate() + 30);
-      const d = new Date(t.dueDate);
-      return t.status !== "completed" && d >= today && d <= limit;
-    }).length,
-    completed: trainings.filter((t) => t.status === "completed").length,
-    overdue: trainings.filter((t) => t.status === "overdue").length,
-  };
+  const stats = useMemo(() => {
+    return {
+      total: trainings.length,
+      upcoming: trainings.filter((t) => {
+        const today = new Date();
+        const limit = new Date();
+        limit.setDate(today.getDate() + 30);
+        const d = new Date(t.dueDate);
+        return t.status !== "completed" && d >= today && d <= limit;
+      }).length,
+      completed: trainings.filter((t) => t.status === "completed").length,
+      overdue: trainings.filter((t) => t.status === "overdue").length,
+    };
+  }, [trainings]);
 
   const totalPages = Math.ceil(filteredTrainings.length / rowsPerPage);
   const paginatedTrainings = filteredTrainings.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage,
   );
-
-  const hasActiveFilters = filterStatus !== "All" || searchTerm || date;
 
   if (isPreviewOpen) {
     return (
@@ -275,45 +269,42 @@ const Training = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="p-4 md:p-8 lg:p-12 w-full space-y-8 animate-in fade-in duration-700 pb-20">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2.5">
-            <span className="flex items-center justify-center w-9 h-9 bg-indigo-600 rounded-xl shadow-sm shadow-indigo-200">
-              <GraduationCap className="w-5 h-5 text-white" />
-            </span>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <GraduationCap className="text-indigo-600" size={32} />
             Training Management
           </h1>
-          <p className="text-xs text-slate-400 font-medium mt-1.5 ml-0.5">
-            Personnel competency and training schedules
+          <p className="text-slate-500 mt-1 font-medium text-lg">
+            Monitor personnel competency and training schedules.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setIsPreviewOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700
-                       text-sm font-bold rounded-xl shadow-sm hover:border-indigo-300 hover:text-indigo-600
-                       active:scale-95 transition-all"
+            className="flex items-center gap-2 px-6 py-3.5 bg-white border border-slate-200 text-slate-700 rounded-2xl font-black shadow-sm hover:border-indigo-300 hover:text-indigo-600 active:scale-95 transition-all text-sm"
           >
-            <FileText className="w-4 h-4" />
+            <FileText size={20} />
             Yearly Preview
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-gray-600
-                       text-sm font-bold rounded-xl shadow-sm shadow-indigo-200
-                       hover:bg-indigo-700 active:scale-95 transition-all"
+            className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-gray-600 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
           >
-            <Plus className="w-4 h-4" />
+            <Plus
+              className="group-hover:rotate-180 transition-transform duration-500"
+              size={20}
+            />
             Schedule Training
           </button>
         </div>
       </div>
 
-      {/* ── Stat cards ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats overlay */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Modules"
           value={stats.total}
@@ -345,59 +336,57 @@ const Training = () => {
         />
       </div>
 
-      {/* ── Main grid ───────────────────────────────────────────── */}
-      <div className="grid grid-cols-12 gap-5 items-start">
-        {/* Training schedule table — 8 cols */}
-        <div className="col-span-12 xl:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-          {/* Table toolbar */}
-          <div className="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-sm font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Table — 8 cols */}
+        <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+          {/* Table Toolbar */}
+          <div className="p-6 border-b border-slate-50 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                 <span className="w-1.5 h-4 bg-indigo-600 rounded-full" />
                 Training Schedule
               </h2>
               {date && (
                 <button
                   onClick={() => setDate(null)}
-                  className="flex items-center gap-1 text-[10px] font-bold text-indigo-600 bg-indigo-50
-                             border border-indigo-100 px-2 py-0.5 rounded-full hover:bg-indigo-100 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase border border-indigo-100 hover:bg-indigo-100 transition-colors"
                 >
-                  Date filter active <X className="w-2.5 h-2.5" />
+                  Filter Active <X size={10} />
                 </button>
               )}
             </div>
 
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <div className="relative w-full sm:w-64">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300"
+                size={16}
+              />
               <input
                 type="text"
-                placeholder="Search trainings…"
+                placeholder="Search trainings..."
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm
-                           text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-2
-                           focus:ring-indigo-500/20 focus:border-indigo-400 transition-all w-56"
               />
             </div>
           </div>
 
-          {/* Status filter pills */}
-          <div className="px-5 py-3 border-b border-slate-100 flex items-center gap-2 flex-wrap">
+          {/* Status Filters */}
+          <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-50 flex items-center gap-2 flex-wrap">
             {STATUS_FILTERS.map((s) => (
               <button
                 key={s}
                 onClick={() => setFilterStatus(s)}
-                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all
-                  ${
-                    filterStatus === s
-                      ? "bg-indigo-600 text-gray-900 border-indigo-600 shadow-sm"
-                      : "bg-white text-slate-500 border-slate-200 hover:border-indigo-300 hover:text-indigo-600"
+                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all
+                  ${filterStatus === s
+                    ? "bg-indigo-600 text-gray-600 border-indigo-600 shadow-md shadow-indigo-100"
+                    : "bg-white text-slate-500 border-slate-200 hover:border-indigo-300 hover:text-indigo-600"
                   }`}
               >
-                {s === "All" ? "All" : (STATUS_CONFIG[s]?.label ?? s)}
+                {s === "All" ? "All" : STATUS_CONFIG[s].label}
                 {s !== "All" && (
-                  <span className="ml-1 opacity-60">
+                  <span className="ml-1.5 opacity-60">
                     ({trainings.filter((t) => t.status === s).length})
                   </span>
                 )}
@@ -405,111 +394,94 @@ const Training = () => {
             ))}
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left">
+          {/* Table Content */}
+          <div className="overflow-x-auto">
+            <table className="w-full">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  {[
-                    "Training Requirement",
-                    "Given By",
-                    "Assignee",
-                    "Due Date",
-                    "Status",
-                    "",
-                  ].map((h, i) => (
-                    <th
-                      key={i}
-                      className="px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap"
-                    >
-                      {h}
-                    </th>
-                  ))}
+                <tr className="bg-slate-50/50 text-left border-b border-slate-50">
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Requirement
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Given By
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Assignee
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                    Due Date
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                    Status
+                  </th>
+                  <th className="px-6 py-4"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {loading ? (
-                  Array.from({ length: 10 }).map((_, i) => (
+                  Array.from({ length: 6 }).map((_, i) => (
                     <SkeletonRow key={i} />
                   ))
                 ) : paginatedTrainings.length === 0 ? (
                   <tr>
                     <td
                       colSpan={6}
-                      className="py-16 text-center text-sm text-slate-400 font-medium"
+                      className="py-20 text-center text-slate-400 font-bold italic"
                     >
-                      No training events found
+                      No training events found matching current criteria.
                     </td>
                   </tr>
                 ) : (
                   paginatedTrainings.map((training) => {
                     const cfg =
-                      STATUS_CONFIG[training.status] ?? STATUS_CONFIG.pending;
+                      STATUS_CONFIG[training.status] || STATUS_CONFIG.pending;
                     return (
                       <tr
                         key={training.id}
-                        className={`hover:bg-slate-50/60 transition-colors group ${cfg.row}`}
+                        className="group hover:bg-slate-50/50 transition-colors"
                       >
-                        {/* Title */}
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-2.5">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
                             <div
-                              className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${cfg.icon}`}
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${cfg.icon}`}
                             >
-                              <GraduationCap className="w-3.5 h-3.5" />
+                              <GraduationCap size={16} />
                             </div>
-                            <span className="text-sm font-semibold text-slate-800 leading-snug">
+                            <span className="text-sm font-bold text-slate-800">
                               {training.title}
                             </span>
                           </div>
                         </td>
-
-                        {/* Given by */}
-                        <td className="px-5 py-3.5">
-                          <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md whitespace-nowrap">
-                            {training.givenBy || "—"}
+                        <td className="px-6 py-4">
+                          <span className="text-[11px] font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                            {training.givenBy}
                           </span>
                         </td>
-
-                        {/* Assignee */}
-                        <td className="px-5 py-3.5">
-                          <span className="text-[11px] font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md whitespace-nowrap">
+                        <td className="px-6 py-4">
+                          <span className="text-[11px] font-bold text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded-md">
                             {training.assignedTo}
                           </span>
                         </td>
-
-                        {/* Due date */}
-                        <td className="px-5 py-3.5 whitespace-nowrap">
+                        <td className="px-6 py-4 text-center">
                           <span
-                            className={`text-sm font-bold ${training.status === "overdue" ? "text-rose-600" : "text-slate-700"}`}
+                            className={`text-[11px] font-black ${training.status === "overdue" ? "text-rose-600" : "text-slate-600"}`}
                           >
                             {new Date(training.dueDate).toLocaleDateString(
                               "en-GB",
-                              {
-                                day: "numeric",
-                                month: "short",
-                                year: "2-digit",
-                              },
+                              { day: "numeric", month: "short" },
                             )}
                           </span>
                         </td>
-
-                        {/* Status badge */}
-                        <td className="px-5 py-3.5">
+                        <td className="px-6 py-4 text-center">
                           <span
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border whitespace-nowrap ${cfg.badge}`}
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${cfg.badge}`}
                           >
                             {cfg.label}
                           </span>
                         </td>
-
-                        {/* Action */}
-                        <td className="px-5 py-3.5">
-                          <button
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500
-                                             hover:bg-indigo-600 hover:text-gray-600 transition-all text-[10px] font-black uppercase tracking-wide border border-slate-200 hover:border-indigo-600"
-                          >
-                            View <ChevronRight className="w-3 h-3" />
+                        <td className="px-6 py-4 text-right">
+                          <button className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                            <ChevronRight size={18} />
                           </button>
                         </td>
                       </tr>
@@ -520,26 +492,24 @@ const Training = () => {
             </table>
           </div>
 
-          {/* Table footer with Pagination */}
-          {!loading && filteredTrainings.length > 0 && (
-            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/40 flex items-center justify-between">
-              <span className="text-[10px] font-medium text-slate-400 italic">
+          {!loading && paginatedTrainings.length > 0 && (
+            <div className="p-6 border-t border-slate-50 bg-slate-50/30 flex items-center justify-between">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                 Showing {paginatedTrainings.length} of{" "}
-                {filteredTrainings.length} training events
-              </span>
+                {filteredTrainings.length} events
+              </p>
               <CustomPagination
                 count={totalPages}
                 page={currentPage}
                 onChange={(e, p) => setCurrentPage(p)}
                 size="small"
-                showText={false}
               />
             </div>
           )}
         </div>
 
         {/* Calendar — 4 cols */}
-        <div className="col-span-12 xl:col-span-4">
+        <div className="lg:col-span-4 bg-white rounded-3xl border border-slate-100 shadow-sm p-2">
           <CustomCalendar
             date={date}
             setDate={setDate}
@@ -550,7 +520,6 @@ const Training = () => {
         </div>
       </div>
 
-      {/* ── Modal ───────────────────────────────────────────────── */}
       <ScheduleTrainingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

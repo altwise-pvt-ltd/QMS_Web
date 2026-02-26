@@ -8,8 +8,7 @@ import NCActions from "./components/NCActions";
 import NCHistoryTable from "./components/NCHistoryTable";
 import NCDetailsModal from "./components/NCDetailsModal";
 import { Alert, Snackbar, Button } from "@mui/material";
-import { History, Plus, Search, Filter } from "lucide-react";
-import { NC_OPTIONS } from "./data/NcCategories";
+import { History, Plus, Search, Filter, AlertTriangle } from "lucide-react";
 
 const INITIAL_FORM_DATA = {
   documentNo: "ADC-FORM-24",
@@ -140,11 +139,11 @@ export default function DailyNCForm() {
               : null,
             taggedStaff: report.staffIdinvolvedInIncident
               ? [
-                  {
-                    id: report.staffIdinvolvedInIncident,
-                    name: "Staff #" + report.staffIdinvolvedInIncident,
-                  },
-                ]
+                {
+                  id: report.staffIdinvolvedInIncident,
+                  name: "Staff #" + report.staffIdinvolvedInIncident,
+                },
+              ]
               : [],
           },
           submittedBy: {
@@ -223,8 +222,8 @@ export default function DailyNCForm() {
     const subCategoryIndex =
       categoryIndex !== -1
         ? NC_OPTIONS[categoryIndex].subcategories.indexOf(
-            formData.entry.ncDetails,
-          )
+          formData.entry.ncDetails,
+        )
         : -1;
     const subCategoryId =
       subCategoryIndex !== -1 ? (subCategoryIndex + 1).toString() : "1";
@@ -299,18 +298,24 @@ export default function DailyNCForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="p-4 md:p-8 lg:p-12 w-full min-h-screen bg-gray-50">
+      <div className="w-full space-y-6">
         {/* Header Toggle */}
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold text-slate-800">
-            {showHistory ? "NC History Log" : "New Non-Conformance"}
-          </h2>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+              <AlertTriangle className="text-indigo-600" size={32} />
+              {showHistory ? "NC History Log" : "Non-Conformance"}
+            </h1>
+            <p className="text-slate-500 mt-1 font-medium text-lg">
+              {showHistory ? "Historical records of identified non-conformities" : "Report and document new quality incidents"}
+            </p>
+          </div>
           <Button
             variant="outlined"
             onClick={() => setShowHistory(!showHistory)}
             startIcon={showHistory ? <Plus size={18} /> : <History size={18} />}
-            className="border-slate-200! text-slate-600! capitalize!"
+            className="border-slate-200! text-slate-600! capitalize! px-6! py-2.5! rounded-xl! font-bold!"
           >
             {showHistory ? "Create New Entry" : "View History"}
           </Button>

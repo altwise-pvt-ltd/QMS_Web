@@ -66,7 +66,7 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full px-4 md:px-8">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center justify-between">
@@ -254,15 +254,14 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
                       <tr
                         key={user.id}
                         onClick={() => toggleUserSelection(user)}
-                        className={`cursor-pointer hover:bg-gray-50 transition-colors ${
-                          isSelected ? "bg-indigo-50" : ""
-                        }`}
+                        className={`cursor-pointer hover:bg-gray-50 transition-colors ${isSelected ? "bg-indigo-50" : ""
+                          }`}
                       >
                         <td className="px-4 py-3">
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => {}}
+                            onChange={() => { }}
                             className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                           />
                         </td>

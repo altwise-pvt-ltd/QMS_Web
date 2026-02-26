@@ -249,7 +249,7 @@ const MrmWorkflow = ({ initialData, onSave, onCancel }) => {
     <div className="flex flex-col h-screen bg-slate-50 pt-6 lg:pt-10">
       {/* HEADER WITH STEPS */}
       <div className="bg-white border-b border-gray-200 shadow-sm px-6 py-5 lg:px-12 flex flex-col gap-8 shrink-0">
-        <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
+        <div className="w-full flex justify-between items-center px-4 md:px-8">
           <div>
             <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">
               MRM Workspace
@@ -275,7 +275,7 @@ const MrmWorkflow = ({ initialData, onSave, onCancel }) => {
         </div>
 
         {/* WIZARD STEPS */}
-        <div className="max-w-5xl mx-auto w-full relative pb-4">
+        <div className="w-full px-4 md:px-8 relative pb-4">
           <div className="absolute top-6 left-0 w-full h-1 bg-gray-100 z-0 rounded-full"></div>
           <div className="flex justify-between relative px-2">
             {[
@@ -301,20 +301,18 @@ const MrmWorkflow = ({ initialData, onSave, onCancel }) => {
                 <button
                   key={step.id}
                   onClick={() => setActiveStep(step.id)}
-                  className={`relative z-10 flex flex-col items-center gap-3 transition-all group ${
-                    isActive
+                  className={`relative z-10 flex flex-col items-center gap-3 transition-all group ${isActive
                       ? "scale-110"
                       : "grayscale opacity-70 hover:opacity-100 hover:grayscale-0"
-                  }`}
+                    }`}
                 >
                   <div
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center border-2 transition-all shadow-md ${
-                      isActive
-                        ? "bg-indigo-600 border-indigo-600 text-white shadow-indigo-200"
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center border-2 transition-all shadow-md ${isActive
+                        ? "bg-indigo-600 border-indigo-600 text-gray-600 shadow-indigo-200"
                         : isPast
                           ? "bg-green-100 border-green-200 text-green-600"
                           : "bg-white border-gray-200 text-gray-400"
-                    }`}
+                      }`}
                   >
                     {isPast ? <Check size={22} /> : <step.icon size={22} />}
                   </div>
@@ -339,7 +337,7 @@ const MrmWorkflow = ({ initialData, onSave, onCancel }) => {
 
       {/* CONTENT AREA */}
       <div className="flex-1 overflow-y-auto bg-slate-50/50">
-        <div className="max-w-7xl mx-auto p-6 lg:p-12">
+        <div className="w-full p-6 lg:p-12">
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden ring-1 ring-black/5">
             {activeStep === 1 && renderSchedule()}
             {activeStep === 2 && renderInputs()}
@@ -351,7 +349,7 @@ const MrmWorkflow = ({ initialData, onSave, onCancel }) => {
 
       {/* FOOTER NAV */}
       <div className="bg-white border-t border-gray-200 px-6 py-5 lg:px-12 shrink-0 shadow-xs">
-        <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
+        <div className="w-full flex justify-between items-center px-4 md:px-8">
           <button
             disabled={activeStep === 1}
             onClick={() => setActiveStep((prev) => prev - 1)}
@@ -394,3 +392,4 @@ const MrmWorkflow = ({ initialData, onSave, onCancel }) => {
 };
 
 export default MrmWorkflow;
+

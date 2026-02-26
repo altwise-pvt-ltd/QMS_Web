@@ -37,9 +37,9 @@ const AttendanceSelection = ({
       prev.map((user) =>
         user.id === userId
           ? {
-              ...user,
-              status: user.status === "Present" ? "Absent" : "Present",
-            }
+            ...user,
+            status: user.status === "Present" ? "Absent" : "Present",
+          }
           : user,
       ),
     );
@@ -51,7 +51,7 @@ const AttendanceSelection = ({
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8 lg:p-12 font-sans">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="w-full px-4 md:px-8 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           <div>
@@ -145,11 +145,10 @@ const AttendanceSelection = ({
                     <div className="flex justify-center">
                       <button
                         onClick={() => toggleStatus(user.id)}
-                        className={`group flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all font-bold text-xs ${
-                          user.status === "Present"
+                        className={`group flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all font-bold text-xs ${user.status === "Present"
                             ? "bg-green-50 border-green-200 text-green-700"
                             : "bg-red-50 border-red-200 text-red-700"
-                        }`}
+                          }`}
                       >
                         {user.status === "Present" ? (
                           <>

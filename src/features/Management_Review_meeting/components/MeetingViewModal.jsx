@@ -85,7 +85,7 @@ const MeetingViewModal = ({
         {/* Header */}
         <div className="bg-linear-to-r from-indigo-700 to-indigo-800 px-6 py-5 lg:px-8 lg:py-6 flex justify-between items-center shrink-0">
           <div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-600 tracking-tight">
               {meeting?.title}
             </h2>
             <div className="flex items-center gap-4 text-indigo-100/80 text-sm mt-1.5">
@@ -216,7 +216,7 @@ const MeetingViewModal = ({
                             key={idx}
                             className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-colors"
                           >
-                            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-gray-600 text-xs font-bold shrink-0">
                               {attendee.username?.charAt(0).toUpperCase()}
                             </div>
                             <div className="min-w-0">
@@ -391,3 +391,4 @@ const MeetingViewModal = ({
 };
 
 export default MeetingViewModal;
+

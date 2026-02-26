@@ -29,17 +29,15 @@ const ComplianceCalendarPage = () => {
     <div className="min-h-screen bg-slate-50">
       {/* Application Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="w-full px-4 md:px-8 lg:px-12">
           <div className="h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-600 rounded-lg">
-                <Calendar className="w-5 h-5 text-white" />
-              </div>
               <div>
-                <h1 className="text-lg font-semibold text-slate-900">
-                  Compliance Management System
+                <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                  <Calendar className="text-indigo-600" size={32} />
+                  Compliance Management
                 </h1>
-                <p className="text-xs text-slate-500">
+                <p className="text-slate-500 mt-1 font-medium text-lg">
                   Calendar & Regulatory Tracking
                 </p>
               </div>
@@ -56,11 +54,10 @@ const ComplianceCalendarPage = () => {
                 <button
                   key={view.id}
                   onClick={() => setActiveView(view.id)}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-md border transition-all ${
-                    isActive
-                      ? "bg-slate-50 border-slate-200 border-b-slate-50 text-indigo-600"
-                      : "text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-md border transition-all ${isActive
+                    ? "bg-slate-50 border-slate-200 border-b-slate-50 text-indigo-600"
+                    : "text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100"
+                    }`}
                 >
                   <Icon size={16} />
                   {view.label}
@@ -72,7 +69,7 @@ const ComplianceCalendarPage = () => {
       </header>
 
       {/* Workspace */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="p-4 md:p-8 lg:p-12 w-full">
         <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
           {activeView === "dashboard" && <ComplianceDashboard />}
           {activeView === "calendar" && <EventCalendar />}

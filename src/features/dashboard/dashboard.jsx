@@ -12,6 +12,7 @@ import {
   Shield,
   AlertCircle,
   ClipboardCheck,
+  LayoutDashboard as DashboardIcon,
 } from "lucide-react";
 
 // Imports from your new Utils folder
@@ -31,14 +32,15 @@ import SupplierQualityWidget from "./widgets/SupplierQualityWidget";
 const QMSDashboard = () => {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-8">
+    <div className="p-4 md:p-8 lg:p-12 w-full min-h-screen bg-slate-100">
       {/* Header */}
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <DashboardIcon className="text-indigo-600" size={32} />
             Quality Overview
           </h1>
-          <p className="text-slate-500">Welcome back, Quality Manager</p>
+          <p className="text-slate-500 mt-1 font-medium text-lg">Welcome back, Quality Manager</p>
         </div>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-black rounded-lg hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 shadow-md shadow-indigo-300/50 text-sm font-medium">
@@ -78,7 +80,7 @@ const QMSDashboard = () => {
         <BentoCard
           title="Next Audit"
           icon={Clock}
-          className="bg-linear-to-br from-indigo-500 to-purple-600 text-white border-none row-span-2"
+          className="bg-linear-to-br from-indigo-500 to-purple-600 text-gray-600 border-none row-span-2"
         >
           <NextAuditWidget />
         </BentoCard>
@@ -140,3 +142,4 @@ const QMSDashboard = () => {
 };
 
 export default QMSDashboard;
+

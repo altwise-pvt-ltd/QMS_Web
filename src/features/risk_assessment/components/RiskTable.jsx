@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  ChevronUp,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -48,100 +47,97 @@ const RiskTable = ({ risks, onRowClick, selectedRiskId }) => {
   const end = Math.min(page * rowsPerPage + rowsPerPage, risks.length);
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden w-full">
+    <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden w-full flex flex-col h-full">
       {/* Scrollable table wrapper */}
-      <div className="overflow-x-auto w-full">
-        <table className="w-full min-w-[800px] text-left border-collapse">
+      <div className="overflow-x-auto w-full flex-1">
+        <table className="w-full min-w-[800px] text-left">
           <thead>
-            <tr className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
-              <th className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide whitespace-nowrap">
+            <tr className="bg-slate-50/50 border-b border-slate-50">
+              <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">
                 Risk ID
               </th>
-              <th className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide whitespace-nowrap">
+              <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">
                 Date
               </th>
-              <th className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide whitespace-nowrap">
+              <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">
                 Clause
               </th>
-              <th className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">
+              <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
                 Quality Indicator
               </th>
-              <th className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide text-center whitespace-nowrap">
+              <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center whitespace-nowrap">
                 Severity
               </th>
-              <th className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide text-center whitespace-nowrap">
+              <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center whitespace-nowrap">
                 Likelihood
               </th>
-              <th className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide text-center whitespace-nowrap">
+              <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center whitespace-nowrap">
                 <div className="flex items-center justify-center gap-1">
                   Score
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                  <ChevronDown className="w-3 h-3 opacity-40" />
                 </div>
               </th>
-              <th className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide text-center whitespace-nowrap">
+              <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center whitespace-nowrap">
                 Category
               </th>
-              <th className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide text-center whitespace-nowrap">
+              <th className="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center whitespace-nowrap">
                 CAPA
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-50">
             {paginatedRisks.map((risk) => (
               <tr
                 key={risk.id}
                 onClick={() => onRowClick(risk)}
                 className={`
-                  cursor-pointer transition-all duration-150 ease-in-out
-                  ${
-                    selectedRiskId === risk.id
-                      ? "bg-indigo-50"
-                      : "hover:bg-slate-50"
+                  cursor-pointer transition-colors duration-200 group
+                  ${selectedRiskId === risk.id
+                    ? "bg-indigo-50/50"
+                    : "hover:bg-slate-50/50"
                   }
                 `}
               >
-                <td className="px-4 py-3 text-sm font-semibold text-indigo-600 whitespace-nowrap">
-                  {risk.id}
+                <td className="px-5 py-4 text-sm font-black text-indigo-600 whitespace-nowrap">
+                  #{risk.id}
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-500 whitespace-nowrap">
+                <td className="px-5 py-4 text-[11px] font-bold text-slate-500 whitespace-nowrap">
                   {risk.date}
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-500 italic whitespace-nowrap">
+                <td className="px-5 py-4 text-[11px] font-bold text-slate-400 italic whitespace-nowrap">
                   {risk.clause}
                 </td>
-                {/* Quality Indicator: inline, truncated with tooltip */}
-                <td className="px-4 py-3 text-sm font-medium text-slate-700 max-w-[220px]">
+                <td className="px-5 py-4 text-sm font-bold text-slate-800 max-w-[220px]">
                   <span className="block truncate" title={risk.description}>
                     {risk.description}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-sm text-center font-semibold text-slate-700 whitespace-nowrap">
+                <td className="px-5 py-4 text-sm text-center font-black text-slate-700 whitespace-nowrap">
                   {risk.severity}
                 </td>
-                <td className="px-4 py-3 text-sm text-center font-semibold text-slate-700 whitespace-nowrap">
+                <td className="px-5 py-4 text-sm text-center font-black text-slate-700 whitespace-nowrap">
                   {risk.likelihood}
                 </td>
-                <td className="px-4 py-3 text-sm text-center whitespace-nowrap">
-                  <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 font-bold text-slate-900 text-sm">
+                <td className="px-5 py-4 text-sm text-center whitespace-nowrap">
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 font-black text-slate-900 text-xs">
                     {risk.score}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-center whitespace-nowrap">
+                <td className="px-5 py-4 text-center whitespace-nowrap">
                   <span
-                    className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${getCategoryBadge(risk.category)}`}
+                    className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getCategoryBadge(risk.category)}`}
                   >
-                    {risk.category.toUpperCase()}
+                    {risk.category}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-center whitespace-nowrap">
+                <td className="px-5 py-4 text-center whitespace-nowrap">
                   <span
-                    className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold ${
-                      risk.capaStatus === "Open"
-                        ? "bg-red-50 text-red-700 border border-red-200"
-                        : risk.capaStatus === "Resolved"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          : "bg-slate-50 text-slate-500 border border-slate-200"
-                    }`}
+                    className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${risk.capaStatus === "Open"
+                      ? "bg-rose-50 text-rose-700 border-rose-100"
+                      : risk.capaStatus === "Resolved"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm"
+                        : "bg-slate-50 text-slate-500 border-slate-100 shadow-sm"
+                      }`}
                   >
                     {risk.capaStatus}
                   </span>
@@ -153,9 +149,9 @@ const RiskTable = ({ risks, onRowClick, selectedRiskId }) => {
               <tr>
                 <td
                   colSpan={9}
-                  className="px-6 py-10 text-center text-sm text-slate-400"
+                  className="px-6 py-20 text-center text-slate-400 font-bold italic"
                 >
-                  No risks found.
+                  No risks found in current registry.
                 </td>
               </tr>
             )}
@@ -163,19 +159,19 @@ const RiskTable = ({ risks, onRowClick, selectedRiskId }) => {
         </table>
       </div>
 
-      {/* Pagination — outside the table to avoid DOM nesting errors */}
-      <div className="border-t border-slate-200 px-4 py-3 bg-slate-50 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+      {/* Modern Pagination UI */}
+      <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-50 flex flex-wrap items-center justify-between gap-4">
         {/* Rows per page */}
         <div className="flex items-center gap-2">
-          <span className="font-medium text-slate-500 whitespace-nowrap">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
             Rows per page:
           </span>
           <select
             value={rowsPerPage}
             onChange={handleChangeRowsPerPage}
-            className="px-2 py-1 border border-slate-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="px-3 py-1 border border-slate-200 rounded-lg text-xs font-bold bg-white focus:outline-none focus:ring-4 focus:ring-indigo-50 transition-all cursor-pointer"
           >
-            {[4, 5, 10, 25, 50].map((n) => (
+            {[5, 10, 25, 50].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
@@ -184,26 +180,26 @@ const RiskTable = ({ risks, onRowClick, selectedRiskId }) => {
         </div>
 
         {/* Page info + nav */}
-        <div className="flex items-center gap-3">
-          <span className="font-medium whitespace-nowrap">
-            {start}–{end} of {risks.length}
+        <div className="flex items-center gap-6">
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            {start}–{end} of {risks.length} records
           </span>
-          <div className="flex gap-1">
+          <div className="flex gap-2">
             <button
               onClick={() => handleChangePage(page - 1)}
               disabled={page === 0}
-              className="p-1.5 rounded-md border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
               aria-label="Previous page"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft size={16} />
             </button>
             <button
               onClick={() => handleChangePage(page + 1)}
               disabled={page >= totalPages - 1}
-              className="p-1.5 rounded-md border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
               aria-label="Next page"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight size={16} />
             </button>
           </div>
         </div>

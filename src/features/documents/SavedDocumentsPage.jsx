@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter, X, FileText } from "lucide-react";
 import { MockData } from "../../data/jsonData/MOCK_DATA";
 import SavedDocumentsTable from "./component/SavedDocumentsTable";
 import { getDocuments } from "../../services/documentService";
@@ -91,14 +91,15 @@ const SavedDocumentsPage = () => {
     <div className="bg-slate-50 min-h-screen">
       {/* Search and Filter Section */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+                <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                  <FileText className="text-indigo-600" size={32} />
                   Document Repository
                 </h1>
-                <p className="text-sm text-slate-500 mt-1">
+                <p className="text-slate-500 mt-1 font-medium text-lg">
                   Search and manage all quality system documents
                 </p>
               </div>
@@ -106,14 +107,14 @@ const SavedDocumentsPage = () => {
               {(searchQuery ||
                 selectedCategory !== "All" ||
                 selectedSubCategory !== "All") && (
-                <button
-                  onClick={clearFilters}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 px-3 py-1.5 rounded-full transition-colors truncate"
-                >
-                  <X size={14} />
-                  Clear All Filters
-                </button>
-              )}
+                  <button
+                    onClick={clearFilters}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 px-3 py-1.5 rounded-full transition-colors truncate"
+                  >
+                    <X size={14} />
+                    Clear All Filters
+                  </button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -180,7 +181,7 @@ const SavedDocumentsPage = () => {
       </div>
 
       {/* Results Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
         <SavedDocumentsTable
           documents={filteredDocuments}
           onDocumentDeleted={handleDocumentDeleted}
