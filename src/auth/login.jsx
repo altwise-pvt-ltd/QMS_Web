@@ -87,13 +87,24 @@ const Login = () => {
         <section className="login-left">
           <div className="login-left-content">
             <div className="brand-title">Quality Management System</div>
-            <div>
+            <div className="login-title-wrapper">
               <h1 className="login-title">
                 Precision in <span>diagnostic</span> Care
               </h1>
-              <p className="login-subtitle">
-                Committed to excellence in diagnostic management.
-              </p>
+            </div>
+            <div className="login-key-points">
+              <div className="key-point-item">
+                <span className="key-point-icon"></span>
+                <span className="key-point-text">Accuracy in every step</span>
+              </div>
+              <div className="key-point-item">
+                <span className="key-point-icon"></span>
+                <span className="key-point-text">Compliance in every action</span>
+              </div>
+              <div className="key-point-item">
+                <span className="key-point-icon"></span>
+                <span className="key-point-text">Confidence in every outcome</span>
+              </div>
             </div>
           </div>
         </section>

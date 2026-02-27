@@ -9,6 +9,8 @@ import {
 import { AuthProvider } from "./auth/AuthContext.jsx";
 import ProtectedRoute from "./auth/ProtectedRoute.jsx";
 import Login from "./auth/login.jsx";
+import ConfirmPassword from "./auth/confirm_passcode/confirm_password.jsx";
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   logout,
@@ -108,6 +110,7 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/confirm-password" element={<ConfirmPassword />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
 
             <Route
