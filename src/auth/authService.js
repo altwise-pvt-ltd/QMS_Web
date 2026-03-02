@@ -66,3 +66,17 @@ export const logoutUser = async () => {
     localStorage.removeItem("refreshToken");
   }
 };
+/**
+ * Handles password update for the current user.
+ *
+ * @param {string} oldPassword - The user's current password.
+ * @param {string} newPassword - The new password to set.
+ * @returns {Promise<Object>} The API response.
+ */
+export const changePassword = async (oldPassword, newPassword) => {
+  const response = await api.post("/AdminUser/ChangePassword", {
+    oldPassword,
+    newPassword,
+  });
+  return response.data;
+};
