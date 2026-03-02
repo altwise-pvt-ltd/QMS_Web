@@ -114,13 +114,13 @@ const RiskMatrix = ({ matrix, selectedCell, onCellClick }) => {
       <div className="overflow-x-auto">
         <div className="min-w-[420px]">
           {/* Likelihood header row */}
-          <div className="flex items-end mb-1.5 pl-24 gap-1">
+          <div className="flex items-end mb-3 pl-32 gap-1.5">
             {LIKELIHOOD_LABELS.map((label, i) => (
               <div key={i} className="flex-1 text-center">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">
+                <div className="text-[11px] font-black text-slate-500 uppercase tracking-wider leading-tight">
                   {label}
                 </div>
-                <div className="text-[10px] font-semibold text-slate-500 mt-0.5">
+                <div className="text-[11px] font-bold text-slate-400 mt-1">
                   ({LIKELIHOOD_SHORT[i]})
                 </div>
               </div>
@@ -130,16 +130,16 @@ const RiskMatrix = ({ matrix, selectedCell, onCellClick }) => {
           {/* Grid rows */}
           <div className="flex gap-1">
             {/* Severity Y-axis labels */}
-            <div className="flex flex-col gap-1 shrink-0 w-24">
+            <div className="flex flex-col gap-1.5 shrink-0 w-32">
               {SEVERITY_LABELS.map((label, i) => (
                 <div
                   key={i}
-                  className="h-12 flex flex-col items-end justify-center pr-2 text-right"
+                  className="h-16 flex flex-col items-end justify-center pr-4 text-right"
                 >
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">
+                  <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider leading-tight">
                     {label}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-medium">
+                  <span className="text-[11px] text-slate-400 font-bold mt-0.5">
                     ({SEVERITY_SHORT[i]})
                   </span>
                 </div>
@@ -147,9 +147,9 @@ const RiskMatrix = ({ matrix, selectedCell, onCellClick }) => {
             </div>
 
             {/* Cells */}
-            <div className="flex-1 flex flex-col gap-1">
+            <div className="flex-1 flex flex-col gap-1.5">
               {matrix.map((row, sIdx) => (
-                <div key={sIdx} className="flex gap-1">
+                <div key={sIdx} className="flex gap-1.5">
                   {row.map((cell, lIdx) => {
                     const score = getScore(sIdx, lIdx);
                     const level = getRiskLevel(score);
@@ -171,7 +171,7 @@ const RiskMatrix = ({ matrix, selectedCell, onCellClick }) => {
                             onCellClick(cell.severity, cell.likelihood)
                           }
                           className={`
-                            relative flex-1 w-full h-12 rounded-lg flex flex-col items-center justify-center
+                            relative flex-1 w-full h-16 rounded-xl flex flex-col items-center justify-center
                             transition-all duration-150 cursor-pointer select-none
                             ${isSelected ? style.selected : `${style.base} ${style.hover}`}
                           `}
@@ -179,7 +179,7 @@ const RiskMatrix = ({ matrix, selectedCell, onCellClick }) => {
                         >
                           {/* Score (tiny, top-right corner) */}
                           <span
-                            className={`absolute top-1 right-1.5 text-[9px] font-bold opacity-50 ${style.score}`}
+                            className={`absolute top-1.5 right-2 text-[10px] font-black opacity-40 ${style.score}`}
                           >
                             {score}
                           </span>
@@ -187,12 +187,12 @@ const RiskMatrix = ({ matrix, selectedCell, onCellClick }) => {
                           {/* Count */}
                           {hasRisks ? (
                             <span
-                              className={`text-base font-bold leading-none ${style.score}`}
+                              className={`text-2xl font-black leading-none ${style.score}`}
                             >
                               {cell.count}
                             </span>
                           ) : (
-                            <span className="text-slate-300 text-sm font-bold leading-none">
+                            <span className="text-slate-200 text-lg font-black leading-none">
                               —
                             </span>
                           )}
@@ -205,8 +205,7 @@ const RiskMatrix = ({ matrix, selectedCell, onCellClick }) => {
             </div>
           </div>
 
-          {/* X-axis label */}
-          <div className="text-center mt-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-24">
+          <div className="text-center mt-4 text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] pl-32">
             Likelihood →
           </div>
         </div>
