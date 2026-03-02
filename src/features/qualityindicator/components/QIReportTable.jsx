@@ -1,30 +1,43 @@
 import React, { forwardRef } from "react";
-import { CATEGORIES } from "../qi_data";
 import QIFormFooter from "./QIFormFooter";
-
 const QIReportTable = forwardRef(
-  ({ selectedMonth, displayedIndicators, metadata }, ref) => {
+  ({ selectedMonth, displayedIndicators, categories = [], metadata }, ref) => {
     const days = Array.from({ length: 31 }, (_, i) =>
       String(i + 1).padStart(2, "0"),
     );
 
-    const renderCategoryRows = (category) => {
-      const categoryIndicators = displayedIndicators.filter(
-        (i) => i.category === category,
-      );
+    const renderCategoryRows = (categoryObj) => {
+      const categoryName =
+        categoryObj.qualityCategoryName ||
+        categoryObj.qiCategory ||
+        categoryObj.name;
+      const catId = categoryObj.qualityIndicatorCategoryId;
+      const catKey = categoryObj.qiCategory;
+
+      const categoryIndicators = displayedIndicators.filter((i) => {
+        const indicatorCatId = String(i.qualityIndicatorCategoryId || "");
+        return (
+          indicatorCatId === String(catId) || indicatorCatId === String(catKey)
+        );
+      });
+
+      if (categoryIndicators.length === 0) return null;
 
       return categoryIndicators.map((indicator, idx) => (
-        <tr key={indicator.id} className="border-b border-slate-300 h-8">
+        <tr
+          key={indicator.qualityIndicatorId}
+          className="border-b border-slate-300 h-8"
+        >
           {idx === 0 && (
             <td
               rowSpan={categoryIndicators.length}
               className="border-r border-slate-300 py-2 px-1 text-center font-bold text-[10px] bg-slate-50 [writing-mode:vertical-rl] rotate-180"
             >
-              {category}
+              {categoryName}
             </td>
           )}
           <td className="border-r border-slate-300 px-3 text-[10px] font-medium text-slate-700 min-w-[200px]">
-            {indicator.name}
+            {indicator.indicatorName}
           </td>
           {days.map((day) => {
             const incident = indicator.incidents?.find((inc) =>
@@ -92,7 +105,7 @@ const QIReportTable = forwardRef(
               </tr>
             </thead>
             <tbody>
-              {CATEGORIES.map((category) => renderCategoryRows(category))}
+              {categories.map((category) => renderCategoryRows(category))}
               <tr className="h-12 border-t-2 border-slate-800">
                 <td
                   colSpan={33}

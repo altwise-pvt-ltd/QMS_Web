@@ -6,13 +6,12 @@ import {
   Square,
   ChevronRight,
 } from "lucide-react";
-import { CATEGORIES } from "../qi_data";
-
 const QIFormSidebar = ({
   selectedMonth,
   setSelectedMonth,
   selectedIndicators,
   indicators = [],
+  categories = [],
   toggleIndicator,
   onSelectAll,
   isCollapsed,
@@ -68,34 +67,58 @@ const QIFormSidebar = ({
             </button>
           </div>
           <div className="space-y-1 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-            {CATEGORIES.map((category) => (
-              <div key={category} className="mb-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2">
-                  {category}
-                </p>
-                {indicators
-                  .filter((i) => i.category === category)
-                  .map((indicator) => (
-                    <button
-                      key={indicator.id}
-                      onClick={() => toggleIndicator(indicator.id)}
-                      className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all text-left ${selectedIndicators.includes(indicator.id)
-                        ? "bg-indigo-50 text-indigo-700"
-                        : "text-slate-500 hover:bg-slate-50"
+            {categories.map((categoryObj) => {
+              const categoryName =
+                categoryObj.qualityCategoryName ||
+                categoryObj.qiCategory ||
+                categoryObj.name;
+              const catId = categoryObj.qualityIndicatorCategoryId;
+              const catKey = categoryObj.qiCategory;
+
+              return (
+                <div key={catId || categoryName} className="mb-4">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2">
+                    {categoryName}
+                  </p>
+                  {indicators
+                    .filter((i) => {
+                      const indicatorCatId = String(
+                        i.qualityIndicatorCategoryId || "",
+                      );
+                      return (
+                        indicatorCatId === String(catId) ||
+                        indicatorCatId === String(catKey)
+                      );
+                    })
+                    .map((indicator) => (
+                      <button
+                        key={indicator.qualityIndicatorId}
+                        onClick={() =>
+                          toggleIndicator(indicator.qualityIndicatorId)
+                        }
+                        className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all text-left ${
+                          selectedIndicators.includes(
+                            indicator.qualityIndicatorId,
+                          )
+                            ? "bg-indigo-50 text-indigo-700"
+                            : "text-slate-500 hover:bg-slate-50"
                         }`}
-                    >
-                      {selectedIndicators.includes(indicator.id) ? (
-                        <CheckSquare size={16} className="shrink-0" />
-                      ) : (
-                        <Square size={16} className="shrink-0" />
-                      )}
-                      <span className="text-xs font-medium truncate">
-                        {indicator.name}
-                      </span>
-                    </button>
-                  ))}
-              </div>
-            ))}
+                      >
+                        {selectedIndicators.includes(
+                          indicator.qualityIndicatorId,
+                        ) ? (
+                          <CheckSquare size={16} className="shrink-0" />
+                        ) : (
+                          <Square size={16} className="shrink-0" />
+                        )}
+                        <span className="text-xs font-medium truncate">
+                          {indicator.indicatorName}
+                        </span>
+                      </button>
+                    ))}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
