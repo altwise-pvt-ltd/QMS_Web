@@ -64,7 +64,7 @@ const Login = () => {
       login(profileData);
 
       // 5. On success, navigate to the main dashboard
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       console.error("Login Failed", err);
       // Provision for user-friendly error messages

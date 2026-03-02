@@ -8,6 +8,7 @@ import {
 // Auth Imports
 import { AuthProvider } from "./auth/AuthContext.jsx";
 import ProtectedRoute from "./auth/ProtectedRoute.jsx";
+import PublicRoute from "./auth/PublicRoute.jsx";
 import Login from "./auth/login.jsx";
 import ConfirmPassword from "./auth/confirm_passcode/confirm_password.jsx";
 
@@ -109,9 +110,31 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/confirm-password" element={<ConfirmPassword />} />
-            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/confirm-password"
+              element={
+                <PublicRoute>
+                  <ConfirmPassword />
+                </PublicRoute>
+              }
+            />
+
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedRoute>
+                  <OnboardingPage />
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               element={
