@@ -29,6 +29,7 @@ const Settings = () => {
         phone: "",
         websiteUrl: "",
         address: "",
+        organizationId: null,
     });
 
     const { user } = useAuth();
@@ -53,6 +54,7 @@ const Settings = () => {
                             phone: company.BusinessPhone || company.businessPhone || "",
                             websiteUrl: company.CorporateWebsite || company.corporateWebsite || "",
                             address: company.RegisteredAddress || company.registeredAddress || "",
+                            organizationId: company.OrganizationId || company.organizationId || null,
                         });
 
                         const logo = company.CompanyLogo || company.logoPath;
@@ -118,21 +120,24 @@ const Settings = () => {
                 formDataToSend.append("CompanyLogo", fileInputRef.current.files[0]);
             }
 
-            const data = await organizationService.createOrganization(formDataToSend);
+            // Target organizationId 1 if not present in formData, based on user requirements.
+            const targetId = formData.organizationId || 1;
+            const data = await organizationService.updateOrganization(targetId, formDataToSend);
 
             if (data.isSuccess) {
                 setSuccess(true);
                 setTimeout(() => setSuccess(false), 3000);
 
                 // Sync local
+                const serverData = data.value;
                 await db.company_info.clear();
                 await db.company_info.add({
-                    organizationId: data.value.organizationId,
-                    name: data.value.legalCompanyName,
-                    industry: data.value.industrySector,
-                    phone: data.value.businessPhone,
-                    websiteUrl: data.value.corporateWebsite,
-                    address: data.value.registeredAddress,
+                    organizationId: serverData.OrganizationId || serverData.organizationId || targetId,
+                    name: serverData.LegalCompanyName || serverData.legalCompanyName,
+                    industry: serverData.IndustrySector || serverData.industrySector,
+                    phone: serverData.BusinessPhone || serverData.businessPhone,
+                    websiteUrl: serverData.CorporateWebsite || serverData.corporateWebsite,
+                    address: serverData.RegisteredAddress || serverData.registeredAddress,
                     logo: logoPreview,
                 });
             }

@@ -1,326 +1,266 @@
 import React, { useState } from "react";
 import {
-  Search,
+  ChevronDown,
+  ChevronUp,
   Shield,
-  MoreVertical,
-  Edit3,
-  Lock,
-  CheckCircle2,
-  XCircle,
-  ChevronRight,
   Save,
-  User,
+  Search,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-import staffService from "../services/staffService";
-import ImageWithFallback from "../../../components/ui/ImageWithFallback";
+import { PERMISSION_DATA } from "./permision_data";
 
-// --- Mock Data ---
-const INITIAL_USERS = [
-  {
-    id: 1,
-    name: "Dr. Sarah Chen",
-    email: "sarah.c@labqms.com",
-    role: "Quality Manager",
-    dept: "Quality Assurance",
-    status: "Active",
-    avatar: "SC",
-  },
-  {
-    id: 2,
-    name: "James Wilson",
-    email: "j.wilson@labqms.com",
-    role: "Lab Technician",
-    dept: "Microbiology",
-    status: "Active",
-    avatar: "JW",
-  },
-  {
-    id: 3,
-    name: "Elena Rodriguez",
-    email: "elena.r@labqms.com",
-    role: "Auditor",
-    dept: "Compliance",
-    status: "Inactive",
-    avatar: "ER",
-  },
-];
-
-const PERMISSION_MODULES = [
-  {
-    name: "Document Control (SOPs)",
-    description: "Manage standard operating procedures and policies.",
-    rights: [
-      { id: "doc_view", label: "View Documents" },
-      { id: "doc_create", label: "Create/Edit Drafts" },
-      { id: "doc_approve", label: "Final Approval Authority", danger: true },
-      { id: "doc_archive", label: "Archive/Obsolete" },
-    ],
-  },
-  {
-    name: "CAPA & Non-Conformance",
-    description: "Handle corrective actions and root cause analysis.",
-    rights: [
-      { id: "capa_initiate", label: "Initiate Ticket" },
-      { id: "capa_investigate", label: "Perform Investigation" },
-      { id: "capa_close", label: "Close Out CAPA", danger: true },
-    ],
-  },
-  {
-    name: "User Management",
-    description: "Administer system users and settings.",
-    rights: [
-      { id: "user_manage", label: "Manage Accounts", danger: true },
-      { id: "audit_logs", label: "View Audit Logs" },
-    ],
-  },
-];
-
-function cn(...inputs) {
-  return twMerge(clsx(inputs));
-}
-
-// --- Component ---
+/**
+ * PermissionManagement Component
+ * Provides a clean, accordion-style interface for managing user access rights.
+ * 
+ * Logic:
+ * - Module toggle ON/OFF toggles all sub-features.
+ * - Any sub-feature toggle ON auto-enables the parent module.
+ */
 const PermissionsPage = ({ staff = null, standalone = true }) => {
-  const [users, setUsers] = useState(INITIAL_USERS);
-  const [selectedUser, setSelectedUser] = useState(staff || null);
-  const [activePermissions, setActivePermissions] = useState([
-    "doc_view",
-    "capa_initiate",
-  ]); // Mock existing permissions
+  // Initialize state with dynamic JSON data
+  const [permissions, setPermissions] = useState(PERMISSION_DATA.permissions);
+  const [expandedModules, setExpandedModules] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [status, setStatus] = useState(null); // { type: 'success' | 'error', message: string }
 
-  // Toggle a specific permission ID
-  const togglePermission = (id) => {
-    setActivePermissions((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id],
+  // Toggle module expansion state
+  const toggleAccordion = (moduleKey, isEnabled) => {
+    if (!isEnabled) return; // Prevent opening if toggle is off
+    setExpandedModules((prev) => ({
+      ...prev,
+      [moduleKey]: !prev[moduleKey],
+    }));
+  };
+
+  /**
+   * Handle Module Level Toggle
+   * Toggling a module updates all its children features.
+   */
+  const handleModuleToggle = (moduleKey, isEnabled) => {
+    setPermissions((prev) =>
+      prev.map((module) => {
+        if (module.key === moduleKey) {
+          return {
+            ...module,
+            enabled: isEnabled,
+            features: module.features.map((feature) => ({
+              ...feature,
+              enabled: isEnabled,
+            })),
+          };
+        }
+        return module;
+      })
+    );
+
+    // Auto-open if enabled, auto-close if disabled
+    setExpandedModules((prev) => ({
+      ...prev,
+      [moduleKey]: isEnabled,
+    }));
+  };
+
+  /**
+   * Handle Feature Level Toggle
+   * Toggling a feature affects the parent module state.
+   */
+  const handleFeatureToggle = (moduleKey, featureKey, isEnabled) => {
+    setPermissions((prev) =>
+      prev.map((module) => {
+        if (module.key === moduleKey) {
+          const updatedFeatures = module.features.map((feature) =>
+            feature.key === featureKey ? { ...feature, enabled: isEnabled } : feature
+          );
+
+          // If any feature is ON, the parent module MUST be enabled
+          const shouldModuleBeEnabled = isEnabled || updatedFeatures.some((f) => f.enabled);
+
+          return {
+            ...module,
+            enabled: shouldModuleBeEnabled,
+            features: updatedFeatures,
+          };
+        }
+        return module;
+      })
     );
   };
 
-  // If we are in non-standalone mode (embedded in StaffModule), return just the drawer content or adapted UI
-  return (
-    <div
-      className={cn(
-        "bg-slate-50 flex gap-6 font-sans text-slate-800",
-        standalone ? "min-h-screen p-6" : "h-full",
-      )}
-    >
-      {/* --- LEFT PANEL: User List --- */}
-      {standalone && (
-        <div
-          className={cn(
-            "flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col transition-all duration-500",
-            selectedUser ? "w-1/2" : "w-full",
-          )}
-        >
-          {/* Header */}
-          <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-bold text-slate-800">
-                Staff Directory
-              </h2>
-              <p className="text-sm text-slate-500 mt-1">
-                Manage access rights and roles
-              </p>
-            </div>
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-indigo-100 flex items-center gap-2">
-              <User size={16} /> Add Staff
-            </button>
-          </div>
+  const handleSave = () => {
+    setIsSaving(true);
+    // Simulate API call
+    setTimeout(() => {
+      console.log("Saving Permissions:", permissions);
+      setIsSaving(false);
+      setStatus({ type: "success", message: "Permissions updated successfully!" });
+      setTimeout(() => setStatus(null), 3000);
+    }, 1000);
+  };
 
-          {/* Toolbar */}
-          <div className="p-4 bg-slate-50/50 flex gap-3">
-            <div className="relative flex-1">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                size={18}
-              />
+  // Filter modules based on search
+  const filteredPermissions = permissions.filter((module) =>
+    module.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    module.features.some(f => f.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  return (
+    <div className={`font-sans ${standalone ? 'min-h-screen bg-slate-50 p-6' : 'p-2'}`}>
+      <div className={`space-y-6 ${standalone ? 'max-w-4xl mx-auto' : ''}`}>
+
+        {/* Header Section - Only show if standalone */}
+        {standalone && (
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <Shield className="text-indigo-600" size={28} />
+                Access Control & Permissions
+              </h1>
+              <p className="text-slate-500 mt-1">Configure module-level access and granular feature rights.</p>
+            </div>
+
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input
                 type="text"
-                placeholder="Search by name, email or role..."
-                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                placeholder="Search modules..."
+                className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 w-full md:w-64 transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
+        )}
 
-          {/* Table List */}
-          <div className="overflow-y-auto flex-1 p-2">
-            {users.map((user) => (
-              <div
-                key={user.id}
-                onClick={() => setSelectedUser(user)}
-                className={cn(
-                  "group flex items-center justify-between p-4 mb-2 rounded-xl cursor-pointer border transition-all",
-                  selectedUser?.id === user.id
-                    ? "bg-indigo-50 border-indigo-200 ring-1 ring-indigo-200"
-                    : "bg-white border-transparent hover:border-slate-200 hover:shadow-md",
-                )}
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm",
-                      selectedUser?.id === user.id
-                        ? "bg-indigo-200 text-indigo-700"
-                        : "bg-slate-100 text-slate-500",
-                    )}
-                  >
-                    {user.avatar}
+        {/* Search for embedded mode */}
+        {!standalone && (
+          <div className="relative max-w-sm mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+            <input
+              type="text"
+              placeholder="Search permissions..."
+              className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/10 w-full transition-all"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        )}
+
+        {/* Status Notification */}
+        {status && (
+          <div className={`p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${status.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
+            }`}>
+            {status.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+            <span className="text-sm font-medium">{status.message}</span>
+          </div>
+        )}
+
+        {/* Modules List */}
+        <div className="space-y-3">
+          {filteredPermissions.map((module) => (
+            <div
+              key={module.key}
+              className={`bg-white rounded-2xl border transition-all duration-300 overflow-hidden ${expandedModules[module.key] ? 'border-indigo-200 shadow-lg shadow-indigo-100/50' : 'border-slate-200 shadow-sm hover:border-slate-300'
+                }`}
+            >
+              {/* Module Header */}
+              <div className="p-4 flex items-center justify-between gap-4 select-none">
+                <div
+                  className={`flex items-center gap-3 flex-1 ${module.enabled ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+                  onClick={() => toggleAccordion(module.key, module.enabled)}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${module.enabled ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-400'
+                    }`}>
+                    {expandedModules[module.key] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-700">{user.name}</h4>
-                    <p className="text-xs text-slate-400">{user.email}</p>
+                    <h3 className="text-lg font-bold text-slate-800">{module.name}</h3>
+                    <p className="text-xs text-slate-400 font-medium">
+                      {module.features.length} sub-features available
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <span className="hidden md:block px-2 py-1 rounded bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider">
-                    {user.role}
+                {/* Module Toggle */}
+                <div className="flex items-center gap-3 pr-2">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${module.enabled ? 'text-indigo-600' : 'text-slate-400'}`}>
+                    {module.enabled ? 'Enabled' : 'Disabled'}
                   </span>
-                  <ChevronRight
-                    size={18}
-                    className={cn(
-                      "transition-transform text-slate-300",
-                      selectedUser?.id === user.id
-                        ? "rotate-90 text-indigo-500"
-                        : "group-hover:translate-x-1",
-                    )}
-                  />
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={module.enabled}
+                      onChange={(e) => handleModuleToggle(module.key, e.target.checked)}
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                  </label>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* --- RIGHT PANEL: Permission Drawer --- */}
-      {selectedUser && (
-        <div
-          className={cn(
-            "bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col transition-all duration-300",
-            standalone
-              ? "w-112.5 animate-in slide-in-from-right-10"
-              : "flex-1 max-w-4xl mx-auto",
-          )}
-        >
-          {/* Drawer Header */}
-          <div className="p-6 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg shadow-indigo-200">
-                  {selectedUser.photo ? (
-                    <ImageWithFallback
-                      src={selectedUser.photo}
-                      alt={selectedUser.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-gray-600 font-bold text-lg">
-                      {selectedUser.avatar ||
-                        selectedUser.name?.charAt(0) ||
-                        "S"}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800">
-                    {selectedUser.name}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span
-                      className={cn(
-                        "w-2 h-2 rounded-full",
-                        selectedUser.status === "Active"
-                          ? "bg-emerald-500"
-                          : "bg-slate-300",
-                      )}
-                    />
-                    <span className="text-xs text-slate-500 font-medium">
-                      {selectedUser.role} • {selectedUser.dept}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              {/* <button
-                onClick={() => setSelectedUser(null)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                <XCircle size={20} />
-              </button> */}
-            </div>
-
-            <div className="flex gap-2">
-              <button className="flex-1 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 shadow-sm transition-all">
-                Reset Password
-              </button>
-              <button className="flex-1 py-2 bg-white border border-rose-200 rounded-lg text-xs font-bold text-rose-600 hover:bg-rose-50 border-rose-200 shadow-sm transition-all">
-                Deactivate User
-              </button>
-            </div>
-          </div>
-
-          {/* Permissions Scroll Area */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-8">
-            {PERMISSION_MODULES.map((module, idx) => (
-              <div key={idx}>
-                <div className="mb-3">
-                  <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                    <Shield size={14} className="text-indigo-500" />
-                    {module.name}
-                  </h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {module.description}
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  {module.rights.map((right) => {
-                    const isEnabled = activePermissions.includes(right.id);
-                    return (
-                      <label
-                        key={right.id}
-                        className={cn(
-                          "flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all",
-                          isEnabled
-                            ? "bg-indigo-50/50 border-indigo-200"
-                            : "bg-white border-slate-100 hover:border-slate-200",
-                        )}
+              {/* Collapsible Features Content */}
+              {expandedModules[module.key] && (
+                <div className="bg-slate-50/50 px-4 pb-4 border-t border-slate-100 animate-in slide-in-from-top-2 duration-300">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                    {module.features.map((feature) => (
+                      <div
+                        key={feature.key}
+                        className={`flex items-center justify-between p-3 rounded-xl border transition-all ${feature.enabled
+                          ? 'bg-white border-indigo-100 shadow-sm'
+                          : 'bg-slate-50 border-slate-200 opacity-70'
+                          }`}
                       >
-                        <span
-                          className={cn(
-                            "text-sm font-medium",
-                            right.danger && "text-rose-600",
-                          )}
-                        >
-                          {right.label}
+                        <span className={`text-sm font-medium ${feature.enabled ? 'text-slate-700' : 'text-slate-500'}`}>
+                          {feature.name}
                         </span>
 
-                        <div className="relative inline-flex items-center cursor-pointer">
+                        <label className="relative inline-flex items-center cursor-pointer scale-90">
                           <input
                             type="checkbox"
                             className="sr-only peer"
-                            checked={isEnabled}
-                            onChange={() => togglePermission(right.id)}
+                            checked={feature.enabled}
+                            onChange={(e) => handleFeatureToggle(module.key, feature.key, e.target.checked)}
                           />
                           <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                        </div>
-                      </label>
-                    );
-                  })}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              )}
+            </div>
+          ))}
 
-          {/* Footer Actions */}
-          <div className="p-4 border-t border-slate-100 bg-white rounded-b-2xl">
-            <button className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-gray-600 rounded-xl font-bold text-sm shadow-xl shadow-indigo-100 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
-              <Save size={18} />
-              Save Permissions
-            </button>
-          </div>
+          {filteredPermissions.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
+              <p className="text-slate-400 italic">No modules matching your search term.</p>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Save Bar */}
+        <div className={`bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-slate-200 shadow-2xl flex items-center justify-between gap-4 ${standalone ? 'sticky bottom-6' : 'mt-8'}`}>
+          <p className="text-xs text-slate-500 hidden sm:block">
+            All changes are stored locally until you click save.
+            <span className="block font-medium text-slate-700">Audit logs will reflect these updates.</span>
+          </p>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex-1 sm:flex-none px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-black rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-200"
+          >
+            {isSaving ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            ) : (
+              <Save size={18} />
+            )}
+            {isSaving ? 'Processing...' : 'Save Permissions'}
+          </button>
+        </div>
+
+      </div>
     </div>
   );
 };

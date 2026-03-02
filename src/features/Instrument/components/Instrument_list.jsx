@@ -257,68 +257,64 @@ const InstrumentList = ({ instruments, onDelete, onEdit }) => {
   return (
     <div className="w-full space-y-4">
       {/* Dense Table Header */}
-      <div className="px-6 sm:px-10 py-2 grid grid-cols-12 text-[10px] font-bold uppercase text-slate-400 border-b border-slate-100 gap-4">
-        <div className="col-span-4">Nomenclature</div>
-        <div className="col-span-2">Department</div>
+      <div className="hidden md:grid px-6 sm:px-10 py-2 grid-cols-12 text-[10px] font-bold uppercase text-slate-400 border-b border-slate-100 gap-4">
+        <div className="col-span-5">Nomenclature</div>
+        <div className="col-span-3">Department</div>
         <div className="col-span-2 text-center">Due Date</div>
-        <div className="col-span-1 text-center">Status</div>
-        <div className="col-span-3 text-right">Actions</div>
+        <div className="col-span-2 text-right">Actions</div>
       </div>
 
       {instruments.map((item) => {
         const isExpired = new Date(item.expiryDate) < new Date();
 
         return (
-          <div key={item.id} className="group bg-white rounded-[32px] border border-slate-100 hover:border-emerald-200 shadow-sm hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 overflow-hidden px-6 sm:px-10 py-6 grid grid-cols-12 items-center gap-4">
-            <div className="col-span-4 flex items-center gap-3 sm:gap-6">
+          <div key={item.id} className="group bg-white rounded-[32px] border border-slate-100 hover:border-emerald-200 shadow-sm hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 overflow-hidden px-6 sm:px-10 py-6 flex flex-col md:grid md:grid-cols-12 items-center gap-6 md:gap-4">
+            <div className="col-span-5 flex items-center gap-3 sm:gap-6 w-full md:w-auto">
               {item.photo ? (
-                <img src={item.photo} alt={item.name} className="w-16 h-16 object-cover rounded-2xl shadow-sm border border-slate-50" />
+                <img src={item.photo} alt={item.name} className="w-16 h-16 object-cover rounded-2xl shadow-sm border border-slate-50 shrink-0" />
               ) : (
-                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300">
+                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 shrink-0">
                   <FileCheck2 size={24} />
                 </div>
               )}
-              <div>
-                <h4 className="text-lg font-black text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors uppercase italic">{item.name}</h4>
+              <div className="min-w-0">
+                <h4 className="text-lg font-black text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors uppercase italic truncate">{item.name}</h4>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">ID: INST-{item.id.toString().slice(-4)}</p>
               </div>
             </div>
 
-            <div className="col-span-2">
-              <span className="px-4 py-2 bg-slate-50 text-slate-600 text-[10px] font-bold rounded-xl border border-slate-100">
+            <div className="col-span-3 w-full md:w-auto flex justify-start md:block">
+              <span className="px-4 py-2 bg-slate-50 text-slate-600 text-[10px] font-bold rounded-xl border border-slate-100 truncate inline-block max-w-full">
                 {item.department}
               </span>
             </div>
 
-            <div className="col-span-2 flex items-center gap-2 text-slate-600 font-bold text-sm">
-              <Calendar size={14} className="text-emerald-400" />
-              {formatDate(item.expiryDate)}
+            <div className="col-span-2 flex items-center gap-2 text-slate-600 font-bold text-sm w-full md:w-auto justify-start md:justify-center">
+              <Calendar size={14} className="text-emerald-400 shrink-0" />
+              <span className="truncate">{formatDate(item.expiryDate)}</span>
             </div>
 
-            <div className="col-span-1 flex justify-center">
-              <div className={`w-3 h-3 rounded-full shadow-sm animate-pulse ${isExpired ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
-            </div>
-
-            <div className="col-span-3 flex items-center justify-end gap-3">
+            <div className="col-span-2 flex items-center justify-end gap-1 w-full md:w-auto">
               <button
                 onClick={() => setSelectedItem(item)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-gray-600 transition-all shadow-sm group/btn"
+                className="p-2 text-gray-600 transition-all hover:drop-shadow-xl hover:-translate-y-0.5 active:scale-90"
+                title="View"
               >
-                <Eye size={14} className="group-hover/btn:scale-110 transition-transform" />
-                View
+                <Eye size={22} strokeWidth={2.5} />
               </button>
               <button
                 onClick={() => onEdit(item)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-gray-600 transition-all shadow-sm group/btn"
+                className="p-2text-gray-600 transition-all hover:drop-shadow-xl hover:-translate-y-0.5 active:scale-90"
+                title="Edit"
               >
-                <Pencil size={14} className="group-hover/btn:scale-110 transition-transform" />
-                Edit
+                <Pencil size={22} strokeWidth={2.5} />
               </button>
               <button
                 onClick={() => onDelete(item.id)}
-                className="p-2.5 hover:bg-rose-50 text-slate-300 hover:text-rose-600 rounded-xl transition-all border border-transparent hover:border-rose-100"
+                className="p-2 text-gray-600 transition-all hover:drop-shadow-xl hover:-translate-y-0.5 active:scale-90"
+                title="Delete"
               >
-                <Trash2 size={18} />
+                <Trash2 size={22} strokeWidth={2.5} />
               </button>
             </div>
           </div>
