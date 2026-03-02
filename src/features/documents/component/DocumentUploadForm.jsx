@@ -29,6 +29,12 @@ export default function DocumentUploadForm({
   const [departments, setDepartments] = useState([]);
 
   useEffect(() => {
+    if (initialData.author && !formData.author) {
+      setFormData((prev) => ({ ...prev, author: initialData.author }));
+    }
+  }, [initialData.author, formData.author]);
+
+  useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const depts = await getDepartments();
@@ -87,10 +93,11 @@ export default function DocumentUploadForm({
           Document File *
         </label>
         <div
-          className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-colors ${formData.file
+          className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-colors ${
+            formData.file
               ? "border-emerald-500 bg-emerald-50"
               : "border-slate-300 hover:bg-slate-50"
-            }`}
+          }`}
         >
           {!formData.file ? (
             <label className="cursor-pointer flex flex-col items-center w-full">

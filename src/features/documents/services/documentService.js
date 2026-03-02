@@ -1,25 +1,85 @@
 import api from "../../../auth/api";
 
-/**
- * Service for handling Document-related API calls.
- */
-export const documentService = {
-  /**
-   * Fetch all documents.
-   */
-  getDocuments: async () => {
-    try {
-      const response = await api.get("/Document/GetAllDocuments");
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-      throw error;
-    }
-  },
+const WORKER_URL   = import.meta.env.VITE_WORKER_URL;
+const WORKER_TOKEN = import.meta.env.VITE_WORKER_TOKEN;
 
-  /**
-   * Fetch all categories.
-   */
+// ─── Upload to R2 via Worker ──────────────────────────────────────────────────
+/**
+ * Step 1 of every document upload.
+ * Sends file to Worker, gets back { filePath, fileUrl } which is
+ * then embedded into the JSON payload sent to the backend.
+ *
+ * @param {File}     file
+ * @param {Object}   opts
+ * @param {string}   opts.category       - e.g. "Quality Manual"
+ * @param {string}   opts.subCategory    - e.g. "Organizational Structure / Organogram"
+ * @param {string}   opts.docId          - pre-generated UUID (generate on form init)
+ * @param {Function} [onProgress]        - (0-100) progress callback
+ * @returns {Promise<{ filePath, fileUrl, originalName, mimeType, size }>}
+ */
+async function uploadToWorker(file, { category, subCategory, docId }, onProgress) {
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append("file",        file);
+    formData.append("category",    category);
+    formData.append("subCategory", subCategory);
+    formData.append("docId",       docId);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${WORKER_URL}/upload`);
+    xhr.setRequestHeader("Authorization", `Bearer ${WORKER_TOKEN}`);
+
+    if (onProgress) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+      };
+    }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const result = JSON.parse(xhr.responseText);
+          console.log("Cloudflare Worker Upload Response:", result);
+          if (!result.filePath) {
+            reject(new Error("Worker response missing filePath"));
+          } else {
+            resolve(result);
+          }
+        } catch {
+          reject(new Error("Invalid JSON from Worker"));
+        }
+      } else {
+        let msg = `Worker upload failed: ${xhr.status}`;
+        try { msg = JSON.parse(xhr.responseText).error || msg; } catch {}
+        reject(new Error(msg));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Network error during upload"));
+    xhr.send(formData);
+  });
+}
+
+// ─── Delete from R2 via Worker ────────────────────────────────────────────────
+async function deleteFromWorker(filePath) {
+  const res = await fetch(
+    `${WORKER_URL}/files/${encodeURIComponent(filePath)}`,
+    {
+      method:  "DELETE",
+      headers: { Authorization: `Bearer ${WORKER_TOKEN}` },
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Worker delete failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+// ─── Document Service ─────────────────────────────────────────────────────────
+export const documentService = {
+
+  // ── Categories ───────────────────────────────────────────────────────────────
   getCategories: async () => {
     try {
       const response = await api.get("/DocumentLibrary/GetCategories");
@@ -30,10 +90,6 @@ export const documentService = {
     }
   },
 
-  /**
-   * Fetch subcategories for a specific category.
-   * @param {number|string} categoryId
-   */
   getSubCategories: async (categoryId) => {
     try {
       const response = await api.get(`/DocumentLibrary/GetSubCategories/${categoryId}`);
@@ -44,9 +100,6 @@ export const documentService = {
     }
   },
 
-  /**
-   * Create a new subcategory.
-   */
   createSubCategory: async (payload) => {
     try {
       const response = await api.post("/DocumentLibrary/CreateSubCategory", payload);
@@ -57,9 +110,6 @@ export const documentService = {
     }
   },
 
-  /**
-   * Update an existing subcategory.
-   */
   updateSubCategory: async (payload) => {
     try {
       const response = await api.post("/DocumentLibrary/UpdateSubCategory", payload);
@@ -70,13 +120,10 @@ export const documentService = {
     }
   },
 
-  /**
-   * Delete a subcategory.
-   */
   deleteSubCategory: async (subCategoryId, categoryId) => {
     try {
       const response = await api.delete(
-        `/DocumentLibrary/DeleteSubCategory?subCategoryId=${subCategoryId}&categoryId=${categoryId}`,
+        `/DocumentLibrary/DeleteSubCategory?subCategoryId=${subCategoryId}&categoryId=${categoryId}`
       );
       return response.data;
     } catch (error) {
@@ -85,75 +132,17 @@ export const documentService = {
     }
   },
 
-  /**
-   * Upload a new document.
-   * @param {Object} data - The document data and file.
-   */
-  uploadDocument: async (data) => {
+  // ── Documents ────────────────────────────────────────────────────────────────
+  getDocuments: async () => {
     try {
-      const formData = new FormData();
-      formData.append("DocumentCategoryId", data.categoryId);
-      formData.append("DocumentSubCategoryId", data.subCategoryId);
-      formData.append("DepartmentId", data.departmentId);
-      formData.append("Author", data.author);
-      formData.append("Version", data.version);
-      formData.append("Description", data.description);
-      formData.append("CreatedBy", data.createdBy);
-      formData.append("UpdatedBy", data.updatedBy);
-      formData.append("EffectiveDate", data.effectiveDate);
-      formData.append("ExpiryDate", data.expiryDate);
-      formData.append("DocumentFile", data.file);
-
-      const response = await api.post("/DocumentLibrary/UploadDocument", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await api.get("/Document/GetAllDocuments");
       return response.data;
     } catch (error) {
-      console.error("Error uploading document:", error);
+      console.error("Error fetching documents:", error);
       throw error;
     }
   },
 
-  /**
-   * Deletes a subcategory.
-   * @param {number|string} subCategoryId
-   * @param {number|string} categoryId - Needed for cache invalidation
-   * @returns {Promise<Object>} Response data
-   */
-  deleteSubCategory: async (subCategoryId, categoryId) => {
-    try {
-      const response = await api.delete(
-        `/DocumentLibrary/DeleteSubCategory/${subCategoryId}`
-      );
-
-      // Invalidate cache for this category
-      if (CACHE.subCategories[categoryId]) {
-        delete CACHE.subCategories[categoryId];
-      }
-
-      return response.data;
-    } catch (error) {
-      console.error("Error deleting subcategory:", error);
-      throw error;
-    }
-  },
-
-  /**
-   * Clears the cache. Useful for force refresh.
-   */
-  clearCache: () => {
-    CACHE.categories = null;
-    CACHE.subCategories = {};
-  },
-
-  /**
-   * Fetches documents for a specific category and subcategory.
-   * @param {number|string} categoryId
-   * @param {number|string} subCategoryId
-   * @returns {Promise<Array>} List of documents
-   */
   getDocumentsByCategoryAndSubCategory: async (categoryId, subCategoryId) => {
     try {
       const response = await api.get(
@@ -161,27 +150,112 @@ export const documentService = {
       );
       return response.data || [];
     } catch (error) {
-      console.error(
-        `Error fetching documents for cat: ${categoryId}, sub: ${subCategoryId}`,
-        error
-      );
+      console.error("Error fetching documents:", error);
       throw error;
     }
   },
 
   /**
-   * Deletes a document.
-   * @param {number|string} documentId
-   * @returns {Promise<Object>} Response data
+   * Upload document:
+   * 1. File → Worker → R2  (get filePath back)
+   * 2. filePath + metadata → Backend as JSON
+   *
+   * @param {Object}   data
+   * @param {File}     data.file
+   * @param {string}   data.categoryName      - "Quality Manual"
+   * @param {number}   data.categoryId        - DB ID
+   * @param {string}   data.subCategoryName   - "Organizational Structure / Organogram"
+   * @param {number}   data.subCategoryId     - DB ID
+   * @param {string}   data.docId             - pre-generated UUID on form init
+   * @param {string}   data.departmentId
+   * @param {string}   data.author
+   * @param {string}   data.version
+   * @param {string}   data.description
+   * @param {string}   data.createdBy
+   * @param {string}   data.updatedBy
+   * @param {string}   data.effectiveDate
+   * @param {string}   data.expiryDate
+   * @param {Function} [onProgress]
    */
-  deleteDocument: async (documentId) => {
+  uploadDocument: async (data, onProgress) => {
+    // ── Step 1: Upload file to R2 via Worker ──
+    let r2Result;
     try {
-      const response = await api.delete(
-        `/DocumentLibrary/DeleteDocument/${documentId}`
+      r2Result = await uploadToWorker(
+        data.file,
+        {
+          category:    data.categoryName,
+          subCategory: data.subCategoryName,
+          docId:       data.docId,
+        },
+        onProgress
       );
+    } catch (error) {
+      console.error("Worker upload failed:", error);
+      throw new Error(`File upload failed: ${error.message}`);
+    }
+
+    // ── Step 2: Construct FormData and send to backend ──
+    try {
+      const payload = new FormData();
+      payload.append("DocumentCategoryId", data.categoryId);
+      payload.append("DocumentSubCategoryId", data.subCategoryId);
+      payload.append("DepartmentId", data.departmentId);
+      payload.append("Author", data.author);
+      if (data.version) payload.append("Version", data.version);
+      if (data.description) payload.append("Description", data.description);
+      if (data.createdBy) payload.append("CreatedBy", data.createdBy);
+      if (data.updatedBy) payload.append("UpdatedBy", data.updatedBy);
+      if (data.effectiveDate) payload.append("EffectiveDate", data.effectiveDate);
+      if (data.expiryDate) payload.append("ExpiryDate", data.expiryDate);
+      payload.append("DocumentFilePath", r2Result.fileUrl);
+
+      const response = await api.post("/DocumentLibrary/UploadDocument", payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      return response.data;
+
+    } catch (error) {
+      // Backend failed — rollback the R2 file
+      console.error("Backend save failed, rolling back R2:", error);
+      await deleteFromWorker(r2Result.filePath).catch((e) =>
+        console.warn("R2 rollback failed:", r2Result.filePath, e)
+      );
+      throw new Error(`Document save failed: ${error.message}`);
+    }
+  },
+
+  /**
+   * Soft delete — DB flag only, R2 file intentionally kept for audit trail.
+   */
+  softDeleteDocument: async (documentId) => {
+    try {
+      const response = await api.delete(`/DocumentLibrary/DeleteDocument/${documentId}`);
       return response.data;
     } catch (error) {
       console.error("Error deleting document:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Hard delete — removes from DB and R2.
+   * Use only for admin purge / GDPR requests.
+   */
+  hardDeleteDocument: async (documentId, filePath) => {
+    try {
+      const response = await api.delete(
+        `/DocumentLibrary/HardDeleteDocument/${documentId}`
+      );
+      if (filePath) {
+        await deleteFromWorker(filePath).catch((e) =>
+          console.warn("R2 cleanup failed:", filePath, e)
+        );
+      }
+      return response.data;
+    } catch (error) {
+      console.error("Error hard deleting document:", error);
       throw error;
     }
   },
