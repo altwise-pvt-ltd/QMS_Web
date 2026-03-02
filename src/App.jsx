@@ -126,15 +126,7 @@ function App() {
                 </PublicRoute>
               }
             />
-
-            <Route
-              path="/onboarding"
-              element={
-                <ProtectedRoute>
-                  <OnboardingPage />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/onboarding" element={<OnboardingPage />} />
 
             <Route
               element={

@@ -213,7 +213,7 @@ const OnboardingPage = () => {
       } else {
         alert(
           error.message ||
-            "Failed to save company information. Please try again.",
+          "Failed to save company information. Please try again.",
         );
       }
     } finally {

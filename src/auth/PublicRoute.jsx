@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
 /**
@@ -12,8 +12,8 @@ import { useAuth } from "./AuthContext";
  */
 const PublicRoute = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
+    const location = useLocation();
 
-    // While checking auth status, show loading
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -22,12 +22,13 @@ const PublicRoute = ({ children }) => {
         );
     }
 
-    // If already authenticated, redirect to /dashboard
+    // If already authenticated, redirect to /dashboard (or the path they were trying to reach)
     if (isAuthenticated) {
-        return <Navigate to="/dashboard" replace />;
+        const from = location.state?.from?.pathname || "/dashboard";
+        return <Navigate to={from} replace />;
     }
 
-    // If not authenticated, render the children (e.g., Login page)
+    // If not authenticated, render the children components
     return children;
 };
 
