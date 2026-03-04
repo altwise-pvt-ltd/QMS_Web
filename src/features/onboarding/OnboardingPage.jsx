@@ -2,24 +2,33 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Upload,
   X,
-  CheckCircle,
   Smartphone,
   Globe,
   MapPin,
   Building2,
   Briefcase,
 } from "lucide-react";
-import { db } from "../../db";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
+import { setOrganization } from "../../store/slices/authSlice";
 import organizationService from "./services/organizationService";
 import "./onboarding.css";
 import ImageWithFallback from "../../components/ui/ImageWithFallback";
 
 const OnboardingPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user } = useAuth();
+
   const [loading, setLoading] = useState(false);
-  const [logoPreview, setLogoPreview] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [logoPreview, setLogoPreview] = useState(null); // base64 for display only
+  const [logoFile, setLogoFile] = useState(null); // actual File object for upload
+  const [error, setError] = useState(null);
+
+  const fileInputRef = useRef(null);
+
   const [formData, setFormData] = useState({
     name: "",
     industry: "",
@@ -28,199 +37,156 @@ const OnboardingPage = () => {
     address: "",
   });
 
-  const { user } = useAuth();
-  const fileInputRef = useRef(null);
-
+  // ── Load existing org on mount ──────────────────────────────────────────────
   useEffect(() => {
     const fetchCompanyInfo = async () => {
       setLoading(true);
       try {
-        // 1. Try to fetch from remote API first
-        console.log("Fetching organization info from server...");
         const data = await organizationService.getAllOrganizations();
 
-        if (data && data.isSuccess && data.value && data.value.length > 0) {
+        if (data?.isSuccess && data?.value?.length > 0) {
           const currentUserId = user?.adminUserId || user?.id || 1;
-
-          // Find the organization that belongs to the current user
           const company = data.value.find(
-            (org) => (org.CreatedBy || org.createdBy) == currentUserId,
+            (org) => (org.createdBy || org.CreatedBy) == currentUserId,
           );
 
           if (company) {
-            console.log(
-              "Matching server organization found for user:",
-              company,
-            );
-
             setFormData({
-              name: company.LegalCompanyName || company.legalCompanyName || "",
-              industry: company.IndustrySector || company.industrySector || "",
-              phone: company.BusinessPhone || company.businessPhone || "",
+              name: company.legalCompanyName || company.LegalCompanyName || "",
+              industry: company.industrySector || company.IndustrySector || "",
+              phone: company.businessPhone || company.BusinessPhone || "",
               websiteUrl:
-                company.CorporateWebsite || company.corporateWebsite || "",
+                company.corporateWebsite || company.CorporateWebsite || "",
               address:
-                company.RegisteredAddress || company.registeredAddress || "",
+                company.registeredAddress || company.RegisteredAddress || "",
             });
 
-            // Sync to local Dexie
-            await db.company_info.clear();
-            await db.company_info.add({
-              organizationId: company.OrganizationId || company.organizationId,
-              name: company.LegalCompanyName || company.legalCompanyName,
-              industry: company.IndustrySector || company.industrySector,
-              phone: company.BusinessPhone || company.businessPhone,
-              websiteUrl: company.CorporateWebsite || company.corporateWebsite,
-              address: company.RegisteredAddress || company.registeredAddress,
-              logo: company.CompanyLogo || company.logoPath,
-              createdAt: company.CreatedAt || company.createdAt,
-            });
+            const logo =
+              company.companyLogoPath ||
+              company.CompanyLogo ||
+              company.logoPath;
+            if (logo) setLogoPreview(logo);
 
-            const logo = company.CompanyLogo || company.logoPath;
-            if (logo) {
-              setLogoPreview(logo);
-            }
-          } else {
-            console.log("No organization matches the current user on server.");
-            await handleFallback();
+            dispatch(
+              setOrganization({
+                organizationId:
+                  company.organizationId || company.OrganizationId,
+                name: company.legalCompanyName || company.LegalCompanyName,
+                industry: company.industrySector || company.IndustrySector,
+                phone: company.businessPhone || company.BusinessPhone,
+                websiteUrl:
+                  company.corporateWebsite || company.CorporateWebsite,
+                address: company.registeredAddress || company.RegisteredAddress,
+                logo,
+                createdAt: company.createdAt || company.CreatedAt,
+              }),
+            );
           }
-        } else {
-          console.log("No organization on server, checking local database...");
-          await handleFallback();
         }
-      } catch (error) {
-        console.error("Failed to fetch organization info", error);
-        await handleFallback();
+      } catch (err) {
+        console.error("Failed to fetch organization info:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    const handleFallback = async () => {
-      const localInfo = await db.company_info.toArray();
-      if (localInfo && localInfo.length > 0) {
-        const company = localInfo[0];
-        setFormData({
-          name: company.name || "",
-          industry: company.industry || "",
-          phone: company.phone || "",
-          websiteUrl: company.websiteUrl || "",
-          address: company.address || "",
-        });
-        if (company.logo) setLogoPreview(company.logo);
-      }
-    };
-
     fetchCompanyInfo();
-  }, [user]);
+  }, [user, dispatch]);
 
+  // ── Handlers ────────────────────────────────────────────────────────────────
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert("File size exceeds 2MB");
-        return;
-      }
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+    if (file.size > 2 * 1024 * 1024) {
+      setError("File size exceeds 2MB. Please choose a smaller image.");
+      return;
     }
+
+    // Store the actual File object — needed for Worker upload
+    setLogoFile(file);
+
+    // Generate preview for display only
+    const reader = new FileReader();
+    reader.onloadend = () => setLogoPreview(reader.result);
+    reader.readAsDataURL(file);
   };
 
   const removeLogo = () => {
     setLogoPreview(null);
+    setLogoFile(null);
+    // Reset the file input so the same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  // ── Submit ───────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+    setUploadProgress(0);
 
     try {
-      const formDataToSend = new FormData();
+      const fields = {
+        legalCompanyName: formData.name,
+        industrySector: formData.industry,
+        businessPhone: formData.phone,
+        corporateWebsite: formData.websiteUrl,
+        registeredAddress: formData.address,
+      };
 
-      // Text fields (PascalCase)
-      formDataToSend.append("LegalCompanyName", formData.name);
-      formDataToSend.append("IndustrySector", formData.industry);
-      formDataToSend.append("BusinessPhone", formData.phone);
-      formDataToSend.append("CorporateWebsite", formData.websiteUrl);
-      formDataToSend.append("RegisteredAddress", formData.address);
-      formDataToSend.append("CreatedBy", user?.adminUserId || user?.id || 1);
+      /**
+       * organizationService.createOrganization handles the two-step flow:
+       *   Step 1 — if logoFile provided: upload to R2 via Worker → get fileUrl
+       *   Step 2 — POST JSON to backend with companyLogoPath = fileUrl
+       *
+       * logoFile can be null — companyLogoPath will be "" if no logo provided
+       */
+      const data = await organizationService.createOrganization(
+        fields,
+        logoFile, // File object or null
+        (progress) => {
+          setUploadProgress(progress);
+        },
+      );
 
-      // Handle Logo - Must be a File object for multipart/form-data
-      if (fileInputRef.current?.files[0]) {
-        // Use the newly uploaded file
-        formDataToSend.append("CompanyLogo", fileInputRef.current.files[0]);
-      } else if (logoPreview && logoPreview.startsWith("data:")) {
-        // Convert existing base64 preview back to a file
-        const res = await fetch(logoPreview);
-        const blob = await res.blob();
-        const file = new File([blob], "logo.png", { type: blob.type });
-        formDataToSend.append("CompanyLogo", file);
-      } else {
-        // If absolutely no logo, we have to send something or the server fails
-        // Providing a tiny transparent 1x1 pixel blob as a fallback if logo is "required"
-        const pixel = atob(
-          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
-        );
-        const array = new Uint8Array(pixel.length);
-        for (let i = 0; i < pixel.length; i++) array[i] = pixel.charCodeAt(i);
-        const blob = new Blob([array], { type: "image/png" });
-        formDataToSend.append("CompanyLogo", blob, "logo.png");
-      }
-
-      console.log("Submitting Onboarding via FormData (with Logo File)...");
-
-      const data = await organizationService.createOrganization(formDataToSend);
-
-      if (data.isSuccess) {
-        console.log("Organization created successfully on server");
-
-        // 3. Sync with local Dexie database for offline/quick access
+      if (data?.isSuccess) {
         const serverData = data.value;
-        await db.company_info.clear();
-        await db.company_info.add({
-          organizationId: serverData.organizationId,
-          name: serverData.legalCompanyName,
-          industry: serverData.industrySector,
-          phone: serverData.businessPhone,
-          websiteUrl: serverData.corporateWebsite,
-          address: serverData.registeredAddress,
-          logo: logoPreview, // Keep local preview
-          createdAt: serverData.createdAt,
-        });
+
+        dispatch(
+          setOrganization({
+            organizationId: serverData?.organizationId,
+            name: serverData?.legalCompanyName,
+            industry: serverData?.industrySector,
+            phone: serverData?.businessPhone,
+            websiteUrl: serverData?.corporateWebsite,
+            address: serverData?.registeredAddress,
+            logo: serverData?.companyLogoPath || logoPreview,
+            createdAt: serverData?.createdAt,
+          }),
+        );
 
         navigate("/");
       } else {
-        throw new Error(data.error || "Failed to create organization");
+        throw new Error(data?.error || "Failed to create organization");
       }
-    } catch (error) {
-      console.error("Error saving company info:", error);
-      if (error.response) {
-        console.error("Server Response Data:", error.response.data);
-        console.error("Server Response Status:", error.response.status);
-        alert(`Server Error: ${JSON.stringify(error.response.data)}`);
-      } else {
-        alert(
-          error.message ||
-          "Failed to save company information. Please try again.",
-        );
-      }
+    } catch (err) {
+      console.error("Error saving company info:", err);
+      setError(
+        err.message || "Failed to save company information. Please try again.",
+      );
     } finally {
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
+  // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="onboarding-page">
       <div className="onboarding-container">
@@ -238,9 +204,23 @@ const OnboardingPage = () => {
             className="onboarding-btn primary"
             disabled={loading}
           >
-            {loading ? "Processing..." : "Save & Continue"}
+            {loading
+              ? uploadProgress > 0
+                ? `Uploading logo... ${uploadProgress}%`
+                : "Processing..."
+              : "Save & Continue"}
           </button>
         </header>
+
+        {/* Error Banner */}
+        {error && (
+          <div className="error-banner">
+            <span>{error}</span>
+            <button type="button" onClick={() => setError(null)}>
+              ✕
+            </button>
+          </div>
+        )}
 
         <form
           id="onboarding-form"
@@ -262,7 +242,7 @@ const OnboardingPage = () => {
                   <div className="logo-preview-wrapper">
                     <ImageWithFallback
                       src={logoPreview}
-                      alt="Preview"
+                      alt="Company Logo Preview"
                       className="logo-preview"
                     />
                     <button
@@ -279,14 +259,14 @@ const OnboardingPage = () => {
                       ref={fileInputRef}
                       type="file"
                       className="hidden-input"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
                       onChange={handleLogoChange}
                     />
                     <Upload size={20} />
                     <div>
                       <span className="upload-link">Click to upload</span> or
                       drag and drop
-                      <p className="upload-hint">PNG, JPG or SVG (max. 2MB)</p>
+                      <p className="upload-hint">PNG, JPG or WebP (max. 2MB)</p>
                     </div>
                   </label>
                 )}
@@ -319,6 +299,7 @@ const OnboardingPage = () => {
                     />
                   </div>
                 </div>
+
                 <div className="form-group">
                   <label htmlFor="industry">Industry Sector</label>
                   <div className="input-wrapper">
@@ -334,6 +315,7 @@ const OnboardingPage = () => {
                     />
                   </div>
                 </div>
+
                 <div className="form-group">
                   <label htmlFor="phone">Business Phone</label>
                   <div className="input-wrapper">
@@ -348,6 +330,7 @@ const OnboardingPage = () => {
                     />
                   </div>
                 </div>
+
                 <div className="form-group">
                   <label htmlFor="websiteUrl">Corporate Website</label>
                   <div className="input-wrapper">
@@ -362,6 +345,7 @@ const OnboardingPage = () => {
                     />
                   </div>
                 </div>
+
                 <div className="form-group full-width">
                   <label htmlFor="address">Registered Address</label>
                   <div className="input-wrapper textarea-wrapper">
@@ -384,4 +368,5 @@ const OnboardingPage = () => {
     </div>
   );
 };
+
 export default OnboardingPage;

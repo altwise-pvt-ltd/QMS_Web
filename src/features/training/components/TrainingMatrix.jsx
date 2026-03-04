@@ -9,6 +9,7 @@ import {
   Minus,
 } from "lucide-react";
 import { db } from "../../../db";
+import staffService from "../../staff/services/staffService";
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS = {
@@ -86,12 +87,18 @@ const TrainingMatrix = () => {
     const loadMatrixData = async () => {
       try {
         setLoading(true);
-        const staffData = await db.staff.toArray();
+        const res = await staffService.getAllStaff();
+        const staffDataMapped = (res.data || []).map((s) => ({
+          id: s.staffId,
+          name: `${s.firstName || ""} ${s.lastName || ""}`.trim(),
+          role: s.jobTitle,
+        }));
+
         const eventTypes = await db.compliance_event_types.toArray();
         const trainingType = eventTypes.find((t) => t.name === "Training");
 
         if (!trainingType) {
-          setStaff(staffData);
+          setStaff(staffDataMapped);
           setLoading(false);
           return;
         }
@@ -112,7 +119,7 @@ const TrainingMatrix = () => {
         const today = new Date().toISOString().split("T")[0];
 
         const calculatedMatrix = {};
-        staffData.forEach((person) => {
+        staffDataMapped.forEach((person) => {
           calculatedMatrix[person.id] = {};
           uniqueTitles.forEach((title) => {
             const records = attendance.filter((a) => {
@@ -144,7 +151,7 @@ const TrainingMatrix = () => {
           });
         });
 
-        setStaff(staffData);
+        setStaff(staffDataMapped);
         setMatrixData(calculatedMatrix);
       } catch (error) {
         console.error("Error loading matrix data:", error);
@@ -350,4 +357,3 @@ const TrainingMatrix = () => {
 };
 
 export default TrainingMatrix;
-

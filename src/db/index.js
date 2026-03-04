@@ -4,7 +4,7 @@ import Dexie from "dexie";
 export const db = new Dexie("QMS_Web_DB");
 
 // UPDATE VERSION: Bump version to apply schema changes (e.g., 6 -> 7)
-db.version(11).stores({
+db.version(12).stores({
   // Persistent storage for documents metadata
   documents:
     "id, name, level, category, subCategory, status, department, author, version, createdDate, expiryDate",
@@ -44,15 +44,8 @@ db.version(11).stores({
   // Training & Competency tracking
   training_attendance: "++id, eventId, staffId, status, score, completionDate",
 
-  // Staff/Personnel directory
-  staff: "++id, name, role, dept, status, joinDate, photo",
-
   // Risk Categories storage
   risk_categories: "++id, name",
-
-  // Company Information (Onboarding)
-  company_info:
-    "++id, name, industry, phone, address, websiteUrl, scope, logo, createdAt",
 });
 
 /**
@@ -95,17 +88,5 @@ export const resetDatabase = async () => {
   }
 };
 
-/**
- * Clear company_info table
- */
-export const clearCompanyInfo = async () => {
-  try {
-    await db.company_info.clear();
-    console.log("✅ clearCompanyInfo executed");
-  } catch (error) {
-    console.error("❌ Failed to clear company_info:", error);
-  }
-};
-
 // Expose to window for console usage
-window.clearCompanyInfo = clearCompanyInfo;
+window.resetDatabase = resetDatabase;

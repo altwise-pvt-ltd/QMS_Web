@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Plus, MoreVertical, Edit, ClipboardCheck, Shield } from "lucide-react";
-import { db } from "../../../db";
 import staffService from "../services/staffService";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import ImageWithFallback from "../../../components/ui/ImageWithFallback";
@@ -59,9 +58,6 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
       setStaffData(mappedStaff);
     } catch (error) {
       console.error("Error loading staff from server:", error);
-      // Fallback to local DB if available
-      const localData = await db.staff.toArray();
-      if (localData.length > 0) setStaffData(localData);
     } finally {
       setLoading(false);
     }
@@ -97,7 +93,6 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
             Manage employees, competence, and documents.
           </p>
         </div>
-
       </div>
 
       <div className="overflow-visible p-4 flex-1">
@@ -172,10 +167,11 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
 
                     <td className="p-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${staff.status === "Competent"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                          : "bg-amber-50 text-amber-700 border-amber-100"
-                          }`}
+                        className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                          staff.status === "Competent"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                            : "bg-amber-50 text-amber-700 border-amber-100"
+                        }`}
                       >
                         {staff.status}
                       </span>
@@ -252,4 +248,3 @@ const StaffList = ({ onAddNew, onEdit, onCompetence, onPermissions }) => {
 };
 
 export default StaffList;
-

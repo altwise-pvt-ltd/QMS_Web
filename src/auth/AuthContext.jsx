@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { loginUser, getProfile } from "./authService";
+import organizationService from "../features/onboarding/services/organizationService";
 import api from "./api";
 import {
   setCredentials,
+  setOrganization,
   logout as logoutAction,
   selectCurrentUser,
+  selectCurrentOrganization,
   selectIsAuthenticated,
 } from "../store/slices/authSlice";
 
@@ -18,6 +21,7 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
+  const organization = useSelector(selectCurrentOrganization);
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const [loading, setLoading] = useState(true);
 
@@ -30,9 +34,30 @@ export const AuthProvider = ({ children }) => {
         try {
           // Attempt to fetch the user profile verify the token is still valid
           const profileData = await getProfile(token);
+
+          // Also fetch organization data
+          let orgData = null;
+          try {
+            const orgResponse = await organizationService.getAllOrganizations();
+            if (
+              orgResponse &&
+              orgResponse.isSuccess &&
+              orgResponse.value &&
+              orgResponse.value.length > 0
+            ) {
+              const currentUserId = profileData?.adminUserId || profileData?.id;
+              orgData = orgResponse.value.find(
+                (org) => (org.CreatedBy || org.createdBy) == currentUserId,
+              );
+            }
+          } catch (orgError) {
+            console.error("Failed to fetch organization during init", orgError);
+          }
+
           dispatch(
             setCredentials({
               user: profileData,
+              organization: orgData,
               accessToken: token,
               refreshToken: localStorage.getItem("refreshToken"),
             }),
@@ -74,7 +99,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, loading, login, logout }}
+      value={{ user, organization, isAuthenticated, loading, login, logout }}
     >
       {children}
     </AuthContext.Provider>

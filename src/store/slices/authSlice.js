@@ -9,6 +9,7 @@ const authSlice = createSlice({
   name: "auth",
   initialState: {
     user: null,
+    organization: null,
     accessToken: localStorage.getItem("accessToken") || null,
     refreshToken: localStorage.getItem("refreshToken") || null,
     isAuthenticated: !!localStorage.getItem("accessToken"),
@@ -17,8 +18,9 @@ const authSlice = createSlice({
   },
   reducers: {
     setCredentials: (state, action) => {
-      const { user, accessToken, refreshToken } = action.payload;
+      const { user, organization, accessToken, refreshToken } = action.payload;
       state.user = user;
+      if (organization) state.organization = organization;
       state.accessToken = accessToken;
       state.refreshToken = refreshToken;
       state.isAuthenticated = true;
@@ -27,6 +29,9 @@ const authSlice = createSlice({
       // Persist to localStorage
       if (accessToken) localStorage.setItem("accessToken", accessToken);
       if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+    },
+    setOrganization: (state, action) => {
+      state.organization = action.payload;
     },
     updateToken: (state, action) => {
       const { accessToken, refreshToken } = action.payload;
@@ -39,6 +44,7 @@ const authSlice = createSlice({
     },
     logout: (state) => {
       state.user = null;
+      state.organization = null;
       state.accessToken = null;
       state.refreshToken = null;
       state.isAuthenticated = false;
@@ -60,6 +66,7 @@ const authSlice = createSlice({
 
 export const {
   setCredentials,
+  setOrganization,
   updateToken,
   logout,
   setAuthLoading,
@@ -70,6 +77,7 @@ export default authSlice.reducer;
 
 // Selectors
 export const selectCurrentUser = (state) => state.auth.user;
+export const selectCurrentOrganization = (state) => state.auth.organization;
 export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
 export const selectAccessToken = (state) => state.auth.accessToken;
 export const selectAuthLoading = (state) => state.auth.loading;

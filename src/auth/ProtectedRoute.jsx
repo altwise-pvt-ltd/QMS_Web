@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
-import { db } from "../db";
 
 /**
  * ProtectedRoute is a wrapper component that restricts access to authenticated users only.
@@ -13,29 +12,11 @@ import { db } from "../db";
  * @returns {JSX.Element} The protected content or a redirect to login/onboarding.
  */
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading: authLoading } = useAuth();
-  const [onboardingLoading, setOnboardingLoading] = useState(true);
-  const [hasCompanyInfo, setHasCompanyInfo] = useState(false);
+  const { isAuthenticated, organization, loading: authLoading } = useAuth();
   const location = useLocation();
 
-  useEffect(() => {
-    const checkOnboarding = async () => {
-      if (isAuthenticated) {
-        try {
-          const count = await db.company_info.count();
-          setHasCompanyInfo(count > 0);
-        } catch (error) {
-          console.error("Failed to check onboarding status:", error);
-        }
-      }
-      setOnboardingLoading(false);
-    };
-
-    checkOnboarding();
-  }, [isAuthenticated]);
-
-  // While the authentication or onboarding status is being determined, show a loading indicator
-  if (authLoading || onboardingLoading) {
+  // If the authentication status is being determined, show a loading indicator
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -48,8 +29,8 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // If authenticated but company info is missing, redirect to onboarding (unless already there)
-  if (!hasCompanyInfo && location.pathname !== "/onboarding") {
+  // If authenticated but company info is missing (organization not set), redirect to onboarding
+  if (!organization && location.pathname !== "/onboarding") {
     return <Navigate to="/onboarding" replace />;
   }
 

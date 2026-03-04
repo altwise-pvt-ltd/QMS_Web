@@ -9,7 +9,6 @@ import {
   TrainingRecords,
   DocumentFormActions,
 } from "./EmployeeDocumentsComponents";
-import { db } from "../../../db";
 import staffService from "../services/staffService";
 
 const EmployeeDocumentsForm = ({ initialData }) => {
@@ -206,16 +205,6 @@ const EmployeeDocumentsForm = ({ initialData }) => {
             ...prev,
             passportPhoto: { file, name: file.name, preview: previewUrl },
           }));
-
-          // Auto-save to DB so header updates
-          if (initialData?.id) {
-            try {
-              await db.staff.update(initialData.id, { photo: previewUrl });
-              console.log("Profile photo updated in database");
-            } catch (err) {
-              console.error("Failed to update profile photo:", err);
-            }
-          }
         };
         reader.readAsDataURL(file);
       } else {
@@ -448,10 +437,16 @@ const EmployeeDocumentsForm = ({ initialData }) => {
       formData.trainingRecords.forEach((item, index) => {
         data.append(`TrainingRecords[${index}].title`, item.title);
         if (item.inductionTraining) {
-          data.append(`TrainingRecords[${index}].inductionTraining`, item.inductionTraining);
+          data.append(
+            `TrainingRecords[${index}].inductionTraining`,
+            item.inductionTraining,
+          );
         }
         if (item.competencyTraining) {
-          data.append(`TrainingRecords[${index}].competencyTraining`, item.competencyTraining);
+          data.append(
+            `TrainingRecords[${index}].competencyTraining`,
+            item.competencyTraining,
+          );
         }
       });
 
@@ -467,7 +462,7 @@ const EmployeeDocumentsForm = ({ initialData }) => {
       console.error("Error submitting documents:", error);
       alert(
         "Failed to submit documents. " +
-        (error.response?.data?.message || error.message),
+          (error.response?.data?.message || error.message),
       );
     } finally {
       setIsSubmitting(false);

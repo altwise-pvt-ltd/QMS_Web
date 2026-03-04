@@ -8,6 +8,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { db } from "../../../db";
+import staffService from "../../staff/services/staffService";
 import {
   createEvent,
   getAllEventTypes,
@@ -41,8 +42,13 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
   const loadStaff = async () => {
     try {
       setStaffLoading(true);
-      const data = await db.staff.toArray();
-      setStaff(data);
+      const res = await staffService.getAllStaff();
+      const staffList = (res.data || []).map((s) => ({
+        id: s.staffId,
+        name: `${s.firstName || ""} ${s.lastName || ""}`.trim(),
+        role: s.jobTitle,
+      }));
+      setStaff(staffList);
     } catch (error) {
       console.error("Error loading staff:", error);
     } finally {
@@ -79,8 +85,7 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
 
       // 2. Create Assignment Mapping (Snapshotting)
       if (formData.assignedTo === "All Staff") {
-        const currentStaff = await db.staff.toArray();
-        const attendanceRecords = currentStaff.map((person) => ({
+        const attendanceRecords = staff.map((person) => ({
           eventId,
           staffId: person.id,
           status: "pending",
@@ -129,8 +134,7 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
 
           // Duplicate attendance mapping for future events
           if (formData.assignedTo === "All Staff") {
-            const currentStaff = await db.staff.toArray();
-            const attendanceRecords = currentStaff.map((person) => ({
+            const attendanceRecords = staff.map((person) => ({
               eventId: fEvent.id,
               staffId: person.id,
               status: "pending",

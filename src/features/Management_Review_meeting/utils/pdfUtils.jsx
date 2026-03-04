@@ -1,4 +1,4 @@
-import { db } from "../../../db";
+// Removed Dexie import
 
 /**
  * Transform IndexedDB meeting data to PDF format
@@ -77,9 +77,13 @@ export const transformMeetingDataForPDF = (
 /**
  * Generate and download MRM PDF
  */
-export const generateMRMPdf = async (meeting, actionItems, minutes) => {
+export const generateMRMPdf = async (
+  meeting,
+  actionItems,
+  minutes,
+  companyInfo = null,
+) => {
   try {
-    const companyInfo = await db.company_info.toCollection().first();
     const data = transformMeetingDataForPDF(
       meeting,
       actionItems,
@@ -101,9 +105,13 @@ export const generateMRMPdf = async (meeting, actionItems, minutes) => {
 /**
  * Generate and download Minutes of Meeting PDF
  */
-export const generateMinutesPdf = async (meeting, actionItems, minutes) => {
+export const generateMinutesPdf = async (
+  meeting,
+  actionItems,
+  minutes,
+  companyInfo = null,
+) => {
   try {
-    const companyInfo = await db.company_info.toCollection().first();
     const data = transformMeetingDataForPDF(
       meeting,
       actionItems,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FileText, Download, Eye, ArrowLeft } from "lucide-react";
-import { db } from "../../../db";
+import { useAuth } from "../../../auth/AuthContext";
 import ImageWithFallback from "../../../components/ui/ImageWithFallback";
 
 const MinutesOfMeetingPreview = ({
@@ -10,22 +10,8 @@ const MinutesOfMeetingPreview = ({
   attendance = [],
   onBack,
 }) => {
+  const { organization: companyInfo } = useAuth();
   const [showPreview, setShowPreview] = useState(true); // Auto-show preview
-  const [companyInfo, setCompanyInfo] = useState(null);
-
-  useEffect(() => {
-    const fetchCompanyInfo = async () => {
-      try {
-        const info = await db.company_info.orderBy("id").last();
-        if (info) {
-          setCompanyInfo(info);
-        }
-      } catch (error) {
-        console.error("Failed to fetch company info:", error);
-      }
-    };
-    fetchCompanyInfo();
-  }, []);
 
   // Transform Dexie data to match the preview format
   const meetingData = {
@@ -45,31 +31,32 @@ const MinutesOfMeetingPreview = ({
     attendees:
       attendance && attendance.length > 0
         ? attendance
-          .filter((att) => att.status === "Present")
-          .map((att) => {
-            const roleInfo = att.role || att.department;
-            return roleInfo ? `${att.username} (${roleInfo})` : att.username;
-          })
+            .filter((att) => att.status === "Present")
+            .map((att) => {
+              const roleInfo = att.role || att.department;
+              return roleInfo ? `${att.username} (${roleInfo})` : att.username;
+            })
         : Array.isArray(meeting?.invitedAttendees || meeting?.invites)
           ? (meeting?.invitedAttendees || meeting?.invites).map((att) =>
-            typeof att === "string"
-              ? att
-              : `${att.username || att.name || "Unknown"} (${att.role || att.department || "Attendee"
-              })`,
-          )
-          : typeof (
-            meeting?.invitedAttendees ||
-            meeting?.invites ||
-            meeting?.attendees
-          ) === "string"
-            ? (
-              meeting?.invitedAttendees ||
-              meeting?.invites ||
-              meeting?.attendees
+              typeof att === "string"
+                ? att
+                : `${att.username || att.name || "Unknown"} (${
+                    att.role || att.department || "Attendee"
+                  })`,
             )
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
+          : typeof (
+                meeting?.invitedAttendees ||
+                meeting?.invites ||
+                meeting?.attendees
+              ) === "string"
+            ? (
+                meeting?.invitedAttendees ||
+                meeting?.invites ||
+                meeting?.attendees
+              )
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
             : [],
   };
 
@@ -198,7 +185,8 @@ const MinutesOfMeetingPreview = ({
     ${companyInfo?.logo ? `<img src="${companyInfo.logo}" alt="Logo">` : ""}
     <p class="company-name">${companyInfo?.name || "Your Company Name"}</p>
     ${companyInfo?.address ? `<p class="company-details">${companyInfo.address}</p>` : ""}
-    ${companyInfo?.phone || companyInfo?.websiteUrl
+    ${
+      companyInfo?.phone || companyInfo?.websiteUrl
         ? `
       <p class="company-details">
         ${companyInfo.phone ? `Tel: ${companyInfo.phone}` : ""}
@@ -207,20 +195,23 @@ const MinutesOfMeetingPreview = ({
       </p>
     `
         : ""
-      }
+    }
   </div>
   
   <h1>Minutes of Management Review Meeting</h1>
   
   <div class="meeting-info">
-    <p><strong>Meeting Title:</strong> ${meeting?.title || "Management Review Meeting"
-      }</p>
-    <p>Management review meeting as per ${meetingData.standard
-      } is scheduled on ${meetingData.date} at ${meetingData.time}.</p>
+    <p><strong>Meeting Title:</strong> ${
+      meeting?.title || "Management Review Meeting"
+    }</p>
+    <p>Management review meeting as per ${
+      meetingData.standard
+    } is scheduled on ${meetingData.date} at ${meetingData.time}.</p>
     <p><strong>Venue:</strong> ${meetingData.venue}</p>
     <p>Following points were discussed in the meeting. Chaired by Lab Director</p>
-    <p>As per the requirements of ${meetingData.standard
-      }, the following points were included in the agenda.</p>
+    <p>As per the requirements of ${
+      meetingData.standard
+    }, the following points were included in the agenda.</p>
     <p>The quality manager has prepared the report on various relevant review parameters</p>
   </div>
 
