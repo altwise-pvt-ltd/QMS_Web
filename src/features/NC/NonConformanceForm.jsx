@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../auth/AuthContext";
 import { ncService } from "./services/ncService";
 import { getDepartments } from "../department/services/departmentService";
+import { NC_OPTIONS } from "./data/NcCategories";
 import NCHeader from "./components/NCHeader";
 import NCEntry from "./components/NCEntry";
 import NCActions from "./components/NCActions";
@@ -139,11 +140,11 @@ export default function DailyNCForm() {
               : null,
             taggedStaff: report.staffIdinvolvedInIncident
               ? [
-                {
-                  id: report.staffIdinvolvedInIncident,
-                  name: "Staff #" + report.staffIdinvolvedInIncident,
-                },
-              ]
+                  {
+                    id: report.staffIdinvolvedInIncident,
+                    name: "Staff #" + report.staffIdinvolvedInIncident,
+                  },
+                ]
               : [],
           },
           submittedBy: {
@@ -222,8 +223,8 @@ export default function DailyNCForm() {
     const subCategoryIndex =
       categoryIndex !== -1
         ? NC_OPTIONS[categoryIndex].subcategories.indexOf(
-          formData.entry.ncDetails,
-        )
+            formData.entry.ncDetails,
+          )
         : -1;
     const subCategoryId =
       subCategoryIndex !== -1 ? (subCategoryIndex + 1).toString() : "1";
@@ -308,7 +309,9 @@ export default function DailyNCForm() {
               {showHistory ? "NC History Log" : "Non-Conformance"}
             </h1>
             <p className="text-slate-500 mt-1 font-medium text-lg">
-              {showHistory ? "Historical records of identified non-conformities" : "Report and document new quality incidents"}
+              {showHistory
+                ? "Historical records of identified non-conformities"
+                : "Report and document new quality incidents"}
             </p>
           </div>
           <Button

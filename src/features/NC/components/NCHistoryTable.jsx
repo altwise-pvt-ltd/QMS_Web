@@ -164,7 +164,7 @@ const NCHistoryTable = ({ reports, isLoading, onViewDetails }) => {
                 <td className="px-6 py-4 align-top">
                   <span
                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusStyle(
-                      report.status
+                      report.status,
                     )}`}
                   >
                     {getStatusIcon(report.status)}

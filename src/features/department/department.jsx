@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  Building2,
-  Plus,
-  Search,
-  Users2,
-} from "lucide-react";
+import { Building2, Plus, Search, Users2 } from "lucide-react";
 import DepartmentCards from "./component/department_cards";
 import DepartmentView from "./component/department_view";
 import AddDepartment from "./component/add_department";
 import { getDepartments, deleteDepartment } from "./services/departmentService";
 import staffService from "../staff/services/staffService";
 import CustomPagination from "../../components/ui/CustomPagination";
+import { Skeleton } from "../../components/ui/Skeleton";
 
 const Department = () => {
   const [departments, setDepartments] = useState([]);
@@ -142,6 +138,41 @@ const Department = () => {
     },
   ];
 
+  const StatsSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {[1, 2].map((i) => (
+        <div
+          key={i}
+          className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-4"
+        >
+          <Skeleton className="w-14 h-14 rounded-2xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-6 w-16" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const DepartmentCardSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      {[1, 2, 3, 4].map((i) => (
+        <div
+          key={i}
+          className="bg-white rounded-3xl border border-slate-100 p-6 flex flex-col h-full space-y-5"
+        >
+          <Skeleton className="w-14 h-14 rounded-2xl" />
+          <div className="space-y-3 flex-1">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+            <Skeleton className="h-16 w-full rounded-2xl mt-6" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="p-4 md:p-8 lg:p-12 w-full space-y-8 animate-in fade-in duration-700 pb-20 bg-slate-50/30">
       {/* Header Section */}
@@ -164,35 +195,57 @@ const Department = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {stats.map((stat, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
-            <div className={`absolute -right-3 -top-3 w-24 h-24 rounded-full ${stat.bg} opacity-10 group-hover:scale-110 transition-transform duration-500`}></div>
-            <div className="flex items-center gap-4 relative z-10">
-              <div className={`p-4 rounded-2xl ${stat.bg} ${stat.color} shadow-sm group-hover:scale-110 transition-transform`}>
-                <stat.icon size={26} />
-              </div>
-              <div>
-                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
-                <h3 className="text-2xl font-black text-slate-800 tracking-tight">{stat.value}</h3>
+      {loading ? (
+        <StatsSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {stats.map((stat, idx) => (
+            <div
+              key={idx}
+              className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
+            >
+              <div
+                className={`absolute -right-3 -top-3 w-24 h-24 rounded-full ${stat.bg} opacity-10 group-hover:scale-110 transition-transform duration-500`}
+              ></div>
+              <div className="flex items-center gap-4 relative z-10">
+                <div
+                  className={`p-4 rounded-2xl ${stat.bg} ${stat.color} shadow-sm group-hover:scale-110 transition-transform`}
+                >
+                  <stat.icon size={26} />
+                </div>
+                <div>
+                  <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                    {stat.label}
+                  </p>
+                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">
+                    {stat.value}
+                  </h3>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Roster & Controls Section */}
       <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden flex flex-col h-full">
         <div className="p-10 border-b border-slate-50 bg-slate-50/30">
           <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
             <div className="flex flex-col gap-1">
-              <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase">Active Departments</h2>
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">Click on a card below to switch the roster view</p>
+              <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase">
+                Active Departments
+              </h2>
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">
+                Click on a card below to switch the roster view
+              </p>
             </div>
 
             <div className="flex flex-col md:flex-row items-center gap-6 w-full lg:w-auto">
               <div className="relative w-full md:w-80">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <Search
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={18}
+                />
                 <input
                   type="text"
                   placeholder="Search departments..."
@@ -214,14 +267,41 @@ const Department = () => {
         </div>
 
         <div className="p-10 bg-white">
-          {filteredDepartments.length > 0 ? (
+          {loading ? (
+            <div className="space-y-16">
+              <DepartmentCardSkeleton />
+              <div className="pt-10 border-t border-slate-50">
+                <div className="flex items-center gap-4 mb-10">
+                  <Skeleton className="w-14 h-14 rounded-2xl" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-48" />
+                    <Skeleton className="h-3 w-32" />
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 p-3 bg-slate-50/50 rounded-2xl"
+                    >
+                      <Skeleton className="w-10 h-10 rounded-xl" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-1/4" />
+                        <Skeleton className="h-3 w-1/6" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : filteredDepartments.length > 0 ? (
             <div className="space-y-16">
               <DepartmentCards
                 departments={paginatedDepartments}
                 selectedId={selectedDeptId}
                 onSelect={(id) => {
                   setSelectedDeptId(id);
-                  const dept = departments.find(d => d.id === id);
+                  const dept = departments.find((d) => d.id === id);
                   if (dept) setSelectedDeptName(dept.name);
                 }}
                 onEdit={handleEdit}
@@ -243,14 +323,21 @@ const Department = () => {
                     </p>
                   </div>
                 </div>
-                <DepartmentView deptId={selectedDeptId} deptName={selectedDeptName} />
+                <DepartmentView
+                  deptId={selectedDeptId}
+                  deptName={selectedDeptName}
+                />
               </div>
             </div>
           ) : (
             <div className="py-24 text-center">
               <Building2 className="w-20 h-20 text-slate-100 mx-auto mb-6" />
-              <h3 className="text-2xl font-black text-slate-300 uppercase tracking-widest">No departments found</h3>
-              <p className="text-slate-400 text-sm font-medium">Try adjusting your search criteria or add a new department hub</p>
+              <h3 className="text-2xl font-black text-slate-300 uppercase tracking-widest">
+                No departments found
+              </h3>
+              <p className="text-slate-400 text-sm font-medium">
+                Try adjusting your search criteria or add a new department hub
+              </p>
             </div>
           )}
         </div>
