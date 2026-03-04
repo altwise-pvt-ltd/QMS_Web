@@ -12,11 +12,68 @@ import {
   selectIsAuthenticated,
 } from "../store/slices/authSlice";
 
-/**
- * AuthContext provides global authentication state and utility functions.
- * It now acts as a bridge to Redux state for backward compatibility.
- */
 const AuthContext = createContext(null);
+
+const fixAvatarUrl = (url) => {
+  if (!url) return null;
+  const secondHttpIndex = url.indexOf("http", 5);
+  if (secondHttpIndex > 0) return url.substring(secondHttpIndex);
+  return url;
+};
+
+const normalizeOrg = (org) => {
+  if (!org) return null;
+  return {
+    organizationId: org.organizationId || org.OrganizationId,
+    name: org.legalCompanyName || org.LegalCompanyName || "",
+    industry: org.industrySector || org.IndustrySector || "",
+    phone: org.businessPhone || org.BusinessPhone || "",
+    websiteUrl: org.corporateWebsite || org.CorporateWebsite || "",
+    address: org.registeredAddress || org.RegisteredAddress || "",
+    logo: org.logoPath || org.companyLogoPath || org.CompanyLogo || null,
+    status: org.status,
+    createdAt: org.createdAt || org.CreatedAt,
+    createdBy: org.createdBy || org.CreatedBy,
+  };
+};
+
+/**
+ * Helper: fetch orgs from API and match to a user profile.
+ * Tries organizationId first, then falls back to createdBy.
+ * Uses String() coercion to avoid number-vs-string mismatches.
+ */
+const fetchAndMatchOrg = async (profileData) => {
+  const orgResponse = await organizationService.getAllOrganizations();
+
+  const orgList = Array.isArray(orgResponse)
+    ? orgResponse
+    : orgResponse?.isSuccess
+      ? orgResponse.value
+      : [];
+
+  if (orgList.length === 0) return null;
+
+  const currentUserId = profileData?.id || profileData?.adminUserId;
+  let matched = null;
+
+  // Priority 1: match by organizationId from user profile
+  if (profileData?.organizationId) {
+    matched = orgList.find(
+      (org) =>
+        String(org.organizationId || org.OrganizationId) ===
+        String(profileData.organizationId),
+    );
+  }
+
+  // Priority 2: fall back to createdBy
+  if (!matched && currentUserId) {
+    matched = orgList.find(
+      (org) => String(org.createdBy || org.CreatedBy) === String(currentUserId),
+    );
+  }
+
+  return normalizeOrg(matched);
+};
 
 export const AuthProvider = ({ children }) => {
   const dispatch = useDispatch();
@@ -25,60 +82,58 @@ export const AuthProvider = ({ children }) => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const [loading, setLoading] = useState(true);
 
-  // Initial check on application mount
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem("accessToken");
 
       if (token && !user) {
         try {
-          // Attempt to fetch the user profile verify the token is still valid
           const profileData = await getProfile(token);
 
-          // Also fetch organization data
+          if (profileData?.avatar) {
+            profileData.avatar = fixAvatarUrl(profileData.avatar);
+          }
+
           let orgData = null;
           try {
-            const orgResponse = await organizationService.getAllOrganizations();
-            if (
-              orgResponse &&
-              orgResponse.isSuccess &&
-              orgResponse.value &&
-              orgResponse.value.length > 0
-            ) {
-              const currentUserId = profileData?.adminUserId || profileData?.id;
-              orgData = orgResponse.value.find(
-                (org) => (org.CreatedBy || org.createdBy) == currentUserId,
-              );
-            }
+            orgData = await fetchAndMatchOrg(profileData);
           } catch (orgError) {
-            console.error("Failed to fetch organization during init", orgError);
+            console.error(
+              "Failed to fetch organization during init:",
+              orgError,
+            );
           }
 
           dispatch(
             setCredentials({
               user: profileData,
-              organization: orgData,
+              organization: orgData, // null is fine — slice handles it
               accessToken: token,
               refreshToken: localStorage.getItem("refreshToken"),
             }),
           );
         } catch (error) {
-          console.error("Auth initialization failed", error);
+          console.error("Auth initialization failed:", error);
           dispatch(logoutAction());
         }
       }
+
       setLoading(false);
     };
 
     checkAuth();
   }, [dispatch, user]);
 
-  const login = (userData) => {
-    // This is now primarily handled in login.jsx via dispatch(setCredentials)
-    // but kept here for compatibility if other components use it.
+  /**
+   * login — called from your login page after successful authentication.
+   * Now accepts an optional orgData param so callers can pass it if available.
+   * If not passed, ProtectedRoute will fetch it before deciding to redirect.
+   */
+  const login = (userData, orgData = null) => {
     dispatch(
       setCredentials({
         user: userData,
+        organization: orgData,
         accessToken: localStorage.getItem("accessToken"),
         refreshToken: localStorage.getItem("refreshToken"),
       }),
@@ -87,12 +142,10 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // Try to notify the API about the logout
       await api.post("/AdminUser/Logout");
     } catch (error) {
-      console.error("API Logout failed", error);
+      console.error("API Logout failed:", error);
     } finally {
-      // Always clear local state regardless of API success
       dispatch(logoutAction());
     }
   };
@@ -106,8 +159,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-/**
- * Custom hook to easily access authentication context from any component.
- * @returns {Object} The context values { user, isAuthenticated, loading, login, logout }.
- */
 export const useAuth = () => useContext(AuthContext);

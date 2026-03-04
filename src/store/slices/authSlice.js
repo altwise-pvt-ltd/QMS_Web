@@ -20,13 +20,16 @@ const authSlice = createSlice({
     setCredentials: (state, action) => {
       const { user, organization, accessToken, refreshToken } = action.payload;
       state.user = user;
-      if (organization) state.organization = organization;
+      // FIXED: Always set organization from payload, even if null.
+      // Previously `if (organization)` meant a missing org on login
+      // would silently preserve stale state instead of reflecting reality.
+      // Use setOrganization separately if you need to update org alone.
+      state.organization = organization ?? state.organization;
       state.accessToken = accessToken;
       state.refreshToken = refreshToken;
       state.isAuthenticated = true;
       state.error = null;
 
-      // Persist to localStorage
       if (accessToken) localStorage.setItem("accessToken", accessToken);
       if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
     },
@@ -38,7 +41,6 @@ const authSlice = createSlice({
       state.accessToken = accessToken;
       if (refreshToken) state.refreshToken = refreshToken;
 
-      // Update localStorage
       if (accessToken) localStorage.setItem("accessToken", accessToken);
       if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
     },
@@ -50,7 +52,6 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
 
-      // Clear localStorage
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
     },
@@ -75,7 +76,6 @@ export const {
 
 export default authSlice.reducer;
 
-// Selectors
 export const selectCurrentUser = (state) => state.auth.user;
 export const selectCurrentOrganization = (state) => state.auth.organization;
 export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;

@@ -40,8 +40,12 @@ const Login = () => {
       const loginResponse = await loginUser(email, password);
 
       // Extract tokens from response
-      const token = loginResponse.accessToken || loginResponse.token || loginResponse.access_token;
-      const refreshToken = loginResponse.refreshToken || loginResponse.refresh_token;
+      const token =
+        loginResponse.accessToken ||
+        loginResponse.token ||
+        loginResponse.access_token;
+      const refreshToken =
+        loginResponse.refreshToken || loginResponse.refresh_token;
 
       if (!token) {
         throw new Error("No access token received");
@@ -51,17 +55,38 @@ const Login = () => {
       // We pass the token explicitly to avoid any race conditions with Redux/localStorage
       const profileData = await getProfile(token);
 
-      // 3. Update Redux State with both user profile and tokens
+      // 3. IMPORTANT: Fetch the organization details if the user has one
+      let orgData = null;
+      if (profileData?.organizationId) {
+        try {
+          const orgResponse = await organizationService.getAllOrganizations();
+          if (Array.isArray(orgResponse)) {
+            orgData = orgResponse.find(
+              (org) =>
+                (org.organizationId || org.OrganizationId) ==
+                profileData.organizationId,
+            );
+          } else if (orgResponse?.isSuccess && orgResponse?.value) {
+            orgData = orgResponse.value.find(
+              (org) =>
+                (org.organizationId || org.OrganizationId) ==
+                profileData.organizationId,
+            );
+          }
+        } catch (orgError) {
+          console.error("Failed to fetch organization during login:", orgError);
+        }
+      }
+
+      // 4. Update Redux State with tokens, profile, and organization
       dispatch(
         setCredentials({
           user: profileData,
+          organization: orgData,
           accessToken: token,
           refreshToken: refreshToken,
         }),
       );
-
-      // 4. Update the global AuthContext with the fetched profile data
-      login(profileData);
 
       // 5. On success, navigate to the main dashboard
       navigate("/dashboard", { replace: true });
@@ -70,7 +95,11 @@ const Login = () => {
       // Provision for user-friendly error messages
       if (err.response && err.response.status === 401) {
         setError("Invalid credentials. Please check your email and password.");
-      } else if (err.response && err.response.data && err.response.data.message) {
+      } else if (
+        err.response &&
+        err.response.data &&
+        err.response.data.message
+      ) {
         setError(err.response.data.message);
       } else {
         setError("Login failed. Please try again later.");
@@ -99,11 +128,15 @@ const Login = () => {
               </div>
               <div className="key-point-item">
                 <span className="key-point-icon"></span>
-                <span className="key-point-text">Compliance in every action</span>
+                <span className="key-point-text">
+                  Compliance in every action
+                </span>
               </div>
               <div className="key-point-item">
                 <span className="key-point-icon"></span>
-                <span className="key-point-text">Confidence in every outcome</span>
+                <span className="key-point-text">
+                  Confidence in every outcome
+                </span>
               </div>
             </div>
           </div>
@@ -165,11 +198,7 @@ const Login = () => {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className="login-btn"
-                disabled={loading}
-              >
+              <button type="submit" className="login-btn" disabled={loading}>
                 {loading ? (
                   <>
                     <div className="spinner"></div>

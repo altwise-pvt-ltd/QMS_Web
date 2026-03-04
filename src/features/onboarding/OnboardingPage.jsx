@@ -19,7 +19,14 @@ import ImageWithFallback from "../../components/ui/ImageWithFallback";
 const OnboardingPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user } = useAuth();
+  const { user, organization } = useAuth();
+
+  useEffect(() => {
+    // If organization is already set, we don't need onboarding
+    if (organization) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [organization, navigate]);
 
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -42,46 +49,47 @@ const OnboardingPage = () => {
     const fetchCompanyInfo = async () => {
       setLoading(true);
       try {
-        const data = await organizationService.getAllOrganizations();
+        const orgResponse = await organizationService.getAllOrganizations();
+        let company = null;
 
-        if (data?.isSuccess && data?.value?.length > 0) {
+        if (Array.isArray(orgResponse)) {
+          const targetId = user?.organizationId;
+          company = orgResponse.find(
+            (org) => (org.organizationId || org.OrganizationId) == targetId,
+          );
+        } else if (orgResponse?.isSuccess && orgResponse?.value?.length > 0) {
+          const targetId = user?.organizationId;
+          company = orgResponse.value.find(
+            (org) => (org.organizationId || org.OrganizationId) == targetId,
+          );
+        }
+
+        // Fallback to searching by createdBy if organizationId isn't found
+        if (
+          !company &&
+          (Array.isArray(orgResponse) || orgResponse?.isSuccess)
+        ) {
+          const dataList = Array.isArray(orgResponse)
+            ? orgResponse
+            : orgResponse.value;
           const currentUserId = user?.adminUserId || user?.id || 1;
-          const company = data.value.find(
+          company = dataList.find(
             (org) => (org.createdBy || org.CreatedBy) == currentUserId,
           );
+        }
 
-          if (company) {
-            setFormData({
-              name: company.legalCompanyName || company.LegalCompanyName || "",
-              industry: company.industrySector || company.IndustrySector || "",
-              phone: company.businessPhone || company.BusinessPhone || "",
-              websiteUrl:
-                company.corporateWebsite || company.CorporateWebsite || "",
-              address:
-                company.registeredAddress || company.RegisteredAddress || "",
-            });
+        if (company) {
+          setFormData({
+            name: company.legalCompanyName || "",
+            industry: company.industrySector || "",
+            phone: company.businessPhone || "",
+            websiteUrl: company.corporateWebsite || "",
+            address: company.registeredAddress || "",
+          });
 
-            const logo =
-              company.companyLogoPath ||
-              company.CompanyLogo ||
-              company.logoPath;
-            if (logo) setLogoPreview(logo);
-
-            dispatch(
-              setOrganization({
-                organizationId:
-                  company.organizationId || company.OrganizationId,
-                name: company.legalCompanyName || company.LegalCompanyName,
-                industry: company.industrySector || company.IndustrySector,
-                phone: company.businessPhone || company.BusinessPhone,
-                websiteUrl:
-                  company.corporateWebsite || company.CorporateWebsite,
-                address: company.registeredAddress || company.RegisteredAddress,
-                logo,
-                createdAt: company.createdAt || company.CreatedAt,
-              }),
-            );
-          }
+          // logoPath is the correct field — backend returns this
+          const logo = company.logoPath || company.companyLogoPath || null;
+          if (logo) setLogoPreview(logo);
         }
       } catch (err) {
         console.error("Failed to fetch organization info:", err);
