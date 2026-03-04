@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { QUALITY_INDICATORS } from "./qi_data";
+
 import { ChevronRight } from "lucide-react";
 import html2pdf from "html2pdf.js";
 
@@ -8,10 +8,10 @@ import QIFormHeader from "./components/QIFormHeader";
 import QIFormSidebar from "./components/QIFormSidebar";
 import QIReportTable from "./components/QIReportTable";
 
-const QalityIndicatorForm = ({ onBack, indicators = QUALITY_INDICATORS }) => {
+const QalityIndicatorForm = ({ onBack, indicators = [], categories = [] }) => {
   const [selectedMonth, setSelectedMonth] = useState("NOV 2025");
   const [selectedIndicators, setSelectedIndicators] = useState(
-    indicators.map((i) => i.id),
+    indicators.map((i) => i.qualityIndicatorId),
   );
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [metadata, setMetadata] = useState({
@@ -49,7 +49,7 @@ const QalityIndicatorForm = ({ onBack, indicators = QUALITY_INDICATORS }) => {
   };
 
   const displayedIndicators = indicators.filter((i) =>
-    selectedIndicators.includes(i.id),
+    selectedIndicators.includes(i.qualityIndicatorId),
   );
 
   return (
@@ -70,9 +70,10 @@ const QalityIndicatorForm = ({ onBack, indicators = QUALITY_INDICATORS }) => {
             setSelectedMonth={setSelectedMonth}
             selectedIndicators={selectedIndicators}
             indicators={indicators}
+            categories={categories}
             toggleIndicator={toggleIndicator}
             onSelectAll={() =>
-              setSelectedIndicators(indicators.map((i) => i.id))
+              setSelectedIndicators(indicators.map((i) => i.qualityIndicatorId))
             }
             isCollapsed={isSidebarCollapsed}
             onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
@@ -87,7 +88,11 @@ const QalityIndicatorForm = ({ onBack, indicators = QUALITY_INDICATORS }) => {
               onClick={() => setIsSidebarCollapsed(false)}
               className="group mb-4 flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-indigo-600 shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 hover:border-indigo-200 transition-all duration-300 no-print"
             >
-              <ChevronRight size={16} strokeWidth={3} className="group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight
+                size={16}
+                strokeWidth={3}
+                className="group-hover:translate-x-0.5 transition-transform"
+              />
               Show Report Options
             </button>
           )}
@@ -95,6 +100,7 @@ const QalityIndicatorForm = ({ onBack, indicators = QUALITY_INDICATORS }) => {
             ref={reportRef}
             selectedMonth={selectedMonth}
             displayedIndicators={displayedIndicators}
+            categories={categories}
             metadata={metadata}
           />
         </div>

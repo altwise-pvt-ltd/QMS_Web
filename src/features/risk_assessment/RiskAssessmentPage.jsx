@@ -9,7 +9,7 @@ import {
   getRiskSummary,
   getMatrixData,
 } from "./services/riskService";
-import { ShieldAlert, SlidersHorizontal, X } from "lucide-react";
+import { ShieldAlert, SlidersHorizontal, X, ChevronDown } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 
 const RiskAssessmentPage = () => {
@@ -19,6 +19,7 @@ const RiskAssessmentPage = () => {
   const [selectedCell, setSelectedCell] = useState(null);
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [selectedMonth, setSelectedMonth] = useState("");
+  const [isMatrixOpen, setIsMatrixOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -124,13 +125,50 @@ const RiskAssessmentPage = () => {
         </div>
 
         <div className="flex items-center gap-4">
+          <div className="relative">
+            <button
+              onClick={() => setIsMatrixOpen((prev) => !prev)}
+              className={`
+                flex items-center gap-2 px-4 py-2 bg-white border rounded-xl shadow-sm transition-all duration-300
+                ${isMatrixOpen ? "border-indigo-600 ring-4 ring-indigo-50" : "border-slate-200 hover:border-indigo-300"}
+              `}
+            >
+              <SlidersHorizontal className={`w-4 h-4 ${isMatrixOpen ? "text-indigo-600" : "text-slate-500"}`} />
+              <span className={`text-sm font-bold ${isMatrixOpen ? "text-slate-900" : "text-slate-600"}`}>
+                5×5 Risk Matrix
+              </span>
+              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isMatrixOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {isMatrixOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40 bg-transparent"
+                  onClick={() => setIsMatrixOpen(false)}
+                />
+                <div className="absolute top-full right-0 mt-3 z-50 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300">
+                  <div className="w-[650px] max-w-[calc(100vw-2rem)]">
+                    <RiskMatrix
+                      matrix={matrix}
+                      selectedCell={selectedCell}
+                      onCellClick={(s, l) => {
+                        handleCellClick(s, l);
+                        // Optional: Keep open or close? User said dropdown table, usually they click around.
+                      }}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
           <RiskDateFilter
             dateRange={dateRange}
             setDateRange={setDateRange}
             selectedMonth={selectedMonth}
             setSelectedMonth={setSelectedMonth}
           />
-          <div className="px-4 py-2 bg-emerald-50 text-emerald-700 text-xs font-black rounded-xl border border-emerald-100 uppercase tracking-widest shadow-sm">
+          <div className="hidden lg:block px-4 py-2 bg-emerald-50 text-emerald-700 text-xs font-black rounded-xl border border-emerald-100 uppercase tracking-widest shadow-sm">
             System Validated
           </div>
         </div>
@@ -186,35 +224,36 @@ const RiskAssessmentPage = () => {
           </div>
         )}
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Risk Matrix */}
-          <div className="lg:col-span-5 h-full">
-            <RiskMatrix
-              matrix={matrix}
-              selectedCell={selectedCell}
-              onCellClick={handleCellClick}
-            />
-          </div>
-
+        <div className="flex flex-col gap-8">
           {/* Risk Table */}
-          <div className="lg:col-span-7 h-full flex flex-col">
-            <div className="mb-4 flex items-center justify-between px-1">
-              <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2.5">
-                <span className="w-2 h-5 bg-indigo-600 rounded-full shadow-sm" />
-                Risk Registry
-              </h3>
-              <div className="px-3 py-1 bg-slate-100 rounded-lg text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                Registry Items: {filteredRisks.length}
+          <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm p-6 md:p-8 flex flex-col min-h-[600px]">
+            <div className="mb-8 flex items-center justify-between px-2">
+              <div className="space-y-1">
+                <h3 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+                  <span className="w-2.5 h-6 bg-indigo-600 rounded-full shadow-sm" />
+                  Risk registry
+                </h3>
+                <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] ml-5.5">
+                  Controlled data matrix
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+                  Registry Items: <span className="text-slate-900 ml-1">{filteredRisks.length}</span>
+                </div>
               </div>
             </div>
-            <RiskTable
-              risks={filteredRisks}
-              onRowClick={(risk) =>
-                setSelectedRisk((prev) => (prev?.id === risk.id ? null : risk))
-              }
-              selectedRiskId={selectedRisk?.id}
-            />
+
+            <div className="flex-1">
+              <RiskTable
+                risks={filteredRisks}
+                onRowClick={(risk) =>
+                  setSelectedRisk((prev) => (prev?.id === risk.id ? null : risk))
+                }
+                selectedRiskId={selectedRisk?.id}
+              />
+            </div>
           </div>
         </div>
       </main>
