@@ -133,8 +133,8 @@ const organizationService = {
         companyLogoPath = r2Result.fileUrl;
         console.log("New logo uploaded to R2:", companyLogoPath);
       } catch (uploadError) {
-        console.error("Logo re-upload to R2 failed:", uploadError);
-        throw new Error(`Logo upload failed: ${uploadError.message}`);
+        console.error("Logo upload to R2 failed:", uploadError);
+        console.warn("Proceeding without logo due to upload failure.");
       }
     }
 

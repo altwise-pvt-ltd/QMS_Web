@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
+// Triggering reload to pick up service changes
 import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
 

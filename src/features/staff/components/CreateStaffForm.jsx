@@ -115,11 +115,14 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
 
       console.log("Submitting staff payload:", payload);
 
-      const response = await staffService.createStaff(payload);
+      const isUpdate = !!initialData;
+      const response = isUpdate
+        ? await staffService.updateStaff(payload)
+        : await staffService.createStaff(payload);
 
       if (response.data) {
         alert(
-          initialData
+          isUpdate
             ? "Staff updated successfully"
             : "Staff created successfully",
         );
@@ -284,10 +287,11 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
       rounded-lg
       flex items-center gap-2
       transition-colors  duration-200
-      ${isSubmitting
-                ? "bg-blue-400 text-gray-600 cursor-not-allowed"
-                : "bg-blue-600 text-gray-600 hover:bg-blue-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              }
+      ${
+        isSubmitting
+          ? "bg-blue-400 text-gray-600 cursor-not-allowed"
+          : "bg-blue-600 text-gray-600 hover:bg-blue-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      }
     `}
           >
             {isSubmitting ? (
@@ -302,7 +306,6 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
                 : "Create Employee"}
           </button>
         </div>
-
       </form>
     </div>
   );

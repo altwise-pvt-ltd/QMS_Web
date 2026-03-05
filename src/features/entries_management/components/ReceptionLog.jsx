@@ -1,9 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import html2pdf from "html2pdf.js";
-import { ChevronLeft, Download, Plus, Minus } from "lucide-react";
+import { ChevronLeft, Download, Plus, Minus, Loader2 } from "lucide-react";
 import { LOG_TYPES } from "../data/entriesData";
+import entriesService from "../services/entriesService";
 
-const ReceptionLog = ({ entry, onBack }) => {
+const ReceptionLog = ({ entry, lab, onBack }) => {
+  const [records, setRecords] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   // Map entry name to log type if possible, otherwise default to refrigerator
   const initialLogType =
     Object.values(LOG_TYPES).find(
@@ -21,8 +25,26 @@ const ReceptionLog = ({ entry, onBack }) => {
         .toLocaleString("default", { month: "long" })
         .toUpperCase(),
       year: new Date().getFullYear(),
+      monthIndex: new Date().getMonth(),
     },
   ]);
+
+  useEffect(() => {
+    if (lab) {
+      const fetchRecords = async () => {
+        try {
+          setIsLoading(true);
+          const data = await entriesService.getRecordsByLaboratoryId(lab.id);
+          setRecords(data);
+        } catch (err) {
+          console.error("Failed to fetch records for report:", err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchRecords();
+    }
+  }, [lab]);
 
   const addMonth = () => {
     const lastMonth = months[months.length - 1];
@@ -46,7 +68,10 @@ const ReceptionLog = ({ entry, onBack }) => {
       nextIdx = 0;
       nextYear++;
     }
-    setMonths([...months, { name: monthNames[nextIdx], year: nextYear }]);
+    setMonths([
+      ...months,
+      { name: monthNames[nextIdx], year: nextYear, monthIndex: nextIdx },
+    ]);
   };
 
   const removeMonth = () => {
@@ -54,6 +79,39 @@ const ReceptionLog = ({ entry, onBack }) => {
   };
 
   const printRef = useRef();
+
+  // Helper to fetch real data or fallback to dummy
+  const getCellData = (m, day, type, paramName = "") => {
+    // Search for a record on this specific date
+    const record = records.find((r) => {
+      const d = new Date(r.date);
+      return (
+        d.getDate() === day &&
+        d.getMonth() === m.monthIndex &&
+        d.getFullYear() === m.year
+      );
+    });
+
+    if (record) {
+      if (type === "sign")
+        return record.recordedBy?.substring(0, 2).toUpperCase() || "OK";
+      if (type === "status") return "OK";
+
+      // If we have specific parameter values
+      if (
+        paramName &&
+        record.parameterValues &&
+        record.parameterValues[paramName]
+      ) {
+        return record.parameterValues[paramName];
+      }
+
+      return record.value || "OK";
+    }
+
+    // Fallback to dummy for demonstration if no real record
+    return getDummyData(type, m.name)[day - 1];
+  };
 
   // Helper to generate dummy data for 31 days
   const getDummyData = (type, seed = "") => {
@@ -177,16 +235,18 @@ const ReceptionLog = ({ entry, onBack }) => {
         {rows.map((row, idx) => (
           <tr key={idx}>
             <td style={s.tdLeft}>{row}</td>
-            {getDummyData(
-              row.toLowerCase().includes("temp")
-                ? "temp"
-                : row.toLowerCase().includes("hum")
-                  ? "hum"
-                  : "status",
-              m.name,
-            ).map((val, i) => (
+            {[...Array(31)].map((_, i) => (
               <td key={i} style={s.td}>
-                {val}
+                {getCellData(
+                  m,
+                  i + 1,
+                  row.toLowerCase().includes("temp")
+                    ? "temp"
+                    : row.toLowerCase().includes("hum")
+                      ? "hum"
+                      : "status",
+                  row,
+                )}
               </td>
             ))}
           </tr>
@@ -212,12 +272,14 @@ const ReceptionLog = ({ entry, onBack }) => {
         {tasks.map((task, idx) => (
           <tr key={idx}>
             <td style={s.tdLeft}>{task}</td>
-            {getDummyData(
-              task.toLowerCase().includes("initials") ? "sign" : "status",
-              m.name,
-            ).map((val, i) => (
+            {[...Array(31)].map((_, i) => (
               <td key={i} style={s.td}>
-                {val}
+                {getCellData(
+                  m,
+                  i + 1,
+                  task.toLowerCase().includes("initials") ? "sign" : "status",
+                  task,
+                )}
               </td>
             ))}
           </tr>
@@ -256,26 +318,22 @@ const ReceptionLog = ({ entry, onBack }) => {
               </td>
             )}
             <td style={s.tdLeft}>{row}</td>
-            {getDummyData(row.toLowerCase(), m.name)
-              .slice(0, 15)
-              .map((val, i) => (
-                <td key={i} style={s.td}>
-                  {val}
-                </td>
-              ))}
+            {[...Array(15)].map((_, i) => (
+              <td key={i} style={s.td}>
+                {getCellData(m, i + 1, row.toLowerCase())}
+              </td>
+            ))}
             {rIdx === 0 && (
               <td rowSpan={3} style={s.td}>
                 <b>{m.name}</b>
               </td>
             )}
             <td style={s.tdLeft}>{row}</td>
-            {getDummyData(row.toLowerCase(), m.name)
-              .slice(15, 31)
-              .map((val, i) => (
-                <td key={i} style={s.td}>
-                  {val}
-                </td>
-              ))}
+            {[...Array(16)].map((_, i) => (
+              <td key={i} style={s.td}>
+                {getCellData(m, i + 16, row.toLowerCase())}
+              </td>
+            ))}
           </tr>
         ))}
         <tr>
@@ -320,9 +378,9 @@ const ReceptionLog = ({ entry, onBack }) => {
         {config.daily.map((item, idx) => (
           <tr key={`d-${idx}`}>
             <td style={s.tdLeft}>{item}</td>
-            {getDummyData("status", m.name).map((val, i) => (
+            {[...Array(31)].map((_, i) => (
               <td key={i} style={s.td}>
-                {val}
+                {getCellData(m, i + 1, "status", item)}
               </td>
             ))}
           </tr>
@@ -342,7 +400,7 @@ const ReceptionLog = ({ entry, onBack }) => {
         {config.weekly.map((item, idx) => (
           <tr key={`w-${idx}`}>
             <td style={s.tdLeft}>{item}</td>
-            {getDummyData("status").map((val, i) => (
+            {[...Array(31)].map((_, i) => (
               <td
                 key={i}
                 style={{
@@ -350,16 +408,16 @@ const ReceptionLog = ({ entry, onBack }) => {
                   backgroundColor: i % 7 === 0 ? "#f9fafb" : "white",
                 }}
               >
-                {i % 7 === 0 ? "OK" : ""}
+                {getCellData(m, i + 1, "status", item)}
               </td>
             ))}
           </tr>
         ))}
         <tr>
           <td style={s.tdLeft}>Initials</td>
-          {getDummyData("sign", m.name).map((val, i) => (
+          {[...Array(31)].map((_, i) => (
             <td key={i} style={s.td}>
-              {val}
+              {getCellData(m, i + 1, "sign")}
             </td>
           ))}
         </tr>
@@ -380,6 +438,10 @@ const ReceptionLog = ({ entry, onBack }) => {
         </button>
 
         <div className="flex items-center gap-3">
+          {isLoading && (
+            <Loader2 size={16} className="animate-spin text-indigo-600" />
+          )}
+
           {!entry && (
             <div className="flex bg-slate-100 p-1 rounded-xl">
               {Object.values(LOG_TYPES).map((log) => (
@@ -423,7 +485,7 @@ const ReceptionLog = ({ entry, onBack }) => {
 
           <button
             onClick={handleDownload}
-            className="bg-indigo-600 text-gray-500 px-6 py-2 rounded-xl hover:bg-indigo-700 font-bold flex items-center gap-2 shadow-lg shadow-indigo-200 transition-all active:scale-95"
+            className="bg-indigo-600 text-white px-6 py-2 rounded-xl hover:bg-indigo-700 font-bold flex items-center gap-2 shadow-lg shadow-indigo-200 transition-all active:scale-95"
           >
             <Download size={18} />
             Export PDF
@@ -443,7 +505,7 @@ const ReceptionLog = ({ entry, onBack }) => {
             <p style={s.address}>
               PLOT NO: A232, ROAD NO: 21, Y-LANE, BEHIND CYBER TECH SOLUTION,
               <br />
-              NEHERU NAGAR, WAGLE INDUSTRIAL ESTATE, THANE (W),
+              NEHERU NAGAR, WAGLE INDUSTRIAL ESTATE, THANE (W), THANE,
               MAHARASHTRA-400604
             </p>
             <div style={s.title}>{currentConfig.title}</div>
@@ -457,6 +519,18 @@ const ReceptionLog = ({ entry, onBack }) => {
                 }}
               >
                 PARAMETER/ENTITY: {entry.name.toUpperCase()}
+              </div>
+            )}
+            {lab?.name && (
+              <div
+                style={{
+                  fontSize: "10px",
+                  fontWeight: "bold",
+                  marginTop: "1px",
+                  color: "#777",
+                }}
+              >
+                LABORATORY: {lab.name.toUpperCase()} ({lab.code})
               </div>
             )}
           </div>

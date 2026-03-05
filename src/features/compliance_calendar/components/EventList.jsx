@@ -46,7 +46,7 @@ const EventList = () => {
   const totalPages = Math.ceil(filteredEvents.length / rowsPerPage);
   const paginatedEvents = filteredEvents.slice(
     (page - 1) * rowsPerPage,
-    page * rowsPerPage
+    page * rowsPerPage,
   );
 
   useEffect(() => {
@@ -90,9 +90,7 @@ const EventList = () => {
 
     // Type filter
     if (typeFilter !== "all") {
-      filtered = filtered.filter(
-        (event) => event.eventTypeId === parseInt(typeFilter),
-      );
+      filtered = filtered.filter((event) => event.eventTypeId === typeFilter);
     }
 
     setFilteredEvents(filtered);
@@ -337,4 +335,3 @@ const EventList = () => {
 };
 
 export default EventList;
-

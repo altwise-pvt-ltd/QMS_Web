@@ -6,70 +6,94 @@ const EntryForm = ({ onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     name: "",
     cycle: "Daily",
-    parameters: [""],
+    parameters: [{ id: crypto.randomUUID(), value: "" }],
   });
 
+  const isFormValid =
+    formData.name.trim() !== "" &&
+    formData.parameters.some((p) => p.value.trim() !== "");
+
   const addParameter = () => {
-    setFormData({ ...formData, parameters: [...formData.parameters, ""] });
+    setFormData({
+      ...formData,
+      parameters: [
+        ...formData.parameters,
+        { id: crypto.randomUUID(), value: "" },
+      ],
+    });
   };
 
-  const removeParameter = (index) => {
-    const newParams = formData.parameters.filter((_, i) => i !== index);
-    setFormData({ ...formData, parameters: newParams });
+  const removeParameter = (id) => {
+    if (formData.parameters.length <= 1) return;
+    setFormData({
+      ...formData,
+      parameters: formData.parameters.filter((p) => p.id !== id),
+    });
   };
 
-  const updateParameter = (index, value) => {
-    const newParams = [...formData.parameters];
-    newParams[index] = value;
-    setFormData({ ...formData, parameters: newParams });
+  const updateParameter = (id, value) => {
+    setFormData({
+      ...formData,
+      parameters: formData.parameters.map((p) =>
+        p.id === id ? { ...p, value } : p,
+      ),
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name) return;
+    if (!isFormValid) return;
+
+    const validParams = formData.parameters
+      .map((p) => p.value.trim())
+      .filter((v) => v !== "");
+
     onSave({
-      ...formData,
+      name: formData.name.trim(),
+      cycle: formData.cycle,
       id: Date.now(),
-      type: "custom", // Marking as custom since it's user-defined
-      parameters: formData.parameters.filter((p) => p.trim() !== ""),
+      type: "custom",
+      parameters: validParams,
     });
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-white rounded-2xl">
+      <div className="p-6 border-b border-slate-100 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Create New Entry</h2>
-          <p className="text-xs text-slate-500 font-medium">
-            Define a new log category and its parameters.
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+            New Logging Category
+          </h2>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+            Define entry schema & cycle
           </p>
         </div>
         <button
           onClick={onCancel}
-          className="p-2 hover:bg-slate-100 rounded-full text-slate-400"
+          className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors"
         >
-          <X size={20} />
+          <X size={18} strokeWidth={2.5} />
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-400 uppercase">
-            Entry Name
+      <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+            Category Name
           </label>
           <input
             type="text"
             required
-            placeholder="e.g. Daily Temperature Check"
+            placeholder="e.g. Sterilization Registry"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-indigo-600 outline-none text-sm font-bold"
+            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-indigo-600 outline-none text-sm font-bold transition-all placeholder:text-slate-300"
           />
         </div>
 
-        <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-400 uppercase">
-            Recording Cycle
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+            Expected Frequency
           </label>
           <div className="grid grid-cols-3 gap-2">
             {RECORDING_CYCLES.map((option) => (
@@ -79,49 +103,53 @@ const EntryForm = ({ onSave, onCancel }) => {
                 onClick={() =>
                   setFormData({ ...formData, cycle: option.value })
                 }
-                className={`py-2 px-1 rounded-lg text-[10px] font-bold border-2 transition-all ${formData.cycle === option.value
-                  ? "border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm"
-                  : "border-slate-100 bg-slate-50 text-slate-500"
-                  }`}
+                className={`py-2 px-1 rounded-lg text-[10px] font-black border transition-all ${
+                  formData.cycle === option.value
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-200 bg-slate-50 text-slate-400 hover:bg-slate-100"
+                }`}
               >
-                {option.label}
+                {option.label.toUpperCase()}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-[10px] font-bold text-slate-400 uppercase">
-              Entry Parameters
+        <div className="space-y-3">
+          <div className="flex items-center justify-between ml-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              Schema Parameters
             </label>
             <button
               type="button"
               onClick={addParameter}
-              className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+              className="px-3 py-1 bg-slate-50 text-[10px] font-black text-slate-600 rounded-md hover:bg-slate-900 hover:text-white transition-all flex items-center gap-1.5 border border-slate-200 uppercase tracking-wider"
             >
-              <Plus size={12} strokeWidth={3} />
-              Add
+              <Plus size={12} strokeWidth={4} />
+              Add Field
             </button>
           </div>
 
-          <div className="space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-1">
-            {formData.parameters.map((param, index) => (
-              <div key={index} className="flex gap-2">
+          <div className="space-y-2 max-h-48 overflow-y-auto px-1 custom-scrollbar">
+            {formData.parameters.map((param) => (
+              <div
+                key={param.id}
+                className="flex gap-2 group animate-in slide-in-from-right-1"
+              >
                 <input
                   type="text"
-                  placeholder="e.g. Morning Temperature"
-                  value={param}
-                  onChange={(e) => updateParameter(index, e.target.value)}
-                  className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs font-medium"
+                  placeholder="Field Label (e.g. Temp C)"
+                  value={param.value}
+                  onChange={(e) => updateParameter(param.id, e.target.value)}
+                  className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-xl outline-none text-xs font-bold focus:border-indigo-400 transition-all placeholder:text-slate-300"
                 />
                 {formData.parameters.length > 1 && (
                   <button
                     type="button"
-                    onClick={() => removeParameter(index)}
-                    className="p-2 text-slate-300 hover:text-red-500 transition-colors"
+                    onClick={() => removeParameter(param.id)}
+                    className="p-2 text-slate-300 hover:text-red-600 rounded-lg transition-all"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={16} />
                   </button>
                 )}
               </div>
@@ -133,16 +161,22 @@ const EntryForm = ({ onSave, onCancel }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 py-3 text-slate-500 font-bold text-sm hover:bg-slate-50 rounded-xl transition-all"
+            className="flex-1 py-3 bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all active:scale-95"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="flex-1 py-3 bg-indigo-600 text-black font-bold text-sm rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center gap-2"
+            disabled={!isFormValid}
+            className={`flex-2 py-3 px-6 flex items-center justify-center gap-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all
+              ${
+                isFormValid
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95"
+                  : "bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed"
+              }`}
           >
-            <CheckCircle2 size={16} />
-            Save Entry
+            <CheckCircle2 size={16} strokeWidth={3} />
+            <span>Save Category</span>
           </button>
         </div>
       </form>

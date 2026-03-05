@@ -1,93 +1,56 @@
-import { db } from "../../../db/index";
+import api from "../../../auth/api";
+import { EVENT_TYPES } from "../config/eventTypes";
+
+/**
+ * Field Mappings: UI (Old Dexie) <-> API (New Backend)
+ */
+const mapApiToUi = (apiEvent) => ({
+  id: apiEvent.complianceEventId,
+  eventTypeId: apiEvent.complianceEventType, // String name (e.g., "Calibration")
+  title: apiEvent.complianceEventTitle,
+  dueDate: apiEvent.complianceDueDate,
+  recurrence: apiEvent.complianceRecurrence,
+  assignedTo: apiEvent.complianceAssignedTo,
+  status: apiEvent.complianceStatus,
+  reminderDays: apiEvent.complianceReminderDays,
+  notes: apiEvent.complianceNotes,
+  cmpId: apiEvent.cmpId,
+  isOverdue: apiEvent.complianceIsOverdue,
+  daysRemaining: apiEvent.complianceDaysRemaining,
+});
+
+const mapUiToApi = (uiEvent) => ({
+  complianceEventId: uiEvent.id || 0,
+  complianceEventType: uiEvent.eventTypeId || "", // Required
+  complianceEventTitle: uiEvent.title || "", // Required
+  complianceDueDate: uiEvent.dueDate || "",
+  complianceRecurrence: uiEvent.recurrence || "one-time", // Required
+  complianceAssignedTo: uiEvent.assignedTo || "", // Required
+  complianceStatus: uiEvent.status || "Pending",
+  complianceReminderDays: parseInt(uiEvent.reminderDays) || 0,
+  complianceNotes: uiEvent.notes || "", // Required
+});
 
 // ==================== EVENT TYPES ====================
 
 /**
- * Initialize default event types in the database
+ * Initialize default event types (Mock/Legacy - Not used by API)
  */
 export const initializeEventTypes = async () => {
-  try {
-    const existingTypes = await db.compliance_event_types.toArray();
-    if (existingTypes.length > 0) {
-      return; // Already initialized
-    }
-
-    const defaultTypes = [
-      {
-        name: "Calibration",
-        category: "Equipment",
-        color: "#3B82F6",
-        icon: "Gauge",
-        defaultFrequency: "yearly",
-      },
-      {
-        name: "AMC",
-        category: "Maintenance",
-        color: "#10B981",
-        icon: "Wrench",
-        defaultFrequency: "yearly",
-      },
-      {
-        name: "PT/EQA",
-        category: "Quality Assurance",
-        color: "#8B5CF6",
-        icon: "TestTube",
-        defaultFrequency: "quarterly",
-      },
-      {
-        name: "Internal Audit",
-        category: "Audit",
-        color: "#F59E0B",
-        icon: "ClipboardCheck",
-        defaultFrequency: "quarterly",
-      },
-      {
-        name: "External Audit",
-        category: "Audit",
-        color: "#EF4444",
-        icon: "Shield",
-        defaultFrequency: "yearly",
-      },
-      {
-        name: "License Renewal",
-        category: "Legal",
-        color: "#EC4899",
-        icon: "FileText",
-        defaultFrequency: "yearly",
-      },
-      {
-        name: "KPI Submission",
-        category: "Reporting",
-        color: "#06B6D4",
-        icon: "BarChart",
-        defaultFrequency: "monthly",
-      },
-      {
-        name: "Training",
-        category: "HR",
-        color: "#84CC16",
-        icon: "GraduationCap",
-        defaultFrequency: "yearly",
-      },
-    ];
-
-    await db.compliance_event_types.bulkAdd(defaultTypes);
-    console.log("✅ Event types initialized");
-  } catch (error) {
-    console.error("Error initializing event types:", error);
-  }
+  return;
 };
 
 /**
- * Get all event types
+ * Get all event types from config
  */
 export const getAllEventTypes = async () => {
-  try {
-    return await db.compliance_event_types.toArray();
-  } catch (error) {
-    console.error("Error fetching event types:", error);
-    return [];
-  }
+  // Map normalized EVENT_TYPES config to array for UI compatibility
+  return Object.values(EVENT_TYPES).map(type => ({
+    id: type.name, // Use name as ID for string matching with API
+    name: type.name,
+    color: type.color,
+    icon: type.icon
+  }));
 };
 
 // ==================== COMPLIANCE EVENTS ====================
@@ -97,12 +60,9 @@ export const getAllEventTypes = async () => {
  */
 export const createEvent = async (eventData) => {
   try {
-    const id = await db.compliance_events.add({
-      ...eventData,
-      status: eventData.status || "pending",
-      createdAt: new Date().toISOString(),
-    });
-    return { id, ...eventData };
+    const apiData = mapUiToApi(eventData);
+    const response = await api.post("/ComplianceManagement/CreateComplianceEvent", apiData);
+    return mapApiToUi(response.data.complianceEvent || response.data);
   } catch (error) {
     console.error("Error creating event:", error);
     throw error;
@@ -114,7 +74,8 @@ export const createEvent = async (eventData) => {
  */
 export const getAllEvents = async () => {
   try {
-    return await db.compliance_events.toArray();
+    const response = await api.get("/ComplianceManagement/GetAllComplianceEvents");
+    return (response.data || []).map(mapApiToUi);
   } catch (error) {
     console.error("Error fetching events:", error);
     return [];
@@ -126,7 +87,8 @@ export const getAllEvents = async () => {
  */
 export const getEventById = async (id) => {
   try {
-    return await db.compliance_events.get(id);
+    const response = await api.get(`/ComplianceManagement/GetComplianceEventById/${id}`);
+    return mapApiToUi(response.data);
   } catch (error) {
     console.error("Error fetching event:", error);
     return null;
@@ -138,8 +100,42 @@ export const getEventById = async (id) => {
  */
 export const updateEvent = async (id, updates) => {
   try {
-    await db.compliance_events.update(id, updates);
-    return await getEventById(id);
+    // 1. Fetch RAW data from API to preserve all fields (organizationId, createdBy, cmpId, etc.)
+    const responseGet = await api.get(`/ComplianceManagement/GetComplianceEventById/${id}`);
+    const rawEvent = responseGet.data;
+    if (!rawEvent) throw new Error("Event not found");
+
+    // 2. Map UI updates to API keys
+    const apiUpdates = {
+      complianceEventTitle: updates.title,
+      complianceEventType: updates.eventTypeId,
+      complianceDueDate: updates.dueDate,
+      complianceRecurrence: updates.recurrence,
+      complianceAssignedTo: updates.assignedTo,
+      complianceStatus: updates.status,
+      complianceNotes: updates.notes,
+    };
+
+    if (updates.reminderDays !== undefined) {
+      apiUpdates.complianceReminderDays = parseInt(updates.reminderDays) || 0;
+    }
+
+    // 3. Merge updates into the original raw record to ensure strict requirements are met
+    // and hidden fields (like organizationId) are preserved.
+    const mergedApiData = { ...rawEvent };
+    
+    Object.keys(apiUpdates).forEach(key => {
+      if (apiUpdates[key] !== undefined) {
+        mergedApiData[key] = apiUpdates[key];
+      }
+    });
+
+    const responsePut = await api.put("/ComplianceManagement/UpdateComplianceEvent", mergedApiData);
+    
+    if (responsePut.data.success || responsePut.status === 200) {
+      return await getEventById(id);
+    }
+    return mapApiToUi(responsePut.data.complianceEvent || responsePut.data);
   } catch (error) {
     console.error("Error updating event:", error);
     throw error;
@@ -151,9 +147,8 @@ export const updateEvent = async (id, updates) => {
  */
 export const deleteEvent = async (id) => {
   try {
-    await db.compliance_events.delete(id);
-    // Also delete related records
-    await db.compliance_records.where("eventId").equals(id).delete();
+    const response = await api.delete(`/ComplianceManagement/DeleteComplianceEventById/${id}`);
+    return response.data;
   } catch (error) {
     console.error("Error deleting event:", error);
     throw error;
@@ -161,31 +156,12 @@ export const deleteEvent = async (id) => {
 };
 
 /**
- * Get events by status
- */
-export const getEventsByStatus = async (status) => {
-  try {
-    return await db.compliance_events.where("status").equals(status).toArray();
-  } catch (error) {
-    console.error("Error fetching events by status:", error);
-    return [];
-  }
-};
-
-/**
- * Get upcoming events (next 30 days)
+ * Get upcoming events (next X days)
  */
 export const getUpcomingEvents = async (days = 30) => {
   try {
-    const today = new Date();
-    const futureDate = new Date();
-    futureDate.setDate(today.getDate() + days);
-
-    const allEvents = await db.compliance_events.toArray();
-    return allEvents.filter((event) => {
-      const dueDate = new Date(event.dueDate);
-      return dueDate >= today && dueDate <= futureDate;
-    });
+    const response = await api.get(`/ComplianceManagement/GetUpcomingComplianceEvents?days=${days}`);
+    return (response.data || []).map(mapApiToUi);
   } catch (error) {
     console.error("Error fetching upcoming events:", error);
     return [];
@@ -197,11 +173,8 @@ export const getUpcomingEvents = async (days = 30) => {
  */
 export const getOverdueEvents = async () => {
   try {
-    const today = new Date().toISOString().split("T")[0];
-    const allEvents = await db.compliance_events.toArray();
-    return allEvents.filter(
-      (event) => event.dueDate < today && event.status !== "completed"
-    );
+    const response = await api.get("/ComplianceManagement/GetOverdueComplianceEvents");
+    return (response.data || []).map(mapApiToUi);
   } catch (error) {
     console.error("Error fetching overdue events:", error);
     return [];
@@ -211,121 +184,58 @@ export const getOverdueEvents = async () => {
 // ==================== LEGAL DOCUMENTS ====================
 
 /**
- * Create a legal document
+ * Create a legal document (TODO: Needs Backend Endpoint)
  */
 export const createLegalDocument = async (documentData) => {
-  try {
-    const id = await db.legal_documents.add({
-      ...documentData,
-      status: documentData.status || "active",
-      createdAt: new Date().toISOString(),
-    });
-    return { id, ...documentData };
-  } catch (error) {
-    console.error("Error creating legal document:", error);
-    throw error;
-  }
+  // Placeholder - Needs API
+  console.warn("createLegalDocument API not implemented");
+  return { ...documentData, id: Date.now() };
 };
 
 /**
- * Get all legal documents
+ * Get all legal documents (TODO: Needs Backend Endpoint)
  */
 export const getAllLegalDocuments = async () => {
-  try {
-    return await db.legal_documents.toArray();
-  } catch (error) {
-    console.error("Error fetching legal documents:", error);
-    return [];
-  }
+  // Placeholder - Needs API
+  return [];
 };
 
 /**
- * Get expiring documents (within specified days)
+ * Get expiring documents (TODO: Needs Backend Endpoint)
  */
 export const getExpiringDocuments = async (days = 30) => {
-  try {
-    const today = new Date();
-    const futureDate = new Date();
-    futureDate.setDate(today.getDate() + days);
-
-    const allDocs = await db.legal_documents.toArray();
-    return allDocs.filter((doc) => {
-      if (!doc.expiryDate) return false;
-      const expiryDate = new Date(doc.expiryDate);
-      return expiryDate >= today && expiryDate <= futureDate;
-    });
-  } catch (error) {
-    console.error("Error fetching expiring documents:", error);
-    return [];
-  }
+  // Placeholder - Needs API
+  return [];
 };
 
 /**
- * Update a legal document
+ * Update a legal document (TODO: Needs Backend Endpoint)
  */
 export const updateLegalDocument = async (id, updates) => {
-  try {
-    await db.legal_documents.update(id, updates);
-    return await db.legal_documents.get(id);
-  } catch (error) {
-    console.error("Error updating legal document:", error);
-    throw error;
-  }
+  // Placeholder - Needs API
+  return { ...updates, id };
 };
 
 /**
- * Delete a legal document
+ * Delete a legal document (TODO: Needs Backend Endpoint)
  */
 export const deleteLegalDocument = async (id) => {
-  try {
-    await db.legal_documents.delete(id);
-  } catch (error) {
-    console.error("Error deleting legal document:", error);
-    throw error;
-  }
+  // Placeholder - Needs API
+  return true;
 };
 
 // ==================== COMPLIANCE RECORDS ====================
+// These are usually handled via file upload services or specific record endpoints
 
-/**
- * Create a compliance record (file upload)
- */
 export const createComplianceRecord = async (recordData) => {
-  try {
-    const id = await db.compliance_records.add({
-      ...recordData,
-      uploadDate: new Date().toISOString(),
-    });
-    return { id, ...recordData };
-  } catch (error) {
-    console.error("Error creating compliance record:", error);
-    throw error;
-  }
+  console.warn("createComplianceRecord API not implemented");
+  return { ...recordData, id: Date.now() };
 };
 
-/**
- * Get records for an event
- */
 export const getRecordsByEventId = async (eventId) => {
-  try {
-    return await db.compliance_records
-      .where("eventId")
-      .equals(eventId)
-      .toArray();
-  } catch (error) {
-    console.error("Error fetching records:", error);
-    return [];
-  }
+  return [];
 };
 
-/**
- * Delete a compliance record
- */
 export const deleteComplianceRecord = async (id) => {
-  try {
-    await db.compliance_records.delete(id);
-  } catch (error) {
-    console.error("Error deleting compliance record:", error);
-    throw error;
-  }
+  return true;
 };

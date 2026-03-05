@@ -6,18 +6,58 @@ import LabDetail from "./components/LabDetail";
 import DataFeedForm from "./components/DataFeedForm";
 import LabForm from "./components/LabForm";
 import ReceptionLog from "./components/ReceptionLog";
-import { DUMMY_ENTRIES, DUMMY_LABS } from "./data/entriesData";
+import entriesService from "./services/entriesService";
 
 const EntriesManagement = () => {
   const [view, setView] = useState("list");
   const [showLabForm, setShowLabForm] = useState(false);
   const [showEntryForm, setShowEntryForm] = useState(false);
-  const [entries, setEntries] = useState(DUMMY_ENTRIES);
-  const [labs, setLabs] = useState(DUMMY_LABS);
+  const [entries, setEntries] = useState([]);
+  const [labs, setLabs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [selectedLab, setSelectedLab] = useState(null);
+
+  // Fetch all entries on mount
+  React.useEffect(() => {
+    const fetchEntries = async () => {
+      try {
+        setIsLoading(true);
+        const data = await entriesService.getAllEntries();
+        setEntries(data);
+      } catch (err) {
+        setError("Failed to fetch entries");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchEntries();
+  }, []);
+
+  // Fetch labs when an entry is selected
+  React.useEffect(() => {
+    if (selectedEntry && view === "labList") {
+      const fetchLabs = async () => {
+        try {
+          setIsLoading(true);
+          const data = await entriesService.getLaboratoriesByEntryId(
+            selectedEntry.id,
+          );
+          setLabs(data);
+        } catch (err) {
+          setError("Failed to fetch laboratories");
+          console.error(err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchLabs();
+    }
+  }, [selectedEntry, view]);
 
   const filteredEntries = entries.filter((entry) => {
     const matchesFilter = filter === "All" || entry.cycle === filter;
@@ -28,8 +68,8 @@ const EntriesManagement = () => {
   });
 
   return (
-    <div className="bg-slate-50 min-h-screen text-slate-900 font-sans">
-      <main className="">
+    <div className="bg-slate-100 min-h-screen text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+      <main className="max-w-7xl mx-auto">
         {view === "list" ? (
           <EntryList
             filteredEntries={filteredEntries}
@@ -42,6 +82,7 @@ const EntriesManagement = () => {
               setView("labList");
             }}
             onCreateNew={() => setShowEntryForm(true)}
+            isLoading={isLoading}
           />
         ) : view === "labList" ? (
           <LabList
@@ -54,6 +95,7 @@ const EntriesManagement = () => {
               setSelectedLab(lab);
               setView("labDetail");
             }}
+            isLoading={isLoading}
           />
         ) : view === "labDetail" ? (
           <LabDetail
@@ -66,19 +108,32 @@ const EntriesManagement = () => {
         ) : (
           <ReceptionLog
             entry={selectedEntry}
+            lab={selectedLab}
             onBack={() => setView("labDetail")}
           />
         )}
       </main>
 
+      {error && (
+        <div className="fixed bottom-4 right-4 bg-red-600 text-white px-6 py-3 rounded-2xl shadow-2xl animate-in slide-in-from-right-4">
+          {error}
+        </div>
+      )}
+
       {/* Entry Creation Popup */}
       {showEntryForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-in fade-in duration-300">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200">
             <EntryForm
-              onSave={(newEntry) => {
-                setEntries([newEntry, ...entries]);
-                setShowEntryForm(false);
+              onSave={async (newEntryData) => {
+                try {
+                  const savedEntry =
+                    await entriesService.createEntry(newEntryData);
+                  setEntries([savedEntry, ...entries]);
+                  setShowEntryForm(false);
+                } catch (err) {
+                  console.error("Error creating entry:", err);
+                }
               }}
               onCancel={() => setShowEntryForm(false)}
             />
@@ -88,17 +143,22 @@ const EntriesManagement = () => {
 
       {/* Laboratory Addition Popup */}
       {showLabForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-in fade-in duration-300">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200">
             <LabForm
-              onSave={(newLabData) => {
-                const newLab = {
-                  id: Date.now(),
-                  entryId: selectedEntry?.id || 1,
-                  ...newLabData,
-                };
-                setLabs([newLab, ...labs]);
-                setShowLabForm(false);
+              onSave={async (newLabData) => {
+                try {
+                  const labToCreate = {
+                    entryId: selectedEntry?.id,
+                    ...newLabData,
+                  };
+                  const savedLab =
+                    await entriesService.createLaboratory(labToCreate);
+                  setLabs([savedLab, ...labs]);
+                  setShowLabForm(false);
+                } catch (err) {
+                  console.error("Error creating lab:", err);
+                }
               }}
               onCancel={() => setShowLabForm(false)}
             />
@@ -108,8 +168,8 @@ const EntriesManagement = () => {
 
       {/* Simplest Ever Popup Modal */}
       {view === "feedForm" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-in fade-in duration-300">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200">
             <DataFeedForm
               selectedLab={selectedLab}
               selectedEntry={selectedEntry}

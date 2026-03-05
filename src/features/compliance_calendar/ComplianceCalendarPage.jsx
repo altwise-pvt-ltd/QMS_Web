@@ -11,9 +11,6 @@ import ComplianceDashboard from "./components/ComplianceDashboard";
 import EventList from "./components/EventList";
 import EventCalendar from "./components/EventCalendar";
 import DocumentList from "./components/DocumentList";
-import { initializeEventTypes } from "./services/complianceService";
-import { seedComplianceData } from "./utils/seedData";
-import { addExpiryDatesToDocuments } from "./utils/documentMigration";
 
 const ComplianceCalendarPage = () => {
   const [activeView, setActiveView] = useState("dashboard");
@@ -54,10 +51,11 @@ const ComplianceCalendarPage = () => {
                 <button
                   key={view.id}
                   onClick={() => setActiveView(view.id)}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-md border transition-all ${isActive
-                    ? "bg-slate-50 border-slate-200 border-b-slate-50 text-indigo-600"
-                    : "text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100"
-                    }`}
+                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-md border transition-all ${
+                    isActive
+                      ? "bg-slate-50 border-slate-200 border-b-slate-50 text-indigo-600"
+                      : "text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100"
+                  }`}
                 >
                   <Icon size={16} />
                   {view.label}

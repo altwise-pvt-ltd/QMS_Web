@@ -10,17 +10,15 @@ import {
   X,
 } from "lucide-react";
 import { db } from "../../../db";
-import { getDepartments } from "../../department/services/departmentService";
 import staffService from "../../staff/services/staffService";
 import UploadPreviewModal from "../../documents/component/UploadPreviewModal";
 
-const NCEntry = ({ entry, onUpdate }) => {
+const NCEntry = ({ entry, onUpdate, departments = [] }) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [availableSubcategories, setAvailableSubcategories] = useState([]);
   const [staffList, setStaffList] = useState([]);
   const [showStaffDropdown, setShowStaffDropdown] = useState(false);
   const [staffSearch, setStaffSearch] = useState("");
-  const [departments, setDepartments] = useState([]);
 
   useEffect(() => {
     const fetchStaff = async () => {
@@ -48,19 +46,6 @@ const NCEntry = ({ entry, onUpdate }) => {
       }
     };
     fetchStaff();
-
-    const fetchDepartments = async () => {
-      try {
-        const depts = await getDepartments();
-        setDepartments(depts);
-      } catch (error) {
-        console.error("Error fetching departments:", error);
-      }
-    };
-
-    if (departments.length === 0) {
-      fetchDepartments();
-    }
   }, [departments]);
 
   useEffect(() => {

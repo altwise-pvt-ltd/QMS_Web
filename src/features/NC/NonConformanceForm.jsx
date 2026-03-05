@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useAuth } from "../../auth/AuthContext";
 import { ncService } from "./services/ncService";
 import { getDepartments } from "../department/services/departmentService";
@@ -9,7 +9,7 @@ import NCActions from "./components/NCActions";
 import NCHistoryTable from "./components/NCHistoryTable";
 import NCDetailsModal from "./components/NCDetailsModal";
 import { Alert, Snackbar, Button } from "@mui/material";
-import { History, Plus, Search, Filter, AlertTriangle } from "lucide-react";
+import { History, Plus, Search, AlertTriangle } from "lucide-react";
 
 const INITIAL_FORM_DATA = {
   documentNo: "ADC-FORM-24",
@@ -33,7 +33,7 @@ const INITIAL_FORM_DATA = {
     taggedStaff: [],
     closureVerification: "",
     observations: "",
-    evidenceImage: null,
+    evidenceImage: null, // File object — kept separate from form fields
   },
 };
 
@@ -42,26 +42,32 @@ export default function DailyNCForm() {
 
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
   const [historyReports, setHistoryReports] = useState([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-
   const [departments, setDepartments] = useState([]);
-
   const [alertConfig, setAlertConfig] = useState({
     open: false,
     severity: "success",
     message: "",
   });
 
-  const handleCloseAlert = () => {
-    setAlertConfig((prev) => ({ ...prev, open: false }));
-  };
+  /**
+   * Stable NCR ID for the life of this form session.
+   * Generated once on mount — all evidence files for this NCR
+   * go into the same R2 folder: qmsdocs/ncr/{date}/{ncrId}/
+   * Reset after successful submit.
+   */
+  const ncrId = useRef(crypto.randomUUID());
 
-  /* Fetch Departments for ID mapping */
+  const handleCloseAlert = () =>
+    setAlertConfig((prev) => ({ ...prev, open: false }));
+
+  // ── Fetch Departments ─────────────────────────────────────────────────────
   useEffect(() => {
     const fetchDepts = async () => {
       try {
@@ -74,14 +80,12 @@ export default function DailyNCForm() {
     fetchDepts();
   }, []);
 
-  /* Autofill responsibility + department */
+  // ── Autofill responsibility + department ──────────────────────────────────
   useEffect(() => {
     if (!user) return;
-
     setFormData((prev) => {
       const { responsibility, department } = prev.entry;
       if (responsibility && department) return prev;
-
       return {
         ...prev,
         entry: {
@@ -93,7 +97,7 @@ export default function DailyNCForm() {
     });
   }, [user]);
 
-  /* Fetch history */
+  // ── Fetch History ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (showHistory) fetchHistory();
   }, [showHistory]);
@@ -133,11 +137,8 @@ export default function DailyNCForm() {
             correctiveAction: report.correctiveActionTaken,
             preventiveAction: report.preventiveActionTaken,
             closureVerification: report.closureVerification,
-            evidenceImage: report.evidenceDocumentPath
-              ? report.evidenceDocumentPath.startsWith("http")
-                ? report.evidenceDocumentPath
-                : `https://qmsapi.altwise.in/${report.evidenceDocumentPath}`
-              : null,
+            // ← Use EvidenceDocumentPath (R2 URL) directly
+            evidenceImage: report.evidenceDocumentPath || null,
             taggedStaff: report.staffIdinvolvedInIncident
               ? [
                   {
@@ -163,10 +164,10 @@ export default function DailyNCForm() {
     }
   };
 
+  // ── Filtered + derived data ───────────────────────────────────────────────
   const filteredReports = useMemo(() => {
     return historyReports.filter((report) => {
       const entry = report.entry || {};
-
       const matchesSearch =
         entry.ncDetails?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         entry.responsibility
@@ -175,10 +176,8 @@ export default function DailyNCForm() {
         report.submittedBy?.name
           ?.toLowerCase()
           .includes(searchQuery.toLowerCase());
-
       const matchesCategory =
         selectedCategory === "All" || entry.category === selectedCategory;
-
       return matchesSearch && matchesCategory;
     });
   }, [historyReports, searchQuery, selectedCategory]);
@@ -190,6 +189,7 @@ export default function DailyNCForm() {
     return ["All", ...Array.from(set).sort()];
   }, [historyReports]);
 
+  // ── Handlers ─────────────────────────────────────────────────────────────
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -197,80 +197,72 @@ export default function DailyNCForm() {
   const updateEntry = (_id, field, value) => {
     setFormData((prev) => ({
       ...prev,
-      entry: {
-        ...prev.entry,
-        [field]: value,
-      },
+      entry: { ...prev.entry, [field]: value },
     }));
   };
 
+  // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     setIsSubmitting(true);
-
-    // Finding IDs for mapping
-    const deptId =
-      departments.find(
-        (d) => (d.departmentName || d.name) === formData.entry.department,
-      )?.departmentId || "1";
-
-    // Category mapping (assuming indices + 1 for now as fallback)
-    const categoryIndex = NC_OPTIONS.findIndex(
-      (c) => c.category === formData.entry.category,
-    );
-    const categoryId =
-      categoryIndex !== -1 ? (categoryIndex + 1).toString() : "1";
-
-    const subCategoryIndex =
-      categoryIndex !== -1
-        ? NC_OPTIONS[categoryIndex].subcategories.indexOf(
-            formData.entry.ncDetails,
-          )
-        : -1;
-    const subCategoryId =
-      subCategoryIndex !== -1 ? (subCategoryIndex + 1).toString() : "1";
-
-    const staffId = formData.entry.taggedStaff?.[0]?.id || "1";
-
-    const formDataPayload = new FormData();
-
-    formDataPayload.append("NonConformanceId", "0"); // 0 for new
-    formDataPayload.append("NonConformanceIssueId", "NC");
-    formDataPayload.append("Supplier", "Internal Dept"); // Default or from user?
-    formDataPayload.append("Status", "Open");
-    formDataPayload.append("NonConformanceStatus", "Under Investigation");
-    formDataPayload.append("Date", formData.entry.date);
-    formDataPayload.append("NonConformanceIssueDate", formData.entry.date);
-    formDataPayload.append(
-      "DetailsOfNonConformance",
-      formData.entry.dailyNcDetails,
-    );
-    formDataPayload.append("DepartmentId", deptId);
-    formDataPayload.append("NonConformanceCategoryId", categoryId);
-    formDataPayload.append("NonConformanceSubCategoryId", subCategoryId);
-    formDataPayload.append("Effectiveness", formData.entry.effectiveness);
-    formDataPayload.append("Observations", formData.entry.observations);
-    formDataPayload.append("RootCause", formData.entry.rootCause);
-    formDataPayload.append(
-      "CorrectiveActionTaken",
-      formData.entry.correctiveAction,
-    );
-    formDataPayload.append(
-      "PreventiveActionTaken",
-      formData.entry.preventiveAction,
-    );
-    formDataPayload.append("StaffIdinvolvedInIncident", staffId);
-    formDataPayload.append("Responsibility", formData.entry.responsibility);
-    formDataPayload.append(
-      "ClosureVerification",
-      formData.entry.closureVerification,
-    );
-
-    if (formData.entry.evidenceImage) {
-      formDataPayload.append("EvidenceDocument", formData.entry.evidenceImage);
-    }
+    setUploadProgress(0);
 
     try {
-      await ncService.createNC(formDataPayload);
+      // ── ID mapping ──────────────────────────────────────────────────────
+      const deptId =
+        departments.find(
+          (d) => (d.departmentName || d.name) === formData.entry.department,
+        )?.departmentId || "1";
+
+      const categoryIndex = NC_OPTIONS.findIndex(
+        (c) => c.category === formData.entry.category,
+      );
+      const categoryId =
+        categoryIndex !== -1 ? (categoryIndex + 1).toString() : "1";
+
+      const subCategoryIndex =
+        categoryIndex !== -1
+          ? NC_OPTIONS[categoryIndex].subcategories.indexOf(
+              formData.entry.ncDetails,
+            )
+          : -1;
+      const subCategoryId =
+        subCategoryIndex !== -1 ? (subCategoryIndex + 1).toString() : "1";
+
+      const staffId = formData.entry.taggedStaff?.[0]?.id || "1";
+
+      // ── Build FormData payload (no binary file) ──────────────────────────
+      const payload = new FormData();
+      payload.append("NonConformanceId", "0");
+      payload.append("NonConformanceIssueId", "NC");
+      payload.append("Supplier", "Internal Dept");
+      payload.append("Status", "Open");
+      payload.append("NonConformanceStatus", "Under Investigation");
+      payload.append("Date", formData.entry.date);
+      payload.append("NonConformanceIssueDate", formData.entry.date);
+      payload.append("DetailsOfNonConformance", formData.entry.dailyNcDetails);
+      payload.append("DepartmentId", deptId);
+      payload.append("NonConformanceCategoryId", categoryId);
+      payload.append("NonConformanceSubCategoryId", subCategoryId);
+      payload.append("Effectiveness", formData.entry.effectiveness);
+      payload.append("Observations", formData.entry.observations);
+      payload.append("RootCause", formData.entry.rootCause);
+      payload.append("CorrectiveActionTaken", formData.entry.correctiveAction);
+      payload.append("PreventiveActionTaken", formData.entry.preventiveAction);
+      payload.append("StaffIdinvolvedInIncident", staffId);
+      payload.append("Responsibility", formData.entry.responsibility);
+      payload.append("ClosureVerification", formData.entry.closureVerification);
+      // NOTE: EvidenceDocumentPath is appended inside ncService.createNC
+      // after the R2 upload completes — do NOT append it here
+
+      // ── Call service — evidence upload + backend save ────────────────────
+      const evidenceFile = formData.entry.evidenceImage; // File object or null
+
+      await ncService.createNC(
+        payload,
+        evidenceFile, // ← File object — Worker uploads this to R2
+        ncrId.current, // ← stable UUID for this form session
+        (progress) => setUploadProgress(progress),
+      );
 
       setAlertConfig({
         open: true,
@@ -278,6 +270,8 @@ export default function DailyNCForm() {
         message: "Non-Conformance created successfully!",
       });
 
+      // Reset form and generate fresh ncrId for next submission
+      ncrId.current = crypto.randomUUID();
       setFormData({
         ...INITIAL_FORM_DATA,
         entry: {
@@ -291,13 +285,15 @@ export default function DailyNCForm() {
       setAlertConfig({
         open: true,
         severity: "error",
-        message: "Failed to save the report.",
+        message: err.message || "Failed to save the report.",
       });
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(0);
     }
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="p-4 md:p-8 lg:p-12 w-full min-h-screen bg-gray-50">
       <div className="w-full space-y-6">
@@ -324,9 +320,18 @@ export default function DailyNCForm() {
           </Button>
         </div>
 
+        {/* Upload progress bar — visible during evidence upload */}
+        {isSubmitting && uploadProgress > 0 && (
+          <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${uploadProgress}%` }}
+            />
+          </div>
+        )}
+
         {showHistory ? (
           <>
-            {/* Filters */}
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <Search
@@ -340,7 +345,6 @@ export default function DailyNCForm() {
                   className="w-full pl-10 pr-4 py-2 border rounded-xl"
                 />
               </div>
-
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
@@ -364,8 +368,16 @@ export default function DailyNCForm() {
           <div className="bg-white rounded-xl border">
             <NCHeader formData={formData} onFieldChange={handleFieldChange} />
             <div className="p-6 space-y-6">
-              <NCEntry entry={formData.entry} onUpdate={updateEntry} />
-              <NCActions onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+              <NCEntry
+                entry={formData.entry}
+                onUpdate={updateEntry}
+                departments={departments}
+              />
+              <NCActions
+                onSubmit={handleSubmit}
+                isSubmitting={isSubmitting}
+                uploadProgress={uploadProgress}
+              />
             </div>
           </div>
         )}

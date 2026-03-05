@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { loginUser, getProfile } from "./authService";
 import { useAuth } from "./AuthContext";
 import { setCredentials } from "../store/slices/authSlice";
+import organizationService from "../features/onboarding/services/organizationService";
 import "./login.css";
 
 const Login = () => {
