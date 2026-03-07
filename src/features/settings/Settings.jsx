@@ -135,6 +135,7 @@ const Settings = () => {
         businessPhone: formData.phone,
         corporateWebsite: formData.websiteUrl,
         registeredAddress: formData.address,
+        Status: "Active",
         companyLogoPath: organization?.logo || "", // Default to existing logo URL
       };
 
@@ -161,6 +162,7 @@ const Settings = () => {
           websiteUrl:
             serverData.corporateWebsite || serverData.CorporateWebsite,
           address: serverData.registeredAddress || serverData.RegisteredAddress,
+          status: serverData.status || "Active",
           logo: serverData.companyLogoPath || logoPreview,
         };
         dispatch(setOrganization(orgData));

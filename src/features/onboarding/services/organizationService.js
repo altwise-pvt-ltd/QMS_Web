@@ -146,6 +146,7 @@ const organizationService = {
         corporateWebsite:  fields.corporateWebsite,
         registeredAddress: fields.registeredAddress,
         companyLogoPath,
+        status: "Active",
       };
 
       const response = await api.put(`/Organization/UpdateOrganization/${id}`, payload);

@@ -19,6 +19,7 @@ export const qiService = {
 
   /**
    * Fetch all Quality Indicators.
+
    */
   getAllQualityIndicators: async () => {
     try {

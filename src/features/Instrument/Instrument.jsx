@@ -24,39 +24,43 @@ const Instrument = () => {
       setLoading(true);
       const data = await instrumentService.getInstruments();
 
-      // Normalize API response
-      const baseUrl = "https://qmsapi.altwise.in/";
-
-      const formatFilePath = (path) => {
-        if (!path || path === "N/A") return "N/A";
-        if (typeof path !== "string") return "N/A";
-        if (path.startsWith("http")) return path;
-
-        let cleanPath = path;
-        const markers = ["UploadedInstruments/", "Upload/", "Uploads/"];
-        for (const marker of markers) {
-          if (path.includes(marker)) {
-            cleanPath = path.substring(path.indexOf(marker));
-            break;
-          }
-        }
-        cleanPath = cleanPath.startsWith("/") ? cleanPath.substring(1) : cleanPath;
-        return `${baseUrl}${cleanPath}`;
-      };
-
       const normalizedData = data.map((item) => ({
         ...item,
         id: item.instrumentCalibrationId || item.id || Date.now(),
-        name: item.instrumentNomenclature || item.instrumentName || item.name || "Unnamed Instrument",
-        department: item.operatingDepartment || item.departmentName || item.department || "General",
+        name:
+          item.instrumentNomenclature ||
+          item.instrumentName ||
+          item.name ||
+          "Unnamed Instrument",
+        department:
+          item.operatingDepartment ||
+          item.departmentName ||
+          item.department ||
+          "General",
         expiryDate: item.expiryDate || item.nextCalibrationDate || "",
-        photo: formatFilePath(item.equipmentPhotographFilePath || item.equipmentPhotographFileName),
-        purchaseOrder: formatFilePath(item.purchaseOrderFilePath || item.purchaseOrderFileName),
-        billReceipt: formatFilePath(item.billReceiptFilePath || item.billReceiptFileName),
-        installationReport: formatFilePath(item.installationReportFilePath || item.installationReportFileName),
-        iqOqPq: formatFilePath(item.iqOqPqProtocolFilePath || item.iqOqPqProtocolFileName),
-        userManual: formatFilePath(item.userOperationsManualFilePath || item.userOperationsManualFileName),
-        calibrationCert: formatFilePath(item.latestCalibrationCertFilePath || item.latestCalibrationCertFileName),
+        photo: instrumentService.getFileUrl(
+          item.equipmentPhotographFilePath || item.equipmentPhotographFileName,
+        ),
+        purchaseOrder: instrumentService.getFileUrl(
+          item.purchaseOrderFilePath || item.purchaseOrderFileName,
+        ),
+        billReceipt: instrumentService.getFileUrl(
+          item.billReceiptFilePath || item.billReceiptFileName,
+        ),
+        installationReport: instrumentService.getFileUrl(
+          item.installationReportFilePath || item.installationReportFileName,
+        ),
+        iqOqPq: instrumentService.getFileUrl(
+          item.iqOqPqProtocolFilePath || item.iqOqPqProtocolFileName,
+        ),
+        userManual: instrumentService.getFileUrl(
+          item.userOperationsManualFilePath ||
+            item.userOperationsManualFileName,
+        ),
+        calibrationCert: instrumentService.getFileUrl(
+          item.latestCalibrationCertFilePath ||
+            item.latestCalibrationCertFileName,
+        ),
         maintenanceText: item.preventiveMaintenanceNotes || "",
       }));
 
@@ -73,7 +77,8 @@ const Instrument = () => {
   }, []);
 
   const handleDeleteInstrument = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this instrument?")) return;
+    if (!window.confirm("Are you sure you want to delete this instrument?"))
+      return;
     try {
       await instrumentService.deleteInstrument(id);
       fetchInstruments();
@@ -91,14 +96,16 @@ const Instrument = () => {
     return instruments.filter(
       (inst) =>
         inst.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        inst.department.toLowerCase().includes(searchTerm.toLowerCase())
+        inst.department.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [instruments, searchTerm]);
 
   // Stats calculation
   const stats = useMemo(() => {
     const total = instruments.length;
-    const active = instruments.filter((inst) => (inst.status || "Active") === "Active").length;
+    const active = instruments.filter(
+      (inst) => (inst.status || "Active") === "Active",
+    ).length;
 
     // Simple logic for "Calibration Due": check if expiry date is within 30 days or past
     const today = new Date();
@@ -112,9 +119,27 @@ const Instrument = () => {
     }).length;
 
     return [
-      { label: "Total Assets", value: total, icon: Zap, color: "text-indigo-600", bg: "bg-indigo-50" },
-      { label: "Calibration Due", value: due, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-      { label: "Active Status", value: active, icon: Activity, color: "text-emerald-600", bg: "bg-emerald-50" },
+      {
+        label: "Total Assets",
+        value: total,
+        icon: Zap,
+        color: "text-indigo-600",
+        bg: "bg-indigo-50",
+      },
+      {
+        label: "Calibration Due",
+        value: due,
+        icon: Clock,
+        color: "text-amber-600",
+        bg: "bg-amber-50",
+      },
+      {
+        label: "Active Status",
+        value: active,
+        icon: Activity,
+        color: "text-emerald-600",
+        bg: "bg-emerald-50",
+      },
     ];
   }, [instruments]);
 
@@ -136,7 +161,10 @@ const Instrument = () => {
           onClick={() => setIsFormOpen(true)}
           className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-gray-600 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
         >
-          <Plus className="group-hover:rotate-180 transition-transform duration-500" size={20} />
+          <Plus
+            className="group-hover:rotate-180 transition-transform duration-500"
+            size={20}
+          />
           Register Instrument
         </button>
       </div>
@@ -149,7 +177,9 @@ const Instrument = () => {
             className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden"
           >
             <div className="flex items-center gap-5 relative z-10">
-              <div className={`p-4 rounded-2xl ${stat.bg} ${stat.color} shadow-sm group-hover:scale-110 transition-transform duration-500`}>
+              <div
+                className={`p-4 rounded-2xl ${stat.bg} ${stat.color} shadow-sm group-hover:scale-110 transition-transform duration-500`}
+              >
                 <stat.icon size={24} />
               </div>
               <div className="space-y-1">
@@ -169,7 +199,10 @@ const Instrument = () => {
       <div className="bg-slate-50/50 p-6 md:p-8 rounded-[40px] border border-slate-100 shadow-inner space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="relative flex-1 w-full max-w-xl group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors" size={20} />
+            <Search
+              className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors"
+              size={20}
+            />
             <input
               type="text"
               placeholder="Search by instrument name or department..."
@@ -218,4 +251,3 @@ const Instrument = () => {
 };
 
 export default Instrument;
-
