@@ -34,13 +34,6 @@ const mapUiToApi = (uiEvent) => ({
 // ==================== EVENT TYPES ====================
 
 /**
- * Initialize default event types (Mock/Legacy - Not used by API)
- */
-export const initializeEventTypes = async () => {
-  return;
-};
-
-/**
  * Get all event types from config
  */
 export const getAllEventTypes = async () => {
@@ -189,7 +182,7 @@ export const getOverdueEvents = async () => {
 export const createLegalDocument = async (documentData) => {
   // Placeholder - Needs API
   console.warn("createLegalDocument API not implemented");
-  return { ...documentData, id: Date.now() };
+  return null;
 };
 
 /**
@@ -229,7 +222,7 @@ export const deleteLegalDocument = async (id) => {
 
 export const createComplianceRecord = async (recordData) => {
   console.warn("createComplianceRecord API not implemented");
-  return { ...recordData, id: Date.now() };
+  return null;
 };
 
 export const getRecordsByEventId = async (eventId) => {

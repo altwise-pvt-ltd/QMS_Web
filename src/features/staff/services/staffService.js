@@ -1,110 +1,215 @@
 import api from "../../../auth/api";
 import placeholderImage from "../../../assets/defualt_image_placeholder.jpg";
-
-const API_BASE_URL = "https://qmsapi.altwise.in/";
+import { uploadFile } from "../../../services/workerService";
 
 /**
- * Staff Service to handle all API calls related to staff management.
+ * staffService.js
+ *
+ * Handles ALL staff-related API calls:
+ *   - Staff CRUD  → /Staff/*
+ *   - Document upload + submission → /StaffDocuments/StaffDetailsList
+ *   - Document read → /StaffDocuments/GetAllDocuments/{staffId}
+ *
+ * Document Upload Flow (two-step):
+ *   Step 1 — Every file → QMS Worker → R2
+ *             Path: qmsdocs/staff/{firstname-lastname}_{staffId}/{subType}/{uuid}.ext
+ *   Step 2 — FormData with R2 URL strings (no binaries) → POST /StaffDocuments/StaffDetailsList
  */
+
+// ─── Internal R2 upload helpers ───────────────────────────────────────────────
+
+/**
+ * Uploads one file to R2. Returns URL string or "" if file is null.
+ */
+async function uploadStaffFile(file, staffId, staffName, subType) {
+  if (!file) return "";
+  // If 'file' is already a URL string (from existingDocuments), return it as-is
+  if (typeof file === "string" && file.startsWith("http")) return file;
+  if (!(file instanceof File)) return "";
+
+  const r2Result = await uploadFile(file, {
+    module:    "staff",
+    staffId:   String(staffId),
+    staffName: staffName || "staff",  // slugified by Worker: "John Doe" → "john-doe"
+    subType,                          // "passport"|"resume"|"qualifications"|etc.
+  });
+
+  return r2Result.fileUrl;
+}
+
+/**
+ * Uploads multiple files of the same subType in parallel.
+ * Returns array of URL strings in the same order as input.
+ */
+async function uploadMany(files, staffId, staffName, subType) {
+  return Promise.all(
+    files.map((file) => uploadStaffFile(file, staffId, staffName, subType))
+  );
+}
+
+// ─── Service ──────────────────────────────────────────────────────────────────
+
 const staffService = {
-  /**
-   * Fetches all staff members.
-   * @returns {Promise<AxiosResponse<any>>}
-   */
-  getAllStaff: () => {
-    return api.get("/Staff/GetAllStaff");
-  },
+
+  // ── Staff CRUD ────────────────────────────────────────────────────────────
+
+  getAllStaff: () => api.get("/Staff/GetAllStaff"),
+
+  getAllDepartments: () => api.get("/Department/GetAllDepartments"),
+
+  getStaffById: (id) => api.get(`/Staff/GetStaffById/${id}`),
+
+  createStaff: (staffData) => api.post("/Staff/CreateStaff", staffData),
+
+  updateStaff: (staffData) => api.put("/Staff/UpdateStaff", staffData),
+
+  deleteStaffById: (id) => api.delete(`/Staff/DeleteStaffById/${id}`),
+
+  // ── Staff Documents — Read ────────────────────────────────────────────────
+
+  getStaffDocuments: (staffId) =>
+    api.get(`/StaffDocuments/GetAllDocuments/${staffId}`),
+
+  // ── Staff Documents — Submit (Worker → R2 → Backend) ─────────────────────
 
   /**
-   * Fetches all departments.
-   * @returns {Promise<AxiosResponse<any>>}
+   * Uploads all staff documents to R2 first, then POSTs URL strings to backend.
+   *
+   * @param {Object} data - Staff document data
+   * @param {number|string} data.staffId        - Required. Staff DB id.
+   * @param {string}        data.staffName      - Required. e.g. "John Doe" → R2 folder "john-doe_15"
+   * @param {File|null}     data.passportPhoto  - Passport photo file
+   * @param {File|null}     data.resume         - CV / Resume file
+   * @param {Array}         data.qualifications - [{ file, documentTitle, collegeName, graduationYear }]
+   * @param {Array}         data.appointments   - [{ file, documentTitle }]
+   * @param {Array}         data.medicals       - [{ file, recordTitle, issueDate }]
+   * @param {Array}         data.vaccinations   - [{ file, certificateName, doseDate }]
+   * @param {Array}         data.trainings      - [{ trainingTitle, inductionFile, competencyFile }]
+   * @param {Function|null} onProgress          - Progress callback (0–100)
+   *
+   * @returns {Promise<Object>} Backend API response
    */
-  getAllDepartments: () => {
-    return api.get("/Department/GetAllDepartments");
-  },
+  submitStaffDocuments: async (data, onProgress = null) => {
+    const { staffId, staffName } = data;
 
-  /**
-   * Fetches a single staff member by ID.
-   * @param {number|string} id - The ID of the staff member.
-   * @returns {Promise<AxiosResponse<any>>}
-   */
-  getStaffById: (id) => {
-    return api.get(`/Staff/GetStaffById/${id}`);
-  },
+    if (!staffId)   throw new Error("staffId is required");
+    if (!staffName) throw new Error("staffName is required");
 
-  /**
-   * Creates a new staff member.
-   * @param {Object} staffData - The staff data payload.
-   * @returns {Promise<AxiosResponse<any>>}
-   */
-  createStaff: (staffData) => {
-    return api.post("/Staff/CreateStaff", staffData);
-  },
+    const report = (pct) => onProgress?.(pct);
 
-  /**
-  * Updates an existing staff member.
-  * @param {Object} staffData - The staff data payload.
-  * @returns {Promise<AxiosResponse<any>>}
-  */
-  updateStaff: (staffData) => {
-    return api.put("/Staff/UpdateStaff", staffData);
-  },
+    // ── Step 1: Upload all files to R2 in parallel per category ──────────────
 
-  /**
-   * Deletes a staff member by ID.
-   * @param {number|string} id - The ID of the staff member.
-   * @returns {Promise<AxiosResponse<any>>}
-   */
-  deleteStaffById: (id) => {
-    return api.delete(`/Staff/DeleteStaffById/${id}`);
-  },
+    report(5);
 
-  /**
-   * Fetches documents for a specific staff member.
-   * @param {number|string} staffId - The ID of the staff member.
-   * @returns {Promise<AxiosResponse<any>>}
-   */
-  getStaffDocuments: (staffId) => {
-    return api.get(`/StaffDocuments/GetAllDocuments/${staffId}`);
-  },
+    // Single files
+    const [passportUrl, resumeUrl] = await Promise.all([
+      uploadStaffFile(data.passportPhoto, staffId, staffName, "passport"),
+      uploadStaffFile(data.resume,        staffId, staffName, "resume"),
+    ]);
+    report(20);
 
-  /**
-   * Submits staff details and documents.
-   * @param {FormData} formData - The staff details form data (multipart/form-data).
-   * @returns {Promise<AxiosResponse<any>>}
-   */
-  submitStaffDetails: (formData) => {
-    return api.post("/StaffDocuments/StaffDetailsList", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      skipAuth: true,
+    // Arrays
+    const qualUrls = await uploadMany(
+      (data.qualifications || []).map((q) => q.file), staffId, staffName, "qualifications"
+    );
+    report(35);
+
+    const apptUrls = await uploadMany(
+      (data.appointments || []).map((a) => a.file), staffId, staffName, "appointments"
+    );
+    report(50);
+
+    const medUrls = await uploadMany(
+      (data.medicals || []).map((m) => m.file), staffId, staffName, "medicals"
+    );
+    report(65);
+
+    const vacUrls = await uploadMany(
+      (data.vaccinations || []).map((v) => v.file), staffId, staffName, "vaccinations"
+    );
+    report(75);
+
+    // Trainings have two files per record
+    const [inductionUrls, competencyUrls] = await Promise.all([
+      uploadMany((data.trainings || []).map((t) => t.inductionFile),  staffId, staffName, "trainings"),
+      uploadMany((data.trainings || []).map((t) => t.competencyFile), staffId, staffName, "trainings"),
+    ]);
+    report(90);
+
+    // ── Step 2: Build FormData with URL strings — no binary files ─────────────
+
+    const formData = new FormData();
+
+    formData.append("StaffId",       String(staffId));
+    formData.append("PassportPhoto", passportUrl);  // R2 URL string
+    formData.append("Resume",        resumeUrl);    // R2 URL string
+
+    (data.qualifications || []).forEach((q, i) => {
+      formData.append(`Qualifications[${i}].File`,           qualUrls[i]      || "");
+      formData.append(`Qualifications[${i}].DocumentTitle`,  q.documentTitle  || "");
+      formData.append(`Qualifications[${i}].CollegeName`,    q.collegeName    || "");
+      formData.append(`Qualifications[${i}].GraduationYear`, q.graduationYear || "");
     });
+
+    (data.appointments || []).forEach((a, i) => {
+      formData.append(`Appointments[${i}].File`,          apptUrls[i]      || "");
+      formData.append(`Appointments[${i}].DocumentTitle`, a.documentTitle  || "");
+    });
+
+    (data.medicals || []).forEach((m, i) => {
+      formData.append(`Medicals[${i}].File`,        medUrls[i]    || "");
+      formData.append(`Medicals[${i}].RecordTitle`, m.recordTitle || "");
+      formData.append(`Medicals[${i}].IssueDate`,   m.issueDate   || "");
+    });
+
+    (data.vaccinations || []).forEach((v, i) => {
+      formData.append(`Vaccinations[${i}].File`,            vacUrls[i]        || "");
+      formData.append(`Vaccinations[${i}].CertificateName`, v.certificateName || "");
+      formData.append(`Vaccinations[${i}].DoseDate`,        v.doseDate        || "");
+    });
+
+    (data.trainings || []).forEach((t, i) => {
+      formData.append(`Trainings[${i}].TrainingTitle`,  t.trainingTitle    || "");
+      formData.append(`Trainings[${i}].InductionFile`,  inductionUrls[i]   || "");
+      formData.append(`Trainings[${i}].CompetencyFile`, competencyUrls[i]  || "");
+    });
+
+    report(95);
+
+    // ── Step 3: POST to backend ───────────────────────────────────────────────
+
+    try {
+      const response = await api.post(
+        "/StaffDocuments/StaffDetailsList",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } },
+      );
+      report(100);
+      return response.data;
+    } catch (error) {
+      console.error("Error submitting staff documents:", error);
+      throw error;
+    }
   },
 
+  // ── Asset URL helper ──────────────────────────────────────────────────────
+
   /**
-   * Constructs the full URL for an asset (image/pdf).
-   * @param {string} path - The relative path of the asset.
-   * @returns {string} The full URL or empty string if path is null/undefined.
+   * Returns the correct displayable URL for any staff asset.
+   * R2 URLs are already full — old Plesk paths get the base URL prepended.
+   *
+   * @param {string} path - R2 URL or legacy relative path
+   * @returns {string}
    */
   getAssetUrl: (path) => {
     if (!path) return "";
-    // If path is already a full URL, return it
-    if (path.startsWith("http")) return path;
-
-    // Ensure forward slashes and no leading slash to avoid double slashes
-    const normalizedPath = path.replace(/\\/g, '/');
-    const cleanPath = normalizedPath.startsWith("/") ? normalizedPath.slice(1) : normalizedPath;
-    return `${API_BASE_URL}${cleanPath}`;
+    if (path.startsWith("http")) return path; // R2 URL — use as-is
+    // Legacy Plesk path fallback
+    const clean = path.replace(/\\/g, "/").replace(/^\//, "");
+    return `https://qmsapi.altwise.in/${clean}`;
   },
 
-  /**
-   * Returns the fallback placeholder image.
-   * @returns {string} Path to placeholder image
-   */
-  getPlaceholderImage: () => {
-    return placeholderImage;
-  }
+  getPlaceholderImage: () => placeholderImage,
 };
 
 export default staffService;

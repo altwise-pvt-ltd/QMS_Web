@@ -46,9 +46,6 @@ import MainLayout from "./features/layout/MainLayout.jsx";
 
 // Database Initialization
 import { initDatabase } from "./db";
-import { initializeEventTypes } from "./features/compliance_calendar/services/complianceService";
-import { seedComplianceData } from "./features/compliance_calendar/utils/seedData";
-import { addExpiryDatesToDocuments } from "./features/compliance_calendar/utils/documentMigration";
 import { useEffect } from "react";
 
 function App() {
@@ -91,11 +88,6 @@ function App() {
       try {
         // Step 1: Safe Open (handles reset on error)
         await initDatabase();
-
-        // Step 2: Seed & Migrate
-        await initializeEventTypes();
-        await seedComplianceData();
-        await addExpiryDatesToDocuments();
 
         console.log("✅ Application data initialized successfully.");
       } catch (error) {
