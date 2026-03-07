@@ -72,7 +72,7 @@ const organizationService = {
           logoFile,
           {
             module: "organization",
-            orgId:  tempOrgId,
+            orgId: tempOrgId,
           },
           onUploadProgress,
         );
@@ -85,19 +85,21 @@ const organizationService = {
       }
     }
 
-    // Step 2 — Send JSON to backend with R2 URL as companyLogoPath
+    // Step 2 — Send JSON to backend with R2 URL as CompanyLogoPath
     try {
       const payload = {
-        legalCompanyName:  fields.legalCompanyName,
-        industrySector:    fields.industrySector,
-        businessPhone:     fields.businessPhone,
-        corporateWebsite:  fields.corporateWebsite,
-        registeredAddress: fields.registeredAddress,
-        companyLogoPath,   // ← full R2 URL e.g. "https://pub-xxx.r2.dev/qmsdocs/organizations/..."
+        LegalCompanyName: fields.legalCompanyName,
+        IndustrySector: fields.industrySector,
+        BusinessPhone: fields.businessPhone,
+        CorporateWebsite: fields.corporateWebsite,
+        RegisteredAddress: fields.registeredAddress,
+        CompanyLogoPath: companyLogoPath,   // ← full R2 URL
+        Status: true,
       };
 
       const response = await api.post("/Organization/CreateOrganization", payload);
       return response.data;
+
     } catch (error) {
       console.error("Error creating organization:", error);
       throw error;
@@ -125,7 +127,7 @@ const organizationService = {
           logoFile,
           {
             module: "organization",
-            orgId:  String(id), // use real org ID on update
+            orgId: String(id), // use real org ID on update
           },
           onUploadProgress,
         );
@@ -139,21 +141,30 @@ const organizationService = {
     }
 
     try {
+      // Mapping to PascalCase as required by the backend.
+      // We often don't include the ID in the body for PUT if it's in the URL,
+      // but if the backend strictly requires it, we can put it back.
+      // Trying WITHOUT it first as it's a common cause of 400s.
       const payload = {
-        legalCompanyName:  fields.legalCompanyName,
-        industrySector:    fields.industrySector,
-        businessPhone:     fields.businessPhone,
-        corporateWebsite:  fields.corporateWebsite,
-        registeredAddress: fields.registeredAddress,
-        companyLogoPath,
+        LegalCompanyName: fields.legalCompanyName,
+        IndustrySector: fields.industrySector,
+        BusinessPhone: fields.businessPhone,
+        CorporateWebsite: fields.corporateWebsite,
+        RegisteredAddress: fields.registeredAddress,
+        // If CompanyLogoPath is required, ensure it's not empty string. 
+        // We'll use the existing path or a placeholder if absolutely blank.
+        CompanyLogoPath: companyLogoPath || fields.companyLogoPath || "Pending",
+        Status: "Active", // Using string as attempted by user
       };
 
+      console.log("Updating Organization with Payload:", payload);
       const response = await api.put(`/Organization/UpdateOrganization/${id}`, payload);
       return response.data;
     } catch (error) {
       console.error("Error updating organization:", error);
       throw error;
     }
+
   },
 
   // ── Delete ────────────────────────────────────────────────────────────────

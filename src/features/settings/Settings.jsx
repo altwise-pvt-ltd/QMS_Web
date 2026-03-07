@@ -135,6 +135,7 @@ const Settings = () => {
         businessPhone: formData.phone,
         corporateWebsite: formData.websiteUrl,
         registeredAddress: formData.address,
+        status: true,
         companyLogoPath: organization?.logo || "", // Default to existing logo URL
       };
 
@@ -201,11 +202,10 @@ const Settings = () => {
             type="submit"
             form="settings-form"
             disabled={loading}
-            className={`flex items-center justify-center gap-3 px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 w-full xl:w-auto ${
-              success
+            className={`flex items-center justify-center gap-3 px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 w-full xl:w-auto ${success
                 ? "bg-indigo-500 grey-600 shadow-indigo-500/20"
                 : "bg-slate-900 grey-600 hover:bg-black shadow-slate-900/20"
-            }`}
+              }`}
           >
             {loading ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

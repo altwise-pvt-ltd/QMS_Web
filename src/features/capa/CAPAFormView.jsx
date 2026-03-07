@@ -7,8 +7,10 @@ import {
   ExternalLink,
 } from "lucide-react";
 import html2pdf from "html2pdf.js";
+import { useAuth } from "../../auth/AuthContext";
 
 const CAPAFormView = ({ capa, onBack }) => {
+  const { organization } = useAuth();
   if (!capa) return null;
 
   const show = (v) => v || "—";
@@ -91,22 +93,32 @@ const CAPAFormView = ({ capa, onBack }) => {
           <thead>
             <tr>
               <td className="p-0 ">
-                <div className="pdf-header text-center border-b-2 border-black px-10 py-4 mb-2">
-                  <h2 className="text-xl font-bold uppercase tracking-tight">
-                    Alpine Diagnostic Centre
-                  </h2>
-                  <p className="text-xs leading-5 mt-1">
-                    Plot No: A232, Road No: 21, Y-Lane, Behind Cyber Tech
-                    Solution,
-                    <br />
-                    Nehru Nagar, Wagle Industrial Estate, Thane (W), Maharashtra
-                    – 400604
-                  </p>
-                  <h3 className="mt-3 text-base font-bold uppercase underline decoration-1 underline-offset-4">
+                <div className="pdf-header flex flex-row items-center border-b-2 border-black px-10 py-4 mb-2 text-left">
+                  <div className="w-[20%] flex justify-center pr-4">
+                    {organization?.logo && (
+                      <img
+                        src={organization.logo}
+                        alt="Logo"
+                        className="h-16 object-contain"
+                      />
+                    )}
+                  </div>
+                  <div className="w-[80%] flex flex-col items-center justify-center">
+                    <h2 className="text-2xl font-bold uppercase tracking-tight text-center">
+                      {organization?.name || "Your Company Name"}
+                    </h2>
+                    <p className="text-sm leading-5 mt-1 text-center font-medium">
+                      {organization?.address || "Your Company Address"}
+                      {organization?.phone && ` | Tel: ${organization.phone}`}
+                      {organization?.websiteUrl && ` | Web: ${organization.websiteUrl}`}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-center py-3">
+                  <h3 className="text-lg font-bold uppercase underline decoration-1 underline-offset-4">
                     Corrective Action & Preventive Action (CAPA) Form
                   </h3>
                 </div>
-                {/* <div style={{ height: '40px', clear: 'both' }}></div> */}
               </td>
             </tr>
           </thead>

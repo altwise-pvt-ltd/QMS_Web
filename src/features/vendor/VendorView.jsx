@@ -4,43 +4,10 @@ import html2pdf from "html2pdf.js";
 import api from "../../auth/api";
 import staffService from "../staff/services/staffService";
 import ImageWithFallback from "../../components/ui/ImageWithFallback";
+import { useAuth } from "../../auth/AuthContext";
 
 const VendorView = ({ vendor, onCancel }) => {
-  const [orgInfo, setOrgInfo] = useState({
-    name: "Alpine Diagnostic Centre",
-    address:
-      "Plot No: A232, Road No: 21, Y-Lane, Behind Cyber Tech Solution, Nehru Nagar, Wagle Industrial Estate, Thane (W), Maharashtra – 400604",
-    phone: "",
-    website: "",
-    logoUrl: null,
-  });
-
-  useEffect(() => {
-    const fetchOrgInfo = async () => {
-      try {
-        const response = await api.get("/Organization/GetAllOrganization");
-        if (response.data?.isSuccess && response.data?.value?.length > 0) {
-          const org = response.data.value[0];
-          setOrgInfo({
-            name:
-              org.legalCompanyName ||
-              org.LegalCompanyName ||
-              "Alpine Diagnostic Centre",
-            address:
-              org.registeredAddress ||
-              org.RegisteredAddress ||
-              "Plot No: A232, Road No: 21, Y-Lane, Behind Cyber Tech Solution, Nehru Nagar, Wagle Industrial Estate, Thane (W), Maharashtra – 400604",
-            phone: org.businessPhone || org.BusinessPhone || "",
-            website: org.corporateWebsite || org.CorporateWebsite || "",
-            logoUrl: staffService.getAssetUrl(org.logoPath || org.LogoPath),
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching organization info:", error);
-      }
-    };
-    fetchOrgInfo();
-  }, []);
+  const { organization } = useAuth();
 
   if (!vendor) return null;
 
@@ -125,7 +92,7 @@ const VendorView = ({ vendor, onCancel }) => {
       {/* PRINT AREA */}
       <div
         id="report-content"
-        className="print-area relative max-w-[900px] mx-auto bg-white text-black font-['Times_New_Roman'] border border-slate-200 shadow-sm"
+        className="print-area relative max-w-[900px] mx-auto bg-white text-black font-['Times_New_Roman'] border border-slate-200 shadow-sm overflow-x-auto overflow-y-hidden"
       >
         {/* Watermark - print only */}
         <div
@@ -140,42 +107,41 @@ const VendorView = ({ vendor, onCancel }) => {
           <thead>
             <tr>
               <td className="p-0">
-                <div className="pdf-header border-b-2 border-black px-10 py-6 mb-2">
-                  <div className="flex items-center justify-between gap-6">
-                    {/* Logo Section */}
-                    {orgInfo.logoUrl && (
-                      <div className="shrink-0">
-                        <ImageWithFallback
-                          src={orgInfo.logoUrl}
-                          alt="Logo"
-                          className="h-20 w-auto object-contain"
-                        />
-                      </div>
-                    )}
-
-                    {/* Organization Info Section */}
-                    <div className="flex-1 text-center">
-                      <h2 className="text-xl font-bold uppercase tracking-tight">
-                        {orgInfo.name}
-                      </h2>
-                      <p className="text-xs leading-5 mt-1 whitespace-pre-line">
-                        {orgInfo.address}
-                      </p>
-                      <div className="flex justify-center gap-4 mt-1 text-[10px] font-bold">
-                        {orgInfo.phone && <span>Phone: {orgInfo.phone}</span>}
-                        {orgInfo.website && (
-                          <span>Website: {orgInfo.website}</span>
-                        )}
-                      </div>
+                <div className="pdf-header border-b-2 border-black">
+                  <div className="flex flex-row items-center px-10 py-6 text-left">
+                    {/* Logo Section (20%) */}
+                    <div className="w-[20%] flex justify-center pr-4">
+                      {organization?.logo ? (
+                        <div className="shrink-0">
+                          <ImageWithFallback
+                            src={organization.logo}
+                            alt="Logo"
+                            className="h-20 w-auto object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-16 h-16 bg-slate-900 rounded-lg flex items-center justify-center text-gray-600 font-black text-xl italic">
+                          {organization?.name?.charAt(0) || "A"}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Placeholder to balance the logo if needed, or another element */}
-                    {orgInfo.logoUrl && (
-                      <div className="w-20 hidden md:block" />
-                    )}
+                    {/* Organization Info Section (80%) */}
+                    <div className="w-[80%] flex flex-col items-center justify-center">
+                      <h2 className="text-2xl font-bold uppercase tracking-tight text-center">
+                        {organization?.name || "Your Company Name"}
+                      </h2>
+                      <p className="text-sm leading-5 mt-1 text-center font-medium">
+                        {organization?.address || "Your Company Address"}
+                        {organization?.phone && ` | Tel: ${organization.phone}`}
+                        {organization?.websiteUrl && ` | Web: ${organization.websiteUrl}`}
+                      </p>
+                    </div>
                   </div>
+                </div>
 
-                  <h3 className="mt-6 text-center text-base font-bold uppercase underline decoration-1 underline-offset-4">
+                <div className="text-center py-5">
+                  <h3 className="text-lg font-bold uppercase underline decoration-1 underline-offset-4">
                     Vendor Assessment Record
                   </h3>
                 </div>
@@ -484,7 +450,7 @@ const VendorView = ({ vendor, onCancel }) => {
                     </tbody>
                   </table>
                   <div className="mt-2 text-[8px] text-right text-slate-400">
-                    Proprietary Information — {orgInfo.name} ©{" "}
+                    Proprietary Information — {organization?.name || "QMS"} ©{" "}
                     {new Date().getFullYear()}
                   </div>
                 </div>
@@ -493,6 +459,70 @@ const VendorView = ({ vendor, onCancel }) => {
           </tfoot>
         </table>
       </div>
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        @media print {
+          @page {
+            size: A4 portrait !important;
+            margin: 15mm !important;
+          }
+          
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          /* Hide UI elements */
+          nav, aside, .sidebar, .sidebar-container, 
+          button, .no-print, header, footer,
+          .fixed {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+          }
+
+          /* Show only report */
+          body * {
+            visibility: hidden !important;
+          }
+
+          .print-area, .print-area * {
+            visibility: visible !important;
+          }
+
+          .print-area {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
+
+          /* Table optimization */
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            page-break-inside: auto !important;
+          }
+          tr {
+            page-break-inside: avoid !important;
+            page-break-after: auto !important;
+          }
+          .break-inside-avoid {
+            page-break-inside: avoid !important;
+          }
+        }
+      `,
+        }}
+      />
     </div>
   );
 };

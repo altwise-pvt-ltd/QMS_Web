@@ -65,11 +65,17 @@ api.interceptors.response.use(
       } catch (refreshError) {
         console.error("Session expired, logging out...", refreshError);
         store.dispatch(logout());
-        if (!window.location.pathname.includes("/login")) {
+
+        // Don't redirect if we're already on a public/auth-setup page
+        const publicPaths = ["/login", "/confirm-password"];
+        const isPublicPath = publicPaths.some(path => window.location.pathname.includes(path));
+
+        if (!isPublicPath) {
           window.location.href = "/login";
         }
         return Promise.reject(handleError(refreshError));
       }
+
     }
 
     // 2. Handle Transient Retries (503/504)

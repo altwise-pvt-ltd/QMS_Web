@@ -88,22 +88,31 @@ function App() {
 
   useEffect(() => {
     const initializeData = async () => {
+      // Step 1: Initialize local database (Dexie) - Always safe
       try {
-        // Step 1: Safe Open (handles reset on error)
         await initDatabase();
+      } catch (err) {
+        console.error("Database connection failed:", err);
+      }
 
-        // Step 2: Seed & Migrate
-        await initializeEventTypes();
-        await seedComplianceData();
-        await addExpiryDatesToDocuments();
-
-        console.log("✅ Application data initialized successfully.");
-      } catch (error) {
-        console.error("Critical: Database initialization failed", error);
+      // Step 2: Seed & Migrate REST data only if authenticated
+      const token = localStorage.getItem("accessToken");
+      if (token) {
+        try {
+          await initializeEventTypes();
+          await seedComplianceData();
+          await addExpiryDatesToDocuments();
+          console.log("✅ Application data initialized successfully.");
+        } catch (error) {
+          console.error("Authenticated initialization failed", error);
+        }
+      } else {
+        console.log("ℹ️ Skipping API-based initialization (User not authenticated)");
       }
     };
     initializeData();
   }, []);
+
 
   return (
     <AuthProvider>

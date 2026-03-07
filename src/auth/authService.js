@@ -67,7 +67,7 @@ export const logoutUser = async () => {
   }
 };
 /**
- * Handles password update for the current user.
+ * Handles password update for the current admin user.
  *
  * @param {string} oldPassword - The user's current password.
  * @param {string} newPassword - The new password to set.
@@ -80,3 +80,26 @@ export const changePassword = async (oldPassword, newPassword) => {
   });
   return response.data;
 };
+
+/**
+ * Handles password update for the staff member.
+ *
+ * @param {number|string} staffId - The ID of the staff member.
+ * @param {string} oldPassword - The user's temporary passcode or old password.
+ * @param {string} newPassword - The new password to set.
+ * @param {string} confirmPassword - The confirmation of the new password.
+ * @returns {Promise<Object>} The API response.
+ */
+export const changeStaffPassword = async (staffId, oldPassword, newPassword, confirmPassword) => {
+  const response = await api.post(`/Staff/ChangePassword/${staffId}`, {
+    oldPassword,
+    newPassword,
+    confirmPassword,
+  });
+  return response.data;
+};
+
+
+
+
+

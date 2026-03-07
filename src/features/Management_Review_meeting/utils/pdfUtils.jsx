@@ -14,24 +14,24 @@ export const transformMeetingDataForPDF = (
 
   const attendeesList = Array.isArray(rawAttendees)
     ? rawAttendees.map((att) =>
-        typeof att === "string"
-          ? att
-          : `${att.username || att.name || "Unknown"} (${
-              att.role || att.department || "Attendee"
-            })`,
-      )
+      typeof att === "string"
+        ? att
+        : `${att.username || att.name || "Unknown"} (${att.role || att.department || "Attendee"
+        })`,
+    )
     : typeof rawAttendees === "string"
       ? rawAttendees
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean)
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
       : [];
 
   return {
     header: {
+      companyName: companyInfo?.name || "Your Company Name",
       address: companyInfo
-        ? `${companyInfo.name}\n${companyInfo.industry} | ${companyInfo.phone}\n${companyInfo.address}`
-        : "Your Company Name, Address Line 1, City, State, ZIP",
+        ? `${companyInfo.industry} | ${companyInfo.phone}\n${companyInfo.address}`
+        : "Address Line 1, City, State, ZIP",
       logo: companyInfo?.logo || null,
     },
     meeting: {

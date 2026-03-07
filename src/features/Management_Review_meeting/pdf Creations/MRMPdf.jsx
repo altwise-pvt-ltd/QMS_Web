@@ -8,19 +8,53 @@ import {
 } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
-  page: { padding: 24, fontSize: 11 },
-  header: { textAlign: "center", fontSize: 9, marginBottom: 10 },
-  logoContainer: {
+  page: { padding: 24, fontSize: 12 },
+  headerRow: {
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: "#000",
+    paddingBottom: 10,
+    marginBottom: 15,
+  },
+  logoColumn: {
+    width: "20%",
+  },
+  textColumn: {
+    width: "80%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
   },
   logo: {
-    height: 48,
+    height: 60,
     width: "auto",
     objectFit: "contain",
   },
-  title: { fontSize: 16, textAlign: "center", fontWeight: "bold" },
-  subtitle: { fontSize: 13, textAlign: "center", marginBottom: 10 },
+  companyName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  headerAddress: { fontSize: 10, textAlign: "center", lineHeight: 1.4 },
+  title: {
+    fontSize: 20,
+    textAlign: "center",
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  subtitle: {
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 15,
+    fontStyle: "italic",
+    textDecoration: "underline",
+  },
   section: { marginBottom: 10 },
   bold: { fontWeight: "bold" },
   table: { borderWidth: 1 },
@@ -33,15 +67,18 @@ const styles = StyleSheet.create({
 const MRMPdf = ({ data }) => (
   <Document>
     <Page size="A4" style={styles.page}>
-      {/* Logo */}
-      {data.header.logo && (
-        <View style={styles.logoContainer}>
-          <Image src={data.header.logo} style={styles.logo} />
+      {/* Header Row: Logo(20%) | Address(80%) */}
+      <View style={styles.headerRow}>
+        <View style={styles.logoColumn}>
+          {data.header.logo && (
+            <Image src={data.header.logo} style={styles.logo} />
+          )}
         </View>
-      )}
-
-      {/* Address */}
-      <Text style={styles.header}>{data.header.address}</Text>
+        <View style={styles.textColumn}>
+          <Text style={styles.companyName}>{data.header.companyName}</Text>
+          <Text style={styles.headerAddress}>{data.header.address}</Text>
+        </View>
+      </View>
 
       {/* Title */}
       <Text style={styles.title}>{data.meeting.title}</Text>

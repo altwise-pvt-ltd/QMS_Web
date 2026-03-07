@@ -1,8 +1,10 @@
 import React from "react";
 import { ArrowLeft, Printer, Download, Share2 } from "lucide-react";
 import html2pdf from "html2pdf.js";
+import { useAuth } from "../../../auth/AuthContext";
 
 const YearlyTrainingPdfView = ({ trainings, onBack }) => {
+  const { organization } = useAuth();
   const currentYear = new Date().getFullYear();
   const show = (v) => v || "—";
 
@@ -31,7 +33,7 @@ const YearlyTrainingPdfView = ({ trainings, onBack }) => {
   return (
     <div className="min-h-screen bg-slate-100 p-4 md:p-8 animate-in fade-in duration-500">
       {/* TOP ACTION BAR */}
-      <div className="max-w-[900px] mx-auto mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200 no-print relative z-[100]">
+      <div className="max-w-[900px] mx-auto mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200 no-print relative z-100">
         <button
           onClick={onBack}
           className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-xl font-bold transition-all active:scale-95 cursor-pointer"
@@ -93,28 +95,31 @@ const YearlyTrainingPdfView = ({ trainings, onBack }) => {
             <tr>
               <td style={{ padding: 0 }}>
                 <div
-                  className="text-center px-10 py-6 mb-4"
+                  className="flex flex-row items-center px-10 py-6 mb-2"
                   style={{ borderBottom: "2px solid black" }}
                 >
-                  <h2 className="text-2xl font-bold uppercase tracking-tight">
-                    QMS ORGANIZATION
-                  </h2>
-                  <p
-                    className="text-xs leading-5 mt-1 pt-1 inline-block px-4"
-                    style={{
-                      borderTop: "1px solid rgba(0, 0, 0, 0.1)",
-                      borderColor: "rgba(0, 0, 0, 0.1)",
-                    }}
-                  >
-                    ACADEMY OF QUALITY MANAGEMENT & STANDARDS
-                  </p>
-                  <h3
-                    className="mt-4 text-lg font-bold uppercase underline"
-                    style={{
-                      textDecoration: "underline",
-                      textUnderlineOffset: "4px",
-                    }}
-                  >
+                  <div className="w-[20%] flex justify-center pr-4">
+                    {organization?.logo && (
+                      <img
+                        src={organization.logo}
+                        alt="Logo"
+                        className="h-16 object-contain"
+                      />
+                    )}
+                  </div>
+                  <div className="w-[80%] flex flex-col items-center justify-center">
+                    <h2 className="text-2xl font-bold uppercase tracking-tight text-center">
+                      {organization?.name || "Your Company Name"}
+                    </h2>
+                    <p className="text-sm leading-5 mt-1 text-center font-medium">
+                      {organization?.address || "Your Company Address"}
+                      {organization?.phone && ` | Tel: ${organization.phone}`}
+                      {organization?.websiteUrl && ` | Web: ${organization.websiteUrl}`}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-center py-4">
+                  <h3 className="text-lg font-bold uppercase underline decoration-1 underline-offset-4">
                     Yearly Training Schedule - {currentYear}
                   </h3>
                 </div>
