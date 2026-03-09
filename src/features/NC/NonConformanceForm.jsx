@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useAuth } from "../../auth/AuthContext";
 import { ncService } from "./services/ncService";
 import { getDepartments } from "../department/services/departmentService";
-import { NC_OPTIONS } from "./data/NcCategories";
 import NCHeader from "./components/NCHeader";
 import NCEntry from "./components/NCEntry";
 import NCActions from "./components/NCActions";
@@ -21,9 +20,12 @@ const INITIAL_FORM_DATA = {
   entry: {
     id: 1,
     category: "",
+    categoryId: "",
+    categoryCode: "", // ← NEW: used for QI/RI subcategory endpoint routing
     date: new Date().toISOString().split("T")[0],
     department: "",
     ncDetails: "",
+    subCategoryId: "",
     dailyNcDetails: "",
     effectiveness: "",
     rootCause: "",
@@ -50,6 +52,7 @@ export default function DailyNCForm() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [departments, setDepartments] = useState([]);
+  const [apiCategories, setApiCategories] = useState([]);
   const [alertConfig, setAlertConfig] = useState({
     open: false,
     severity: "success",
@@ -67,17 +70,25 @@ export default function DailyNCForm() {
   const handleCloseAlert = () =>
     setAlertConfig((prev) => ({ ...prev, open: false }));
 
-  // ── Fetch Departments ─────────────────────────────────────────────────────
+  // ── Fetch Departments & Categories ───────────────────────────────────────
   useEffect(() => {
-    const fetchDepts = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getDepartments();
-        setDepartments(data);
+        const [deptData, catData] = await Promise.all([
+          getDepartments(),
+          ncService.getAllCategories(),
+        ]);
+        setDepartments(deptData);
+        if (catData && catData.isSuccess) {
+          setApiCategories(catData.value || []);
+        } else if (Array.isArray(catData)) {
+          setApiCategories(catData);
+        }
       } catch (err) {
-        console.error("Failed to fetch departments:", err);
+        console.error("Failed to fetch startup data:", err);
       }
     };
-    fetchDepts();
+    fetchData();
   }, []);
 
   // ── Autofill responsibility + department ──────────────────────────────────
@@ -113,16 +124,23 @@ export default function DailyNCForm() {
           : [];
 
       const mappedReports = apiReports.map((report) => {
-        const catIdx = parseInt(report.nonConformanceCategoryId) - 1;
-        const subIdx = parseInt(report.nonConformanceSubCategoryId) - 1;
+        const currentCategories = apiCategories.length > 0 ? apiCategories : [];
+
+        const apiCat = currentCategories.find(
+          (c) =>
+            String(c.nonConformanceCategoryId || c.categoryId || c.id) ===
+            String(report.nonConformanceCategoryId),
+        );
+        const categoryName = apiCat
+          ? apiCat.categoryName || apiCat.name
+          : "Uncategorized";
 
         return {
           id: report.nonConformanceId,
           status: report.status || "Open",
           entry: {
-            category: NC_OPTIONS[catIdx]?.category || "Uncategorized",
-            ncDetails:
-              NC_OPTIONS[catIdx]?.subcategories[subIdx] || "No description",
+            category: categoryName,
+            ncDetails: report.nonConformanceSubCategoryName || "No description",
             date: report.date?.split("T")[0] || "",
             department:
               departments.find((d) => d.departmentId === report.departmentId)
@@ -207,26 +225,14 @@ export default function DailyNCForm() {
     setUploadProgress(0);
 
     try {
-      // ── ID mapping ──────────────────────────────────────────────────────
+      // ── ID mapping from state/form ──────────────────────────────────────
       const deptId =
         departments.find(
           (d) => (d.departmentName || d.name) === formData.entry.department,
         )?.departmentId || "1";
 
-      const categoryIndex = NC_OPTIONS.findIndex(
-        (c) => c.category === formData.entry.category,
-      );
-      const categoryId =
-        categoryIndex !== -1 ? (categoryIndex + 1).toString() : "1";
-
-      const subCategoryIndex =
-        categoryIndex !== -1
-          ? NC_OPTIONS[categoryIndex].subcategories.indexOf(
-              formData.entry.ncDetails,
-            )
-          : -1;
-      const subCategoryId =
-        subCategoryIndex !== -1 ? (subCategoryIndex + 1).toString() : "1";
+      const categoryId = formData.entry.categoryId || "1";
+      const subCategoryId = formData.entry.subCategoryId || "1";
 
       const staffId = formData.entry.taggedStaff?.[0]?.id || "1";
 
@@ -372,6 +378,7 @@ export default function DailyNCForm() {
                 entry={formData.entry}
                 onUpdate={updateEntry}
                 departments={departments}
+                categories={apiCategories}
               />
               <NCActions
                 onSubmit={handleSubmit}

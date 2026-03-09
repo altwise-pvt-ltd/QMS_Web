@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NC_OPTIONS } from "../data/NcCategories";
+import { ncService } from "../services/ncService";
 import {
   FileText as FileIcon,
   UploadCloud,
@@ -13,7 +13,7 @@ import { db } from "../../../db";
 import staffService from "../../staff/services/staffService";
 import UploadPreviewModal from "../../documents/component/UploadPreviewModal";
 
-const NCEntry = ({ entry, onUpdate, departments = [] }) => {
+const NCEntry = ({ entry, onUpdate, departments = [], categories = [] }) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [availableSubcategories, setAvailableSubcategories] = useState([]);
   const [staffList, setStaffList] = useState([]);
@@ -48,18 +48,65 @@ const NCEntry = ({ entry, onUpdate, departments = [] }) => {
     fetchStaff();
   }, [departments]);
 
+  // ── Fetch subcategories when category changes ─────────────────────────────
+  // Routes to QI or RI endpoint based on categoryCode prefix
   useEffect(() => {
-    if (!entry.category) {
-      setAvailableSubcategories([]);
-      return;
-    }
-    const found = NC_OPTIONS.find((opt) => opt.category === entry.category);
-    setAvailableSubcategories(found ? found.subcategories : []);
-  }, [entry.category]);
+    const fetchSubCats = async () => {
+      if (!entry.categoryId || !entry.categoryCode) {
+        setAvailableSubcategories([]);
+        return;
+      }
+      try {
+        const response = await ncService.getSubCategoriesByCategory(
+          entry.categoryId,
+          entry.categoryCode,
+        );
+        // API returns { success, message, data: [...] }
+        const raw =
+          response?.data ||
+          response?.value ||
+          (Array.isArray(response) ? response : []);
+
+        // Normalize QI/RI field names into a common shape for the dropdown
+        const isQI = entry.categoryCode?.startsWith("QICategory_");
+        const normalized = raw.map((sub) => ({
+          subCategoryId: isQI
+            ? sub.qualityIndicatorSubCategoryId
+            : (sub.riskIndicatorSubCategoryId ?? sub.id),
+          subCategoryName: isQI
+            ? sub.qualitySubCategoryName
+            : (sub.riskSubCategoryName ?? sub.name),
+          ...sub, // preserve original fields if needed
+        }));
+
+        setAvailableSubcategories(normalized);
+      } catch (err) {
+        console.error("Error fetching subcategories:", err);
+        setAvailableSubcategories([]);
+      }
+    };
+    fetchSubCats();
+  }, [entry.categoryId, entry.categoryCode]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Validate file type
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "application/pdf",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      alert(
+        `File type '${file.type}' is not permitted. Please upload an image or PDF.`,
+      );
+      e.target.value = ""; // Reset input
+      return;
+    }
+
     onUpdate(entry.id, "evidenceImage", file);
   };
 
@@ -114,39 +161,69 @@ const NCEntry = ({ entry, onUpdate, departments = [] }) => {
               NC Category
             </label>
             <select
-              value={entry.category || ""}
+              value={entry.categoryId || ""}
               onChange={(e) => {
-                onUpdate(entry.id, "category", e.target.value);
+                const catId = e.target.value;
+                const selectedCat = categories.find(
+                  (c) =>
+                    String(
+                      c.nonConformanceCategoryId || c.categoryId || c.id,
+                    ) === String(catId),
+                );
+                const catName =
+                  selectedCat?.categoryName || selectedCat?.name || "";
+                const catCode = selectedCat?.categoryCode || "";
+
+                onUpdate(entry.id, "categoryId", catId);
+                onUpdate(entry.id, "category", catName);
+                onUpdate(entry.id, "categoryCode", catCode);
+                onUpdate(entry.id, "subCategoryId", "");
                 onUpdate(entry.id, "ncDetails", "");
               }}
               className="w-full px-3 py-2 border rounded-md bg-white focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select Category</option>
-              {NC_OPTIONS.map((opt) => (
-                <option key={opt.category} value={opt.category}>
-                  {opt.category}
+              {categories.map((cat) => (
+                <option
+                  key={cat.nonConformanceCategoryId || cat.categoryId || cat.id}
+                  value={
+                    cat.nonConformanceCategoryId || cat.categoryId || cat.id
+                  }
+                >
+                  {cat.categoryName || cat.name}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* NC Details */}
+          {/* NC Details (Nature of NC) — Subcategory */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Nature of N.C.
             </label>
             <select
-              value={entry.ncDetails || ""}
-              onChange={(e) => onUpdate(entry.id, "ncDetails", e.target.value)}
-              disabled={!entry.category}
+              value={entry.subCategoryId || ""}
+              onChange={(e) => {
+                const subId = e.target.value;
+                const selectedSub = availableSubcategories.find(
+                  (s) => String(s.subCategoryId) === String(subId),
+                );
+                onUpdate(entry.id, "subCategoryId", subId);
+                onUpdate(
+                  entry.id,
+                  "ncDetails",
+                  selectedSub?.subCategoryName || "",
+                );
+              }}
+              disabled={!entry.categoryId}
               className="w-full px-3 py-2 border rounded-md bg-white disabled:bg-gray-100"
             >
               <option value="">
-                {entry.category ? "Select Details" : "Select Category first"}
+                {entry.categoryId ? "Select Details" : "Select Category first"}
               </option>
               {availableSubcategories.map((sub) => (
-                <option key={sub} value={sub}>
-                  {sub}
+                <option key={sub.subCategoryId} value={sub.subCategoryId}>
+                  {sub.subCategoryName}
                 </option>
               ))}
             </select>
@@ -168,6 +245,7 @@ const NCEntry = ({ entry, onUpdate, departments = [] }) => {
                   <input
                     type="file"
                     className="sr-only"
+                    accept="image/*,application/pdf"
                     onChange={handleFileChange}
                   />
                 </label>

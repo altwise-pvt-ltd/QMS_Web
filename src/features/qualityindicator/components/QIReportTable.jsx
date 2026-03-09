@@ -27,7 +27,7 @@ const QIReportTable = forwardRef(
 
       return categoryIndicators.map((indicator, idx) => (
         <tr
-          key={indicator.qualityIndicatorId}
+          key={indicator.qualityIndicatorSubCategoryId}
           className="border-b border-slate-300 h-8"
         >
           {idx === 0 && (
@@ -39,7 +39,7 @@ const QIReportTable = forwardRef(
             </td>
           )}
           <td className="border-r border-slate-300 px-3 text-[10px] font-medium text-slate-700 min-w-[200px]">
-            {indicator.indicatorName}
+            {indicator.qualitySubCategoryName}
           </td>
           {days.map((day) => {
             const incident = indicator.incidents?.find((inc) =>

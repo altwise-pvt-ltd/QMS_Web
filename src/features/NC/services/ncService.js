@@ -18,6 +18,12 @@ import { uploadFile } from "../../../services/workerService";
  *   Effectiveness, Observations, RootCause, CorrectiveActionTaken,
  *   PreventiveActionTaken, StaffIdinvolvedInIncident, Responsibility,
  *   ClosureVerification
+ *
+ * Subcategory Routing:
+ *   Categories come from /QualityIndicator/GetAllQualityAndRiskCategories
+ *   which returns both QI and RI categories with a categoryCode prefix.
+ *   - "QICategory_*" → /QualityIndicator/GetSubCategoriesByCategory/{id}
+ *   - "RICategory_*" → /RiskIndicator/GetSubCategoriesByCategory/{id}
  */
 export const ncService = {
 
@@ -35,23 +41,26 @@ export const ncService = {
   createNC: async (formData, evidenceFile = null, ncrId = null, onProgress = null) => {
     try {
       // Step 1 — Upload evidence to R2 if provided
-      if (evidenceFile && ncrId) {
+      if (evidenceFile instanceof File && ncrId) {
         const r2Result = await uploadFile(
           evidenceFile,
           {
-            module:  "ncr",
+            module: "ncr",
             ncrId,
-            subType: "evidence",   // → evidence__{uuid}.jpg
+            subType: "evidence", // → evidence__{uuid}.jpg
           },
           onProgress,
         );
 
         // Step 2 — Replace binary file with R2 URL string
         formData.append("EvidenceDocumentPath", r2Result.fileUrl);
+        // Backend requires both Path AND Name — use original filename
+        formData.append("EvidenceDocumentName", evidenceFile.name);
         console.log("Evidence uploaded to R2:", r2Result.fileUrl);
       } else {
-        // No evidence — send empty string so field is present
+        // No evidence — send empty strings so fields are present
         formData.append("EvidenceDocumentPath", "");
+        formData.append("EvidenceDocumentName", "");
       }
 
       // Step 3 — Send FormData (with URL string, no binary) to backend
@@ -115,11 +124,11 @@ export const ncService = {
   updateNC: async (id, formData, evidenceFile = null, ncrId = null, onProgress = null) => {
     try {
       // Re-upload new evidence if provided
-      if (evidenceFile && ncrId) {
+      if (evidenceFile instanceof File && ncrId) {
         const r2Result = await uploadFile(
           evidenceFile,
           {
-            module:  "ncr",
+            module: "ncr",
             ncrId,
             subType: "evidence",
           },
@@ -127,6 +136,7 @@ export const ncService = {
         );
 
         formData.append("EvidenceDocumentPath", r2Result.fileUrl);
+        formData.append("EvidenceDocumentName", evidenceFile.name);
         console.log("Updated evidence uploaded to R2:", r2Result.fileUrl);
       }
       // If no new file, EvidenceDocumentPath should already be in formData
@@ -140,6 +150,58 @@ export const ncService = {
       return response.data;
     } catch (error) {
       console.error(`Error updating NC with ID ${id}:`, error);
+      throw error;
+    }
+  },
+
+  // ── Categories ────────────────────────────────────────────────────────────
+
+  /**
+   * Fetch all Non-Conformance Categories (both QI and RI combined).
+   */
+  getAllCategories: async () => {
+    try {
+      const response = await api.get("/QualityIndicator/GetAllQualityAndRiskCategories");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching NC categories:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Fetch SubCategories by Category ID.
+   * Routes to the correct endpoint based on categoryCode prefix:
+   *   - "QICategory_*" → /QualityIndicator/GetSubCategoriesByCategory/{id}
+   *   - "RICategory_*" → /RiskIndicator/GetSubCategoriesByCategory/{id}
+   *
+   * @param {string|number} categoryId   - The category ID to fetch subcategories for
+   * @param {string}        categoryCode - The categoryCode (e.g. "QICategory_4", "RICategory_1")
+   * @returns {Promise<any>} Subcategory data from the appropriate endpoint
+   */
+  getSubCategoriesByCategory: async (categoryId, categoryCode) => {
+    try {
+      let endpoint;
+
+      if (categoryCode && categoryCode.startsWith("QICategory_")) {
+        endpoint = `/QualityIndicator/GetSubCategoriesByCategory/${categoryId}`;
+      } else if (categoryCode && categoryCode.startsWith("RICategory_")) {
+        endpoint = `/RiskIndicator/GetSubCategoriesByCategory/${categoryId}`;
+      } else {
+        console.warn(
+          `Unknown categoryCode prefix: "${categoryCode}" for categoryId: ${categoryId}. ` +
+          `Expected "QICategory_*" or "RICategory_*". Defaulting to QualityIndicator endpoint.`
+        );
+        endpoint = `/QualityIndicator/GetSubCategoriesByCategory/${categoryId}`;
+      }
+
+      const response = await api.get(endpoint);
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error fetching subcategories for category ${categoryId} (code: ${categoryCode}):`,
+        error,
+      );
       throw error;
     }
   },
