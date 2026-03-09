@@ -36,10 +36,10 @@ const QualityIndicator = () => {
   // Form state
   const [form, setForm] = useState({
     qualityIndicatorCategoryId: "",
-    indicatorName: "",
+    qualitySubCategoryName: "",
     thresholdPercentage: "",
     severity: "0",
-    status: "false",
+    status: "Inactive",
   });
 
   // ── Load data on mount ──────────────────────────────────────────────────────
@@ -51,11 +51,11 @@ const QualityIndicator = () => {
     try {
       setLoading(true);
       setError(null);
-      const [indicatorData, categoryData] = await Promise.all([
-        qiService.getAllQualityIndicators(),
+      const [subCategoryData, categoryData] = await Promise.all([
+        qiService.getAllQualitySubCategories(),
         qiService.getAllCategories(),
       ]);
-      setIndicators(Array.isArray(indicatorData) ? indicatorData : []);
+      setIndicators(Array.isArray(subCategoryData) ? subCategoryData : []);
       setCategories(Array.isArray(categoryData) ? categoryData : []);
     } catch (err) {
       console.error("Error loading quality indicators:", err);
@@ -71,19 +71,19 @@ const QualityIndicator = () => {
       setForm({
         qualityIndicatorCategoryId:
           editingIndicator.qualityIndicatorCategoryId || "",
-        indicatorName: editingIndicator.indicatorName || "",
+        qualitySubCategoryName: editingIndicator.qualitySubCategoryName || "",
         thresholdPercentage:
           editingIndicator.thresholdPercentage?.toString() || "",
         severity: editingIndicator.severity?.toString() || "0",
-        status: editingIndicator.status || "false",
+        status: editingIndicator.status || "Inactive",
       });
     } else {
       setForm({
         qualityIndicatorCategoryId: "",
-        indicatorName: "",
+        qualitySubCategoryName: "",
         thresholdPercentage: "",
         severity: "0",
-        status: "false",
+        status: "Inactive",
       });
     }
   }, [editingIndicator]);
@@ -94,15 +94,16 @@ const QualityIndicator = () => {
 
   // ── Save (create or update) ─────────────────────────────────────────────────
   const handleSave = async () => {
-    if (!form.indicatorName || !form.qualityIndicatorCategoryId) return;
+    if (!form.qualitySubCategoryName || !form.qualityIndicatorCategoryId)
+      return;
 
     setSaving(true);
     setError(null);
 
     try {
       const payload = {
-        qualityIndicatorCategoryId: form.qualityIndicatorCategoryId,
-        indicatorName: form.indicatorName,
+        qualityIndicatorCategoryId: parseInt(form.qualityIndicatorCategoryId),
+        qualitySubCategoryName: form.qualitySubCategoryName,
         thresholdPercentage: parseFloat(form.thresholdPercentage) || 0,
         severity: parseInt(form.severity) || 0,
         status: form.status,
@@ -110,23 +111,26 @@ const QualityIndicator = () => {
 
       if (editingIndicator) {
         // UPDATE
-        const updated = await qiService.updateQualityIndicator(
-          editingIndicator.qualityIndicatorId,
+        const response = await qiService.updateSubCategory(
+          editingIndicator.qualityIndicatorSubCategoryId,
           {
             ...payload,
-            qualityIndicatorId: editingIndicator.qualityIndicatorId,
+            qualityIndicatorSubCategoryId:
+              editingIndicator.qualityIndicatorSubCategoryId,
           },
         );
+        const updated = response.success ? response.data : response;
         setIndicators((prev) =>
           prev.map((i) =>
-            i.qualityIndicatorId === editingIndicator.qualityIndicatorId
+            i.qualityIndicatorSubCategoryId ===
+            editingIndicator.qualityIndicatorSubCategoryId
               ? { ...i, ...updated }
               : i,
           ),
         );
       } else {
         // CREATE
-        const created = await qiService.createQualityIndicator(payload);
+        const created = await qiService.createSubCategory(payload);
         setIndicators((prev) => [created, ...prev]);
       }
 
@@ -144,16 +148,20 @@ const QualityIndicator = () => {
     e.stopPropagation();
     if (
       !window.confirm(
-        `Delete "${indicator.indicatorName}"? This cannot be undone.`,
+        `Delete "${indicator.qualitySubCategoryName}"? This cannot be undone.`,
       )
     )
       return;
 
     try {
-      await qiService.deleteQualityIndicator(indicator.qualityIndicatorId);
+      await qiService.deleteQualityIndicator(
+        indicator.qualityIndicatorSubCategoryId,
+      );
       setIndicators((prev) =>
         prev.filter(
-          (i) => i.qualityIndicatorId !== indicator.qualityIndicatorId,
+          (i) =>
+            i.qualityIndicatorSubCategoryId !==
+            indicator.qualityIndicatorSubCategoryId,
         ),
       );
     } catch (err) {
@@ -184,7 +192,7 @@ const QualityIndicator = () => {
   ];
 
   const filteredIndicators = indicators.filter((indicator) => {
-    const matchesSearch = (indicator.indicatorName || "")
+    const matchesSearch = (indicator.qualitySubCategoryName || "")
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
 
@@ -210,7 +218,9 @@ const QualityIndicator = () => {
   });
 
   const totalIndicators = indicators.length;
-  const activeIndicators = indicators.filter((i) => i.status === "true").length;
+  const activeIndicators = indicators.filter(
+    (i) => i.status === "Active",
+  ).length;
   const highSeverity = indicators.filter(
     (i) => parseInt(i.severity) >= 2,
   ).length;
@@ -256,7 +266,7 @@ const QualityIndicator = () => {
   const IndicatorCard = ({ indicator }) => {
     const sev =
       SEVERITY_LABELS[parseInt(indicator.severity)] || SEVERITY_LABELS[0];
-    const isActive = indicator.status === "true";
+    const isActive = indicator.status === "Active";
 
     return (
       <div className="bg-white group rounded-2xl border-2 border-slate-100 hover:border-indigo-200 transition-all p-5 flex flex-col justify-between h-full hover:-translate-y-1 shadow-sm hover:shadow-xl">
@@ -286,7 +296,7 @@ const QualityIndicator = () => {
           </div>
 
           <h4 className="text-slate-800 font-bold text-base mb-3 group-hover:text-indigo-600 transition-colors leading-tight">
-            {indicator.indicatorName}
+            {indicator.qualitySubCategoryName}
           </h4>
 
           {indicator.thresholdPercentage !== undefined && (
@@ -466,7 +476,7 @@ const QualityIndicator = () => {
               ))
             : filteredIndicators.map((indicator) => (
                 <IndicatorCard
-                  key={indicator.qualityIndicatorId}
+                  key={indicator.qualityIndicatorSubCategoryId}
                   indicator={indicator}
                 />
               ))}
@@ -543,9 +553,12 @@ const QualityIndicator = () => {
                   <input
                     type="text"
                     placeholder="e.g. Turnaround Time Overrun"
-                    value={form.indicatorName}
+                    value={form.qualitySubCategoryName}
                     onChange={(e) =>
-                      handleFieldChange("indicatorName", e.target.value)
+                      handleFieldChange(
+                        "qualitySubCategoryName",
+                        e.target.value,
+                      )
                     }
                     className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800"
                   />
@@ -598,8 +611,8 @@ const QualityIndicator = () => {
                       }
                       className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800 appearance-none cursor-pointer"
                     >
-                      <option value="false">Inactive</option>
-                      <option value="true">Active</option>
+                      <option value="Inactive">Inactive</option>
+                      <option value="Active">Active</option>
                     </select>
                   </div>
                 </div>
@@ -616,11 +629,11 @@ const QualityIndicator = () => {
                 <button
                   onClick={handleSave}
                   disabled={
-                    !form.indicatorName ||
+                    !form.qualitySubCategoryName ||
                     !form.qualityIndicatorCategoryId ||
                     saving
                   }
-                  className="flex-1 py-4 bg-indigo-600 text-gray-600 font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0 flex items-center justify-center gap-2"
+                  className="flex-1 py-4 bg-indigo-600 text-gray-900 font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0 flex items-center justify-center gap-2"
                 >
                   {saving ? (
                     <>

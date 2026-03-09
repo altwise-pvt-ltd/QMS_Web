@@ -11,7 +11,7 @@ import QIReportTable from "./components/QIReportTable";
 const QalityIndicatorForm = ({ onBack, indicators = [], categories = [] }) => {
   const [selectedMonth, setSelectedMonth] = useState("NOV 2025");
   const [selectedIndicators, setSelectedIndicators] = useState(
-    indicators.map((i) => i.qualityIndicatorId),
+    indicators.map((i) => i.qualityIndicatorSubCategoryId),
   );
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [metadata, setMetadata] = useState({
@@ -49,7 +49,7 @@ const QalityIndicatorForm = ({ onBack, indicators = [], categories = [] }) => {
   };
 
   const displayedIndicators = indicators.filter((i) =>
-    selectedIndicators.includes(i.qualityIndicatorId),
+    selectedIndicators.includes(i.qualityIndicatorSubCategoryId),
   );
 
   return (
@@ -73,7 +73,9 @@ const QalityIndicatorForm = ({ onBack, indicators = [], categories = [] }) => {
             categories={categories}
             toggleIndicator={toggleIndicator}
             onSelectAll={() =>
-              setSelectedIndicators(indicators.map((i) => i.qualityIndicatorId))
+              setSelectedIndicators(
+                indicators.map((i) => i.qualityIndicatorSubCategoryId),
+              )
             }
             isCollapsed={isSidebarCollapsed}
             onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}

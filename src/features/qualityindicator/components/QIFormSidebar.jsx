@@ -92,27 +92,29 @@ const QIFormSidebar = ({
                     })
                     .map((indicator) => (
                       <button
-                        key={indicator.qualityIndicatorId}
+                        key={indicator.qualityIndicatorSubCategoryId}
                         onClick={() =>
-                          toggleIndicator(indicator.qualityIndicatorId)
+                          toggleIndicator(
+                            indicator.qualityIndicatorSubCategoryId,
+                          )
                         }
                         className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all text-left ${
                           selectedIndicators.includes(
-                            indicator.qualityIndicatorId,
+                            indicator.qualityIndicatorSubCategoryId,
                           )
                             ? "bg-indigo-50 text-indigo-700"
                             : "text-slate-500 hover:bg-slate-50"
                         }`}
                       >
                         {selectedIndicators.includes(
-                          indicator.qualityIndicatorId,
+                          indicator.qualityIndicatorSubCategoryId,
                         ) ? (
                           <CheckSquare size={16} className="shrink-0" />
                         ) : (
                           <Square size={16} className="shrink-0" />
                         )}
                         <span className="text-xs font-medium truncate">
-                          {indicator.indicatorName}
+                          {indicator.qualitySubCategoryName}
                         </span>
                       </button>
                     ))}

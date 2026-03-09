@@ -179,7 +179,7 @@ const RiskIndicator = () => {
     try {
       setLoading(true);
       // 🚀 Fetch from Backend API
-      const apiData = await riService.getAllRiskIndicators();
+      const apiData = await riService.getAllRiskSubCategories();
       console.log("Risk indicators from API:", apiData);
 
       if (apiData && Array.isArray(apiData) && apiData.length > 0) {
@@ -189,12 +189,12 @@ const RiskIndicator = () => {
           const cat = currentCategories.find((c) => c.id?.toString() === catId);
 
           return {
-            id: ri.riskIndicatorId || `api-ri-${Math.random()}`,
-            riskIndicatorId: ri.riskIndicatorId,
-            name: ri.riskName || "Untitled Risk",
+            id: ri.riskIndicatorSubCategoryId || `api-ri-${Math.random()}`,
+            riskIndicatorId: ri.riskIndicatorSubCategoryId,
+            name: ri.riskSubCategoryName || "Untitled Risk",
             category: cat ? cat.name : ri.riskCategoryName || "General",
             count: 0, // 👈 Fix: API doesn't provide current count, defaulting to 0
-            hasCapa: ri.status === "true" || ri.status === true,
+            hasCapa: ri.status === "Active" || ri.status === true,
             incidents: [],
             threshold: ri.thresholdCount || 0,
             severity: ri.severity || 1,
@@ -252,15 +252,13 @@ const RiskIndicator = () => {
 
         // 🚀 Update with API using the specific Update endpoint
         const updateData = {
-          riskIndicatorId: apiId,
-          riskIndicatorCategoryId: categoryObj?.id?.toString() || "1",
-          riskName: newName,
+          riskSubCategoryName: newName,
           thresholdCount: parseInt(newThreshold) || 0,
           severity: parseInt(newSeverity) || 0,
-          status: editingIndicator.hasCapa ? "true" : "false",
+          status: editingIndicator.hasCapa ? "Active" : "Inactive",
         };
 
-        await riService.updateRiskIndicator(apiId, updateData);
+        await riService.updateRiskSubCategory(apiId, updateData);
 
         // Update existing
         const updatedIndicator = {
@@ -282,21 +280,21 @@ const RiskIndicator = () => {
 
         // 🚀 Add new with exact requested structure
         const indicatorData = {
-          riskIndicatorId: 0,
           riskIndicatorCategoryId: categoryObj?.id?.toString() || "1",
-          riskName: newName,
+          riskSubCategoryName: newName,
           thresholdCount: parseInt(newThreshold) || 0,
           severity: parseInt(newSeverity) || 0,
-          status: "false",
+          status: "Active",
         };
 
         // 🚀 Call Backend API
-        const apiResponse = await riService.createRiskIndicator(indicatorData);
+        const apiResponse =
+          await riService.createRiskSubCategory(indicatorData);
         console.log("Create risk indicator API response:", apiResponse);
 
         const newIndicator = {
           id:
-            apiResponse?.riskIndicatorId ||
+            apiResponse?.riskIndicatorSubCategoryId ||
             apiResponse?.id ||
             `risk-new-${Date.now()}`,
           name: newName,
