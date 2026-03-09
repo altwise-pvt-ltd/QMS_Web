@@ -54,6 +54,13 @@ const MrmPage = () => {
     } catch (e) {
       console.error("Failed to restore MRM state:", e);
     }
+
+    // 🔥 Reset state when navigating away from this module
+    return () => {
+      console.log("Leaving MRM module, clearing flow state...");
+      localStorage.removeItem("mrm_current_view");
+      localStorage.removeItem("mrm_selected_meeting");
+    };
   }, []);
 
   // Save state to localStorage whenever it changes

@@ -90,40 +90,36 @@ const FormPreview = ({
           <div className="flex p-1 gap-2">
             <button
               onClick={() => setActiveTab("ncs")}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black transition-all ${
-                activeTab === "ncs"
-                  ? "bg-white text-indigo-600 shadow-sm border border-slate-200"
-                  : "text-slate-500 hover:text-slate-900 hover:bg-white/50"
-              }`}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black transition-all ${activeTab === "ncs"
+                ? "bg-white text-indigo-600 shadow-sm border border-slate-200"
+                : "text-slate-500 hover:text-slate-900 hover:bg-white/50"
+                }`}
             >
               <ClipboardList className="w-4 h-4" />
               List of NC's
               <span
-                className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-black ${
-                  activeTab === "ncs"
-                    ? "bg-indigo-100 text-indigo-600"
-                    : "bg-slate-200 text-slate-600"
-                }`}
+                className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === "ncs"
+                  ? "bg-indigo-100 text-indigo-600"
+                  : "bg-slate-200 text-slate-600"
+                  }`}
               >
                 {ncs.length}
               </span>
             </button>
             <button
               onClick={() => setActiveTab("filed")}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black transition-all ${
-                activeTab === "filed"
-                  ? "bg-white text-emerald-600 shadow-sm border border-slate-200"
-                  : "text-slate-500 hover:text-slate-900 hover:bg-white/50"
-              }`}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black transition-all ${activeTab === "filed"
+                ? "bg-white text-emerald-600 shadow-sm border border-slate-200"
+                : "text-slate-500 hover:text-slate-900 hover:bg-white/50"
+                }`}
             >
               <CheckCircle className="w-4 h-4" />
               Filed CAPA's
               <span
-                className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-black ${
-                  activeTab === "filed"
-                    ? "bg-emerald-100 text-emerald-600"
-                    : "bg-slate-200 text-slate-600"
-                }`}
+                className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === "filed"
+                  ? "bg-emerald-100 text-emerald-600"
+                  : "bg-slate-200 text-slate-600"
+                  }`}
               >
                 {filedCapas.length}
               </span>
@@ -177,11 +173,10 @@ const FormPreview = ({
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-2">
                         <div
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-gray-600 ${
-                            activeTab === "ncs"
-                              ? "bg-indigo-500"
-                              : "bg-emerald-500"
-                          }`}
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center text-[15px] font-black text-white ${activeTab === "ncs"
+                            ? "bg-indigo-500"
+                            : "bg-emerald-500"
+                            }`}
                         >
                           {(
                             item.reportedBy ||

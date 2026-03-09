@@ -163,10 +163,10 @@ const InstrumentForm = ({ isOpen, onClose, onAdd, editingInstrument }) => {
       const errorData = error.response?.data;
       const errorMessage = errorData?.errors
         ? Object.entries(errorData.errors)
-            .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
-            .join("\n")
+          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
+          .join("\n")
         : errorData?.title ||
-          "Failed to register instrument. Please ensure all required fields and documents are provided.";
+        "Failed to register instrument. Please ensure all required fields and documents are provided.";
       alert(`Registration Error:\n${errorMessage}`);
     } finally {
       setIsUploading(false);
@@ -428,7 +428,7 @@ const InstrumentForm = ({ isOpen, onClose, onAdd, editingInstrument }) => {
             form="instrument-form"
             type="submit"
             disabled={isUploading}
-            className={`px-10 py-2.5 bg-slate-900 text-white rounded-md text-sm font-bold transition-all shadow-sm active:scale-95 uppercase tracking-widest ${isUploading ? "opacity-70 cursor-not-allowed" : "hover:bg-black"}`}
+            className={`px-10 py-2.5 bg-slate-900 text-gray-600 rounded-md text-sm font-bold transition-all shadow-sm active:scale-95 uppercase tracking-widest ${isUploading ? "opacity-70 cursor-not-allowed" : "hover:bg-black"}`}
           >
             {isUploading
               ? `Uploading ${uploadProgress}%`

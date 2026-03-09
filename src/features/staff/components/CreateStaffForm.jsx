@@ -292,14 +292,14 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
       flex items-center gap-2
       transition-colors  duration-200
       ${isSubmitting
-                ? "bg-blue-400 text-white cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                ? "bg-blue-400 text-gray-600 cursor-not-allowed"
+                : "bg-blue-600 text-gray-600 hover:bg-blue-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               }
     `}
 
           >
             {isSubmitting ? (
-              <Spinner size={18} className="text-white" />
+              <Spinner size={18} className="text-gray-600" />
             ) : (
 
               <Save size={18} />
