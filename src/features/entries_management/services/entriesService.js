@@ -73,7 +73,12 @@ export const getAllEntries = async () => {
     const response = await api.get("/EntryManagement/GetAllEntries");
     return (response.data || []).map(mapEntryApiToUi);
   } catch (error) {
-    console.error("Error fetching all entries:", error);
+    // Handle 400 "No entries found" gracefully
+    if (error.status === 400 || error.response?.status === 400) {
+      console.log("📝 GetAllEntries: No entries found (API returned 400). Returning empty set.");
+      return [];
+    }
+    console.error("❌ Error fetching all entries:", error);
     throw error;
   }
 };
@@ -130,7 +135,11 @@ export const getLaboratoriesByEntryId = async (entryId) => {
     const response = await api.get(`/EntryManagement/GetLaboratoriesByEntryId/${entryId}`);
     return (response.data || []).map(mapLabApiToUi);
   } catch (error) {
-    console.error("Error fetching laboratories for entry:", error);
+    if (error.status === 400 || error.response?.status === 400) {
+      console.log(`📝 GetLaboratoriesByEntryId: No labs found for entry ${entryId} (API returned 400). Returning empty set.`);
+      return [];
+    }
+    console.error("❌ Error fetching laboratories for entry:", error);
     throw error;
   }
 };
@@ -186,7 +195,11 @@ export const getRecordsByLaboratoryId = async (labId) => {
     const response = await api.get(`/EntryManagement/GetRecordsByLaboratoryId/${labId}`);
     return (response.data || []).map(mapRecordApiToUi);
   } catch (error) {
-    console.error("Error fetching records for lab:", error);
+    if (error.status === 400 || error.response?.status === 400) {
+      console.log(`📝 GetRecordsByLaboratoryId: No records found for lab ${labId} (API returned 400). Returning empty set.`);
+      return [];
+    }
+    console.error("❌ Error fetching records for lab:", error);
     throw error;
   }
 };

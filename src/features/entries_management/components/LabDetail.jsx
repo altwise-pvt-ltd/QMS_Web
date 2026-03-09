@@ -75,7 +75,7 @@ const LabDetail = ({
       </div>
 
       {/* Structured Table Container */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col min-h-[400px]">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col min-h-100">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400">

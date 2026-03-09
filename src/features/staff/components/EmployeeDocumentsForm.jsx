@@ -13,7 +13,6 @@ import staffService from "../services/staffService";
 
 const EmployeeDocumentsForm = ({ initialData }) => {
   const [formData, setFormData] = useState({
-    // ... (rest is same until handleSubmit)
     // Personal Documents
     passportPhoto: null,
     cv: null,
@@ -49,7 +48,6 @@ const EmployeeDocumentsForm = ({ initialData }) => {
   });
 
   // Populate form when editing existing staff
-  // Populate form when editing existing staff
   const [existingDocuments, setExistingDocuments] = useState({
     passportPhoto: null,
     cv: null,
@@ -63,7 +61,6 @@ const EmployeeDocumentsForm = ({ initialData }) => {
   // Populate form when editing existing staff
   useEffect(() => {
     if (initialData?.id) {
-      // 1. Fetch full documents list from API
       const fetchDocuments = async () => {
         try {
           const response = await staffService.getStaffDocuments(initialData.id);
@@ -166,7 +163,7 @@ const EmployeeDocumentsForm = ({ initialData }) => {
 
     if (!file && !value) return;
 
-    // Handle dynamic arrays (qualifications, appointmentDocuments, medicalRecords, vaccinationRecords, trainingRecords)
+    // Handle dynamic arrays
     if (
       [
         "qualifications",
@@ -245,12 +242,10 @@ const EmployeeDocumentsForm = ({ initialData }) => {
     const { name, value } = e.target;
 
     if (fieldName && index !== null && subField) {
-      // Handle dynamic array field changes
       const updatedArray = [...formData[fieldName]];
       updatedArray[index][subField] = value;
       setFormData((prev) => ({ ...prev, [fieldName]: updatedArray }));
     } else {
-      // Handle simple field changes
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
@@ -361,109 +356,119 @@ const EmployeeDocumentsForm = ({ initialData }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Basic Validation for required files
+    if (!formData.passportPhoto?.file && !existingDocuments.passportPhoto) {
+      alert("Passport Photo is required.");
+      return;
+    }
+    if (!formData.cv && !existingDocuments.cv) {
+      alert("Resume (CV) is required.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const data = new FormData();
-
-      // Append basic fields if needed (assuming they are passed or part of this form)
-      if (initialData?.id) {
-        data.append("StaffId", initialData.id);
-      }
-
-      // 1. Personal Documents
-      // 1. Personal Documents
-      if (formData.passportPhoto?.file) {
-        data.append("PassportPhoto", formData.passportPhoto.file);
-      }
-      if (formData.cv) {
-        data.append("CV", formData.cv);
-      }
-
-      // Helper to append array of objects
-      const appendArray = (array, prefix, fileField = "file", keyMap = {}) => {
-        array.forEach((item, index) => {
-          Object.keys(item).forEach((key) => {
-            if (item[key]) {
-              // Ensure we use the correct indexing syntax for ASP.NET Core / Standard Model Binding
-              // e.g., Qualifications[0].DocumentTitle
-              const backendKey = keyMap[key] || key;
-
-              if (key === fileField) {
-                // For files, we might need a specific naming convention or just map them
-                // often it's "Qualifications[0].File"
-                data.append(`${prefix}[${index}].${key}`, item[key]);
-              } else {
-                data.append(`${prefix}[${index}].${key}`, item[key]);
-              }
-            }
-          });
-        });
+      // Helper to get either the new file or the existing path
+      const getFileOrPath = (newFile, existingObj) => {
+        if (newFile instanceof File) return newFile;
+        // If it was already a processed object { file, name, preview } from handleFileChange
+        if (newFile?.file instanceof File) return newFile.file;
+        // Fallback to existing path if no new file is selected
+        return existingObj?.path || "";
       };
 
-      // 2. Qualifications
-      // formData.qualifications: { title, collegeName, graduationYear, file }
-      appendArray(formData.qualifications, "Qualifications", "file", {
-        title: "DocumentTitle",
-        file: "File",
-      });
+      // Construct the data object for the service
+      const submissionData = {
+        staffId: initialData?.id || "",
+        staffName: initialData?.name || "staff",
+        passportPhoto: getFileOrPath(
+          formData.passportPhoto,
+          existingDocuments.passportPhoto,
+        ),
+        resume: getFileOrPath(formData.cv, existingDocuments.cv),
 
-      // 3. Appointment Documents
-      // formData.appointmentDocuments: { title, file }
-      appendArray(formData.appointmentDocuments, "Appointments", "file", {
-        title: "DocumentTitle",
-        file: "File",
-      });
+        qualifications: formData.qualifications
+          .filter((q) => q.title || q.collegeName || q.graduationYear || q.file)
+          .map((q, i) => ({
+            documentTitle: q.title,
+            collegeName: q.collegeName,
+            graduationYear: q.graduationYear,
+            file: getFileOrPath(q.file, existingDocuments.qualifications?.[i]),
+          })),
 
-      // 4. Medical Records
-      // formData.medicalRecords: { title, certificate (file), issueDate }
-      appendArray(formData.medicalRecords, "Medicals", "certificate", {
-        title: "RecordTitle",
-        issueDate: "IssueDate",
-        certificate: "File",
-      });
+        appointments: formData.appointmentDocuments
+          .filter((a) => a.title || a.file)
+          .map((a, i) => ({
+            documentTitle: a.title,
+            file: getFileOrPath(
+              a.file,
+              existingDocuments.appointmentDocuments?.[i],
+            ),
+          })),
 
-      // 5. Vaccination Records
-      // formData.vaccinationRecords: { name, date, file }
-      appendArray(formData.vaccinationRecords, "Vaccinations", "file", {
-        name: "CertificateName",
-        date: "DoseDate",
-        file: "File",
-      });
+        medicals: formData.medicalRecords
+          .filter((m) => m.title || m.certificate || m.issueDate)
+          .map((m, i) => ({
+            recordTitle: m.title,
+            issueDate: m.issueDate,
+            file: getFileOrPath(
+              m.certificate,
+              existingDocuments.medicalRecords?.[i],
+            ),
+          })),
 
-      // 6. Training Records
-      // formData.trainingRecords: { title, inductionTraining (file), competencyTraining (file) }
-      // specific handling since it has multiple files
-      formData.trainingRecords.forEach((item, index) => {
-        data.append(`TrainingRecords[${index}].title`, item.title);
-        if (item.inductionTraining) {
-          data.append(
-            `TrainingRecords[${index}].inductionTraining`,
-            item.inductionTraining,
-          );
-        }
-        if (item.competencyTraining) {
-          data.append(
-            `TrainingRecords[${index}].competencyTraining`,
-            item.competencyTraining,
-          );
-        }
-      });
+        vaccinations: formData.vaccinationRecords
+          .filter((v) => v.name || v.date || v.file)
+          .map((v, i) => ({
+            certificateName: v.name,
+            doseDate: v.date,
+            file: getFileOrPath(
+              v.file,
+              existingDocuments.vaccinationRecords?.[i],
+            ),
+          })),
 
-      console.log("Submitting Employee Documents Data via API...");
+        trainings: formData.trainingRecords
+          .filter((t) => t.title || t.inductionTraining || t.competencyTraining)
+          .map((t, i) => ({
+            trainingTitle: t.title,
+            inductionFile: getFileOrPath(
+              t.inductionTraining,
+              existingDocuments.trainingRecords?.[i]?.inductionTraining,
+            ),
+            competencyFile: getFileOrPath(
+              t.competencyTraining,
+              existingDocuments.trainingRecords?.[i]?.competencyTraining,
+            ),
+          })),
+      };
 
-      const response = await staffService.submitStaffDetails(data);
+      console.log("Starting two-step submission flow...");
+      const result = await staffService.submitStaffDocuments(submissionData);
 
-      if (response.data) {
+      if (result) {
         alert("Documents submitted successfully!");
-        console.log("Response:", response.data);
+        console.log("Submission successful:", result);
       }
     } catch (error) {
       console.error("Error submitting documents:", error);
-      alert(
-        "Failed to submit documents. " +
-          (error.response?.data?.message || error.message),
-      );
+      const validationErrors = error.response?.data?.errors;
+      if (validationErrors) {
+        const errorMessages = Object.entries(validationErrors)
+          .map(
+            ([field, msgs]) =>
+              `${field}: ${Array.isArray(msgs) ? msgs.join(", ") : msgs}`,
+          )
+          .join("\n");
+        alert(`Validation errors:\n${errorMessages}`);
+      } else {
+        alert(
+          "Failed to submit documents. " +
+            (error.response?.data?.message || error.message),
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }

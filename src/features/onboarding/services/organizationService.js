@@ -141,27 +141,24 @@ const organizationService = {
     }
 
     try {
-      // Mapping to PascalCase as required by the backend.
-      // We often don't include the ID in the body for PUT if it's in the URL,
-      // but if the backend strictly requires it, we can put it back.
-      // Trying WITHOUT it first as it's a common cause of 400s.
       const payload = {
         LegalCompanyName: fields.legalCompanyName,
         IndustrySector: fields.industrySector,
         BusinessPhone: fields.businessPhone,
         CorporateWebsite: fields.corporateWebsite,
         RegisteredAddress: fields.registeredAddress,
-        // If CompanyLogoPath is required, ensure it's not empty string. 
-        // We'll use the existing path or a placeholder if absolutely blank.
         CompanyLogoPath: companyLogoPath || fields.companyLogoPath || "Pending",
-        Status: "Active", // Using string as attempted by user
+        Status: "Active"
       };
 
       console.log("Updating Organization with Payload:", payload);
+
       const response = await api.put(`/Organization/UpdateOrganization/${id}`, payload);
+
       return response.data;
+
     } catch (error) {
-      console.error("Error updating organization:", error);
+      console.error("Error updating organization:", error.response?.data || error);
       throw error;
     }
 

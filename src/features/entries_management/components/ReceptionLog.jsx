@@ -564,7 +564,3 @@ const ReceptionLog = ({ entry, lab, onBack }) => {
 };
 
 export default ReceptionLog;
-
-// work on the month and date
-// work on the table border and cell padding
-// implement data and fields from previous page (making table data dynamic)

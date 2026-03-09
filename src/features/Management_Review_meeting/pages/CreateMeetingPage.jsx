@@ -9,7 +9,7 @@ import {
   Save,
   X,
 } from "lucide-react";
-import { dummyUSerData } from "../../../db/dummyUSerData";
+// import { dummyUSerData } from "../../../db/dummyUSerData";
 
 const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
   const navigate = useNavigate();
@@ -254,14 +254,15 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
                       <tr
                         key={user.id}
                         onClick={() => toggleUserSelection(user)}
-                        className={`cursor-pointer hover:bg-gray-50 transition-colors ${isSelected ? "bg-indigo-50" : ""
-                          }`}
+                        className={`cursor-pointer hover:bg-gray-50 transition-colors ${
+                          isSelected ? "bg-indigo-50" : ""
+                        }`}
                       >
                         <td className="px-4 py-3">
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => { }}
+                            onChange={() => {}}
                             className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                           />
                         </td>
