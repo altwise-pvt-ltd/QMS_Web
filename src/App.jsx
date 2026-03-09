@@ -94,9 +94,9 @@ function App() {
 
         if (token) {
           try {
-            await initializeEventTypes();
-            await seedComplianceData();
-            await addExpiryDatesToDocuments();
+            // await initializeEventTypes();
+            // await seedComplianceData();
+            // await addExpiryDatesToDocuments();
             console.log("✅ Application data initialized successfully.");
           } catch (error) {
             console.error("Authenticated initialization failed", error);

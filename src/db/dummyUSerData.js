@@ -1,0 +1,58 @@
+export const dummyUSerData = [
+    {
+        id: 1,
+        username: "John Doe",
+        email: "john.doe@example.com",
+        role: "CEO",
+        department: "Management",
+    },
+    {
+        id: 2,
+        username: "Jane Smith",
+        email: "jane.smith@example.com",
+        role: "Quality Manager",
+        department: "Quality",
+    },
+    {
+        id: 3,
+        username: "Bob Johnson",
+        email: "bob.johnson@example.com",
+        role: "Operations Manager",
+        department: "Operations",
+    },
+    {
+        id: 4,
+        username: "Alice Williams",
+        email: "alice.williams@example.com",
+        role: "HR Manager",
+        department: "Human Resources",
+    },
+    {
+        id: 5,
+        username: "Charlie Brown",
+        email: "charlie.brown@example.com",
+        role: "IT Specialist",
+        department: "IT",
+    },
+    {
+        id: 6,
+        username: "David Miller",
+        email: "david.miller@example.com",
+        role: "Lab Technician",
+        department: "Laboratory",
+    },
+    {
+        id: 7,
+        username: "Eve Davis",
+        email: "eve.davis@example.com",
+        role: "Compliance Officer",
+        department: "Compliance",
+    },
+    {
+        id: 8,
+        username: "Frank Wilson",
+        email: "frank.wilson@example.com",
+        role: "Safety Officer",
+        department: "General",
+    },
+];
