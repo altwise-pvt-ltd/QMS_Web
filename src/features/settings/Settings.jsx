@@ -242,33 +242,38 @@ const Settings = () => {
         className="grid grid-cols-1 lg:grid-cols-12 gap-10"
       >
         {/* Left Column: Branding */}
-        <div className="lg:col-span-4 space-y-8">
-          <div className="bg-white p-6 md:p-8 rounded-[32px] border border-slate-100 shadow-sm space-y-6">
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-slate-50 p-6 md:p-8 rounded-[32px] border border-slate-200/60 shadow-sm space-y-6">
+            {/* Header Section */}
             <div className="flex items-center gap-3">
-              <Camera size={20} className="text-indigo-600" />
-              <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">
+              <div className="p-2 bg-white rounded-xl shadow-sm border border-slate-100">
+                <Camera size={18} className="text-indigo-600" />
+              </div>
+              <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                 Visual Identity
               </h3>
             </div>
 
+            {/* Upload Zone */}
             <div className="relative group">
-              <div className="aspect-square w-full bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden group-hover:border-indigo-300 transition-all">
+              <div className="aspect-square w-full bg-white/80 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden group-hover:border-indigo-400 group-hover:bg-white transition-all duration-300">
                 {logoPreview ? (
                   <img
                     src={logoPreview}
                     alt="Company Logo"
-                    className="w-full h-full object-contain p-8"
+                    className="w-full h-full object-contain p-12"
                   />
                 ) : (
                   <div className="text-center p-6 space-y-3">
-                    <div className="p-4 bg-white rounded-2xl shadow-sm inline-block text-slate-300">
-                      <Upload size={32} />
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 inline-block text-slate-400 group-hover:text-indigo-500 transition-colors">
+                      <Upload size={28} />
                     </div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-slate-600 transition-colors">
                       Upload Logo
                     </p>
                   </div>
                 )}
+
                 <label className="absolute inset-0 cursor-pointer">
                   <input
                     type="file"
@@ -280,22 +285,27 @@ const Settings = () => {
                 </label>
               </div>
 
+              {/* Delete Action */}
               {logoPreview && (
                 <button
                   type="button"
                   onClick={() => setLogoPreview(null)}
-                  className="absolute -top-2 -right-2 w-8 h-8 bg-white border border-slate-100 rounded-full flex items-center justify-center text-rose-500 shadow-md hover:bg-rose-50 transition-all"
+                  className="absolute -top-2 -right-2 w-8 h-8 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 shadow-sm hover:shadow-md transition-all"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={14} />
                 </button>
               )}
             </div>
 
-            <p className="text-[10px] text-slate-400 font-medium italic leading-relaxed text-center">
-              Recommended: 512x512px SVG or transparent PNG.
-              <br />
-              Max size: 2MB.
-            </p>
+            {/* Footer Meta */}
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                SVG or transparent PNG
+              </p>
+              <p className="text-[9px] text-slate-400/70 font-medium">
+                Max size 2MB • Recommended 512x512px
+              </p>
+            </div>
           </div>
         </div>
 
