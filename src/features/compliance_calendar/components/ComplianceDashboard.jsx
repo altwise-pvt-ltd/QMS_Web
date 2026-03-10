@@ -19,15 +19,15 @@ import { formatDueDate, sortByPriority } from "../utils/reminderUtils";
 
 const StatusBadge = ({ type, label }) => {
   const styles = {
-    upcoming: "bg-amber-100 text-amber-700",
-    overdue: "bg-red-100 text-red-700",
-    completed: "bg-emerald-100 text-emerald-700",
-    expiring: "bg-orange-100 text-orange-700",
+    upcoming: "bg-amber-50 text-amber-600 border-amber-100",
+    overdue: "bg-red-50 text-red-600 border-red-100",
+    completed: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    expiring: "bg-orange-50 text-orange-600 border-orange-100",
   };
 
   return (
     <span
-      className={`px-2 py-0.5 rounded-full text-xs font-medium ${styles[type]}`}
+      className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border ${styles[type]}`}
     >
       {label}
     </span>
@@ -35,17 +35,19 @@ const StatusBadge = ({ type, label }) => {
 };
 
 const StatCard = ({ icon: Icon, label, value }) => (
-  <div className="bg-white border border-slate-200 rounded-lg p-5 transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-1 hover:border-indigo-200 group cursor-pointer">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-xs uppercase tracking-wide text-slate-500 group-hover:text-slate-600 transition-colors">
+  <div className="bg-white border border-slate-100 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/40 hover:-translate-y-1 hover:border-indigo-100 group cursor-pointer relative overflow-hidden">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] uppercase font-black tracking-[0.15em] text-slate-400 group-hover:text-slate-500 transition-colors">
           {label}
         </p>
-        <p className="text-2xl font-semibold text-slate-900 mt-1 group-hover:text-indigo-600 transition-colors">
-          {value}
-        </p>
+        <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-indigo-50 transition-colors">
+          <Icon className="w-4 h-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+        </div>
       </div>
-      <Icon className="w-6 h-6 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+      <p className="text-4xl font-black text-slate-900 group-hover:text-indigo-600 transition-all duration-300 tracking-tight">
+        {value}
+      </p>
     </div>
   </div>
 );
@@ -90,7 +92,7 @@ const ComplianceDashboard = () => {
   if (loading) {
     return (
       <div className="py-20 flex justify-center">
-        <div className="h-10 w-10 border-2 border-slate-300 border-t-indigo-600 rounded-full animate-spin" />
+        <div className="h-12 w-12 border-[3px] border-slate-100 border-t-indigo-600 rounded-full animate-spin" />
       </div>
     );
   }
@@ -99,10 +101,11 @@ const ComplianceDashboard = () => {
     <div className="space-y-8">
       {/* KPI Summary */}
       <section>
-        <h2 className="text-sm font-semibold text-slate-700 mb-3">
+        <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-4 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
           Compliance Overview
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <StatCard
             icon={CalendarDays}
             label="Total Events"
@@ -128,103 +131,122 @@ const ComplianceDashboard = () => {
 
       {/* Alerts */}
       {(overdueEvents.length > 0 || expiringDocs.length > 0) && (
-        <section className="border border-red-200 bg-red-50 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-red-700 font-medium">
-            <AlertTriangle size={18} />
+        <section className="bg-red-50/50 border border-red-100 rounded-2xl p-4 md:p-6 animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="flex items-center gap-3 text-red-700 font-bold">
+            <div className="p-1.5 bg-red-100 rounded-lg">
+              <AlertTriangle size={16} />
+            </div>
             Immediate Attention Required
           </div>
-          <p className="text-sm text-red-600 mt-1">
-            {overdueEvents.length} overdue events and {expiringDocs.length}{" "}
+          <p className="text-sm text-red-600/80 mt-2 ml-10 font-medium">
+            <span className="font-bold text-red-700">
+              {overdueEvents.length}
+            </span>{" "}
+            overdue events and{" "}
+            <span className="font-bold text-red-700">
+              {expiringDocs.length}
+            </span>{" "}
             documents nearing expiry.
           </p>
         </section>
       )}
 
       {/* Events */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         {/* Upcoming */}
-        <div className="bg-white border border-slate-200 rounded-lg p-5 transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/50">
-          <h3 className="text-sm font-semibold text-slate-800 mb-4">
+        <div className="space-y-6">
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
             Upcoming Events
           </h3>
-          {upcomingEvents.length === 0 ? (
-            <p className="text-sm text-slate-500">No upcoming events.</p>
-          ) : (
-            <ul className="space-y-3">
-              {upcomingEvents.map((event) => (
-                <li
-                  key={event.id}
-                  className="flex justify-between items-start p-2 rounded-lg hover:bg-slate-50 transition-colors"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">
-                      {event.title}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {formatDueDate(event.dueDate)}
-                    </p>
+          <div className="space-y-1">
+            {upcomingEvents.length === 0 ? (
+              <p className="text-sm text-slate-400 italic py-2">
+                No upcoming events.
+              </p>
+            ) : (
+              <div className="divide-y divide-slate-50">
+                {upcomingEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className="group flex justify-between items-center py-3 px-2 hover:bg-slate-50/50 rounded-xl transition-all duration-200"
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">
+                        {event.title}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1 font-medium">
+                        {formatDueDate(event.dueDate)}
+                      </p>
+                    </div>
+                    <StatusBadge type="upcoming" label="Upcoming" />
                   </div>
-                  <StatusBadge type="upcoming" label="Upcoming" />
-                </li>
-              ))}
-            </ul>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Overdue */}
-        <div className="bg-white border border-slate-200 rounded-lg p-5 transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/50">
-          <h3 className="text-sm font-semibold text-slate-800 mb-4">
+        <div className="space-y-6">
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
             Overdue Events
           </h3>
-          {overdueEvents.length === 0 ? (
-            <p className="text-sm text-emerald-600">No overdue events.</p>
-          ) : (
-            <ul className="space-y-3">
-              {overdueEvents.map((event) => (
-                <li
-                  key={event.id}
-                  className="flex justify-between items-start p-2 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">
-                      {event.title}
-                    </p>
-                    <p className="text-xs text-red-600">
-                      {formatDueDate(event.dueDate)}
-                    </p>
+          <div className="space-y-1">
+            {overdueEvents.length === 0 ? (
+              <p className="text-sm text-emerald-500 font-medium py-2">
+                No overdue events 🎉
+              </p>
+            ) : (
+              <div className="divide-y divide-slate-50">
+                {overdueEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className="group flex justify-between items-center py-3 px-2 hover:bg-red-50/30 rounded-xl transition-all duration-200"
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-slate-800 group-hover:text-red-700 transition-colors">
+                        {event.title}
+                      </p>
+                      <p className="text-xs text-red-500/80 mt-1 font-bold">
+                        {formatDueDate(event.dueDate)}
+                      </p>
+                    </div>
+                    <StatusBadge type="overdue" label="Overdue" />
                   </div>
-                  <StatusBadge type="overdue" label="Overdue" />
-                </li>
-              ))}
-            </ul>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
       {/* Expiring Documents */}
       {expiringDocs.length > 0 && (
-        <section className="bg-white border border-slate-200 rounded-lg p-5 transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/50">
-          <h3 className="text-sm font-semibold text-slate-800 mb-4">
+        <section className="space-y-6">
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
             Documents Nearing Expiry
           </h3>
-          <ul className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {expiringDocs.map((doc) => (
-              <li
+              <div
                 key={doc.id}
-                className="flex justify-between items-start p-2 rounded-lg hover:bg-orange-50 transition-colors"
+                className="group flex justify-between items-center p-3 md:p-4 bg-slate-50/50 rounded-2xl border border-transparent hover:border-orange-100 hover:bg-orange-50/30 transition-all duration-300"
               >
                 <div>
-                  <p className="text-sm font-medium text-slate-900">
+                  <p className="text-sm font-bold text-slate-800 group-hover:text-orange-700 transition-colors">
                     {doc.documentName}
                   </p>
-                  <p className="text-xs text-slate-500">
-                    {doc.documentType} · Expires {doc.expiryDate}
+                  <p className="text-xs text-slate-400 mt-1 font-medium">
+                    {doc.documentType} ·{" "}
+                    <span className="text-orange-500 font-bold">
+                      Expires {doc.expiryDate}
+                    </span>
                   </p>
                 </div>
                 <StatusBadge type="expiring" label="Expiring" />
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
       )}
     </div>

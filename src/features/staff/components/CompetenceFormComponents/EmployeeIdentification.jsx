@@ -35,32 +35,16 @@ const EmployeeIdentification = ({ formData, handleInputChange }) => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Hire Date
-          </label>
-          <input
-            type="date"
-            name="hireDate"
-            value={formData.hireDate}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
             Department
           </label>
-          <select
+          <input
+            type="text"
             name="department"
             value={formData.department}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border bg-white"
-          >
-            <option value="">Select Department</option>
-            <option value="IT">IT / Engineering</option>
-            <option value="HR">Human Resources</option>
-            <option value="QA">Quality Assurance</option>
-            <option value="OPS">Operations</option>
-          </select>
+            readOnly
+            placeholder="No Department Assigned"
+            className="mt-1 block w-full rounded-md border-gray-200 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border text-gray-600 cursor-not-allowed"
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">
@@ -70,21 +54,21 @@ const EmployeeIdentification = ({ formData, handleInputChange }) => {
             type="text"
             name="jobTitle"
             value={formData.jobTitle}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+            readOnly
+            className="mt-1 block w-full rounded-md border-gray-200 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border text-gray-600 cursor-not-allowed"
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Phone Number
+            Mobile Number
           </label>
           <input
             type="text"
-            name="phoneNo"
-            value={formData.phoneNo}
-            onChange={handleInputChange}
+            name="mobileNumber"
+            value={formData.mobileNumber}
+            readOnly
             placeholder="+91 98765 43210"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+            className="mt-1 block w-full rounded-md border-gray-200 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border text-gray-600 cursor-not-allowed"
           />
         </div>
       </div>

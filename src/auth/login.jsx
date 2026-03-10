@@ -2,32 +2,24 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginUser, getProfile } from "./authService";
-import { useAuth } from "./AuthContext";
 import { setCredentials } from "../store/slices/authSlice";
 import organizationService from "../features/onboarding/services/organizationService";
+import { matchUserOrg } from "../utils/organizationUtils";
 import "./login.css";
 
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  /**
-   * Handles the login form submission.
-   * It performs authentication, fetches the user profile, and updates the global auth state.
-   *
-   * @param {Event} e - The form submission event.
-   */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
+    setError("");
 
-    // Basic validation: ensure both fields are filled
     if (!email || !password) {
       setError("Please fill all required fields");
       return;
@@ -36,84 +28,66 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // 1. Authenticate with credentials and store tokens in LocalStorage (handled inside loginUser)
-      console.log(`Attempting login for: ${email}`);
+      // 1. Authenticate and unwrap
       const loginResponse = await loginUser(email, password);
+      const loginData = loginResponse?.isSuccess
+        ? loginResponse.value
+        : loginResponse;
 
-      // Extract tokens from response
       const token =
-        loginResponse.accessToken ||
-        loginResponse.token ||
-        loginResponse.access_token;
-      const refreshToken =
-        loginResponse.refreshToken || loginResponse.refresh_token;
+        loginData.accessToken || loginData.token || loginData.access_token;
+      const refreshToken = loginData.refreshToken || loginData.refresh_token;
 
-      if (!token) {
-        throw new Error("No access token received");
-      }
+      if (!token) throw new Error("No access token received");
 
-      // 2. IMPORTANT: Fetch the detailed user profile using the token we just received
-      // We pass the token explicitly to avoid any race conditions with Redux/localStorage
-      const profileData = await getProfile(token);
+      // Set tokens immediately so subsequent API calls (via api instance) are authenticated
+      localStorage.setItem("accessToken", token);
+      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
 
-      // 3. IMPORTANT: Fetch the organization details if the user has one
-      let orgData = null;
-      if (profileData?.organizationId) {
-        try {
-          const orgResponse = await organizationService.getAllOrganizations();
-          if (Array.isArray(orgResponse)) {
-            orgData = orgResponse.find(
-              (org) =>
-                (org.organizationId || org.OrganizationId) ==
-                profileData.organizationId,
-            );
-          } else if (orgResponse?.isSuccess && orgResponse?.value) {
-            orgData = orgResponse.value.find(
-              (org) =>
-                (org.organizationId || org.OrganizationId) ==
-                profileData.organizationId,
-            );
-          }
-        } catch (orgError) {
-          console.error("Failed to fetch organization during login:", orgError);
-        }
-      }
+      // 2. Fetch User Profile and unwrap
+      const rawProfile = await getProfile(token);
+      const profileData = rawProfile?.isSuccess ? rawProfile.value : rawProfile;
 
-      // 4. Update Redux State with tokens, profile, and organization
+      // 3. Fetch Organization List and unwrap
+      const orgResponse = await organizationService.getAllOrganizations();
+      const orgList = Array.isArray(orgResponse)
+        ? orgResponse
+        : orgResponse?.isSuccess
+          ? orgResponse.value
+          : [];
+
+      // 4. Match strictly by organizationId as requested
+      const orgData = matchUserOrg(profileData, orgList);
+
+      // 5. Update Redux State
       dispatch(
         setCredentials({
           user: profileData,
           organization: orgData,
           accessToken: token,
-          refreshToken: refreshToken,
+          refreshToken,
         }),
       );
 
-      // 5. On success, navigate to the main dashboard
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      console.error("Login Failed", err);
-      // Provision for user-friendly error messages
-      if (err.response && err.response.status === 401) {
+      console.error("Login Failed:", err);
+      if (err.response?.status === 401) {
         setError("Invalid credentials. Please check your email and password.");
-      } else if (
-        err.response &&
-        err.response.data &&
-        err.response.data.message
-      ) {
-        setError(err.response.data.message);
       } else {
-        setError("Login failed. Please try again later.");
+        setError(
+          err.response?.data?.message ||
+            "Login failed. Please try again later.",
+        );
       }
     } finally {
-      // Ensure loading state is reset regardless of outcome
       setLoading(false);
     }
   };
+
   return (
     <main className="login-page">
       <div className="login-container">
-        {/* Branding Section */}
         <section className="login-left">
           <div className="login-left-content">
             <div className="brand-title">Quality Management System</div>
@@ -143,7 +117,6 @@ const Login = () => {
           </div>
         </section>
 
-        {/* Login Form Section */}
         <section className="login-right">
           <div className="login-form-wrapper">
             <h2 className="welcome-text">Welcome</h2>

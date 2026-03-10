@@ -1,7 +1,7 @@
 import React from "react";
 import { Save } from "lucide-react";
 
-const FormActions = ({ assessmentDate }) => {
+const FormActions = ({ assessmentDate, isSaving }) => {
   return (
     <div className="flex justify-between items-center pt-6 bg-white p-6 rounded-lg shadow-sm border border-gray-200 sticky bottom-4">
       <div className="text-sm text-gray-500">
@@ -11,15 +11,26 @@ const FormActions = ({ assessmentDate }) => {
       <div className="flex gap-3">
         <button
           type="button"
-          className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 shadow-sm"
+          disabled={isSaving}
+          className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2 shadow-md"
+          disabled={isSaving}
+          className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Save size={18} /> Save Record
+          {isSaving ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save size={18} /> Save Record
+            </>
+          )}
         </button>
       </div>
     </div>

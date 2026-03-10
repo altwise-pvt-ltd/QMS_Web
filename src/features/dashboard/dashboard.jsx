@@ -40,7 +40,9 @@ const QMSDashboard = () => {
             <DashboardIcon className="text-indigo-600" size={32} />
             Quality Overview
           </h1>
-          <p className="text-slate-500 mt-1 font-medium text-lg">Welcome back, Quality Manager</p>
+          <p className="text-slate-500 mt-1 font-medium text-lg">
+            Welcome back, Quality Manager
+          </p>
         </div>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-black rounded-lg hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 shadow-md shadow-indigo-300/50 text-sm font-medium">
@@ -142,4 +144,3 @@ const QMSDashboard = () => {
 };
 
 export default QMSDashboard;
-

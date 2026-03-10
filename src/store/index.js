@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "./slices/authSlice";
+import authReducer, { setupAuthPersistence } from "./slices/authSlice";
 
 /**
  * Redux Store Configuration
@@ -11,5 +11,8 @@ export const store = configureStore({
   },
   devTools: import.meta.env.MODE !== "production",
 });
+
+// Initialize authentication persistence
+setupAuthPersistence(store);
 
 export default store;

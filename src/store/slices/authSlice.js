@@ -2,8 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 
 /**
  * Auth Slice
- * Manages authentication state, including tokens and user profile.
- * Persists session data to localStorage.
+ * Purely manages authentication state.
+ * Side effects (localStorage persistence) are handled via setupAuthPersistence.
  */
 const authSlice = createSlice({
   name: "auth",
@@ -20,18 +20,12 @@ const authSlice = createSlice({
     setCredentials: (state, action) => {
       const { user, organization, accessToken, refreshToken } = action.payload;
       state.user = user;
-      // FIXED: Always set organization from payload, even if null.
-      // Previously `if (organization)` meant a missing org on login
-      // would silently preserve stale state instead of reflecting reality.
-      // Use setOrganization separately if you need to update org alone.
-      state.organization = organization ?? state.organization;
+      // Assign explicitly to ensure null or updated orgs are correctly reflected
+      state.organization = organization;
       state.accessToken = accessToken;
       state.refreshToken = refreshToken;
       state.isAuthenticated = true;
       state.error = null;
-
-      if (accessToken) localStorage.setItem("accessToken", accessToken);
-      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
     },
     setOrganization: (state, action) => {
       state.organization = action.payload;
@@ -40,9 +34,6 @@ const authSlice = createSlice({
       const { accessToken, refreshToken } = action.payload;
       state.accessToken = accessToken;
       if (refreshToken) state.refreshToken = refreshToken;
-
-      if (accessToken) localStorage.setItem("accessToken", accessToken);
-      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
     },
     logout: (state) => {
       state.user = null;
@@ -51,9 +42,6 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.isAuthenticated = false;
       state.error = null;
-
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
     },
     setAuthLoading: (state, action) => {
       state.loading = action.payload;
@@ -75,6 +63,35 @@ export const {
 } = authSlice.actions;
 
 export default authSlice.reducer;
+
+/**
+ * Helper to sync auth state tokens with localStorage.
+ * Listens to store updates and persists tokens.
+ */
+export const setupAuthPersistence = (store) => {
+  let previousToken = store.getState().auth.accessToken;
+  
+  store.subscribe(() => {
+    const state = store.getState().auth;
+    
+    // Persist accessToken
+    if (state.accessToken !== previousToken) {
+      if (state.accessToken) {
+        localStorage.setItem("accessToken", state.accessToken);
+      } else {
+        localStorage.removeItem("accessToken");
+      }
+      previousToken = state.accessToken;
+    }
+
+    // Persist refreshToken
+    if (state.refreshToken) {
+      localStorage.setItem("refreshToken", state.refreshToken);
+    } else if (!state.accessToken) {
+      localStorage.removeItem("refreshToken");
+    }
+  });
+};
 
 export const selectCurrentUser = (state) => state.auth.user;
 export const selectCurrentOrganization = (state) => state.auth.organization;

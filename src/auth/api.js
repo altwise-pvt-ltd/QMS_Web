@@ -7,8 +7,8 @@ import { handleError } from "../utils/errorHandler";
  * Axios instance configured with a base URL and interceptors for token management.
  */
 const api = axios.create({
-  baseURL: "/api", // QMS API Base URL via Vite Proxy
-  timeout: 15000,   // 15s timeout
+  baseURL: "/api",
+  timeout: 15000,
 });
 
 /**
@@ -42,7 +42,7 @@ const processQueue = (error, token = null) => {
 
 /**
  * Response Interceptor:
- * Handles global API response logic, retries, and error mapping.
+ * Handles global API response logic, retries, and token refresh.
  */
 api.interceptors.response.use(
   (response) => response,
@@ -63,9 +63,7 @@ api.interceptors.response.use(
             originalRequest.headers["Authorization"] = "Bearer " + token;
             return api(originalRequest);
           })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
+          .catch((err) => Promise.reject(err));
       }
 
       originalRequest._retry = true;
@@ -76,7 +74,7 @@ api.interceptors.response.use(
         if (!refreshToken) throw new Error("No refresh token available");
 
         const response = await axios.post("/api/AdminUser/RefreshToken", {
-          refreshToken: refreshToken,
+          refreshToken,
         });
 
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
@@ -95,10 +93,9 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        console.error("Session expired, logging out...", refreshError);
         store.dispatch(logout());
 
-        // Don't redirect if we're already on a public/auth-setup page
+        // Redirect to login only if session refresh definitively fails
         const publicPaths = ["/login", "/confirm-password"];
         const isPublicPath = publicPaths.some(path => window.location.pathname.includes(path));
 
@@ -109,20 +106,17 @@ api.interceptors.response.use(
       } finally {
         isRefreshing = false;
       }
-
     }
 
     // 2. Handle Transient Retries (503/504)
     if (
       [503, 504].includes(error.response?.status) &&
-      !originalRequest._retryCount
+      (originalRequest._retryCount || 0) < 2
     ) {
       originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
-      if (originalRequest._retryCount <= 2) {
-        const delay = originalRequest._retryCount * 1000;
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        return api(originalRequest);
-      }
+      const delay = originalRequest._retryCount * 1000;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      return api(originalRequest);
     }
 
     // 3. Centralized Error Transformation

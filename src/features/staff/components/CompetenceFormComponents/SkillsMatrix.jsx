@@ -12,8 +12,9 @@ const SkillsMatrix = ({ skills, handleDynamicChange, addRow, removeRow }) => {
           type="button"
           onClick={() =>
             addRow("skills", {
-              name: "",
-              requiredLevel: "3",
+              staffSkillsAndCompetencyMatrixId: 0,
+              skillName: "",
+              requestLevel: "3",
               actualLevel: "1",
               gap: true,
             })
@@ -45,18 +46,22 @@ const SkillsMatrix = ({ skills, handleDynamicChange, addRow, removeRow }) => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {skills.map((skill, index) => (
-              <tr key={skill.id}>
+              <tr
+                key={
+                  skill.staffSkillsAndCompetencyMatrixId || skill.id || index
+                }
+              >
                 <td className="px-3 py-2">
                   <input
                     type="text"
                     placeholder="e.g. Sample Analysis & Handling"
-                    value={skill.name}
+                    value={skill.skillName || ""}
                     onChange={(e) =>
                       handleDynamicChange(
                         index,
-                        "name",
+                        "skillName",
                         e.target.value,
-                        "skills"
+                        "skills",
                       )
                     }
                     className="w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm border p-1"
@@ -67,13 +72,13 @@ const SkillsMatrix = ({ skills, handleDynamicChange, addRow, removeRow }) => {
                     type="number"
                     min="1"
                     max="5"
-                    value={skill.requiredLevel}
+                    value={skill.requestLevel || ""}
                     onChange={(e) =>
                       handleDynamicChange(
                         index,
-                        "requiredLevel",
+                        "requestLevel",
                         e.target.value,
-                        "skills"
+                        "skills",
                       )
                     }
                     className="w-full border-gray-300 rounded-md border p-1"
@@ -84,13 +89,13 @@ const SkillsMatrix = ({ skills, handleDynamicChange, addRow, removeRow }) => {
                     type="number"
                     min="1"
                     max="5"
-                    value={skill.actualLevel}
+                    value={skill.actualLevel || ""}
                     onChange={(e) =>
                       handleDynamicChange(
                         index,
                         "actualLevel",
                         e.target.value,
-                        "skills"
+                        "skills",
                       )
                     }
                     className="w-full border-gray-300 rounded-md border p-1"

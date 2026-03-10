@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { loginUser, getProfile } from "./authService";
+import { getProfile } from "./authService";
 import organizationService from "../features/onboarding/services/organizationService";
+import { matchUserOrg } from "../utils/organizationUtils";
 import api from "./api";
 import {
   setCredentials,
-  setOrganization,
   logout as logoutAction,
   selectCurrentUser,
   selectCurrentOrganization,
@@ -21,60 +21,6 @@ const fixAvatarUrl = (url) => {
   return url;
 };
 
-const normalizeOrg = (org) => {
-  if (!org) return null;
-  return {
-    organizationId: org.organizationId || org.OrganizationId,
-    name: org.legalCompanyName || org.LegalCompanyName || "",
-    industry: org.industrySector || org.IndustrySector || "",
-    phone: org.businessPhone || org.BusinessPhone || "",
-    websiteUrl: org.corporateWebsite || org.CorporateWebsite || "",
-    address: org.registeredAddress || org.RegisteredAddress || "",
-    logo: org.logoPath || org.companyLogoPath || org.CompanyLogo || null,
-    status: org.status,
-    createdAt: org.createdAt || org.CreatedAt,
-    createdBy: org.createdBy || org.CreatedBy,
-  };
-};
-
-/**
- * Helper: fetch orgs from API and match to a user profile.
- * Tries organizationId first, then falls back to createdBy.
- * Uses String() coercion to avoid number-vs-string mismatches.
- */
-const fetchAndMatchOrg = async (profileData) => {
-  const orgResponse = await organizationService.getAllOrganizations();
-
-  const orgList = Array.isArray(orgResponse)
-    ? orgResponse
-    : orgResponse?.isSuccess
-      ? orgResponse.value
-      : [];
-
-  if (orgList.length === 0) return null;
-
-  const currentUserId = profileData?.id || profileData?.adminUserId;
-  let matched = null;
-
-  // Priority 1: match by organizationId from user profile
-  if (profileData?.organizationId) {
-    matched = orgList.find(
-      (org) =>
-        String(org.organizationId || org.OrganizationId) ===
-        String(profileData.organizationId),
-    );
-  }
-
-  // Priority 2: fall back to createdBy
-  if (!matched && currentUserId) {
-    matched = orgList.find(
-      (org) => String(org.createdBy || org.CreatedBy) === String(currentUserId),
-    );
-  }
-
-  return normalizeOrg(matched);
-};
-
 export const AuthProvider = ({ children }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
@@ -88,28 +34,37 @@ export const AuthProvider = ({ children }) => {
 
       if (token && !user) {
         try {
-          const profileData = await getProfile(token);
+          // 1. Fetch and unwrap profile
+          const rawProfile = await getProfile(token);
+          const profileData = rawProfile?.isSuccess
+            ? rawProfile.value
+            : rawProfile;
 
           if (profileData?.avatar) {
             profileData.avatar = fixAvatarUrl(profileData.avatar);
           }
 
-          let orgData = null;
-          try {
-            orgData = await fetchAndMatchOrg(profileData);
-          } catch (orgError) {
-            console.error(
-              "Failed to fetch organization during init:",
-              orgError,
-            );
-          }
+          // Ensure tokens are in localStorage for the next call (should be there, but defensive)
+          localStorage.setItem("accessToken", token);
+          const rf = localStorage.getItem("refreshToken");
+
+          // 2. Fetch and unwrap organization list
+          const orgResponse = await organizationService.getAllOrganizations();
+          const orgList = Array.isArray(orgResponse)
+            ? orgResponse
+            : orgResponse?.isSuccess
+              ? orgResponse.value
+              : [];
+
+          // 3. Match strictly by organizationId
+          const orgData = matchUserOrg(profileData, orgList);
 
           dispatch(
             setCredentials({
               user: profileData,
               organization: orgData,
-              accessToken: localStorage.getItem("accessToken"),
-              refreshToken: localStorage.getItem("refreshToken"),
+              accessToken: token,
+              refreshToken: rf,
             }),
           );
         } catch (error) {
@@ -126,8 +81,6 @@ export const AuthProvider = ({ children }) => {
 
   /**
    * login — called from your login page after successful authentication.
-   * Now accepts an optional orgData param so callers can pass it if available.
-   * If not passed, ProtectedRoute will fetch it before deciding to redirect.
    */
   const login = (userData, orgData = null) => {
     dispatch(
