@@ -1,263 +1,59 @@
-import api from "../../../auth/api";
-
-// ==================== MAPPINGS ====================
-
-const mapEntryApiToUi = (apiEntry) => ({
-  id: apiEntry.entryId,
-  name: apiEntry.entryName,
-  cycle: apiEntry.recordingCycle,
-  parameters: typeof apiEntry.entryParameters === "string" 
-    ? JSON.parse(apiEntry.entryParameters) 
-    : apiEntry.entryParameters || [],
-  isActive: apiEntry.isActive,
-  organizationId: apiEntry.organizationId,
-});
-
-const mapEntryUiToApi = (uiEntry) => ({
-  entryId: uiEntry.id || 0,
-  entryName: uiEntry.name,
-  recordingCycle: uiEntry.cycle,
-  entryParameters: uiEntry.parameters || [],
-});
-
-const mapLabApiToUi = (apiLab) => ({
-  id: apiLab.laboratoryId,
-  entryId: apiLab.entryId,
-  name: apiLab.laboratoryName,
-  code: apiLab.laboratoryCode,
-  labNumber: apiLab.laboratoryNumber,
-  isActive: apiLab.isActive,
-});
-
-const mapLabUiToApi = (uiLab) => ({
-  laboratoryId: uiLab.id || 0,
-  entryId: uiLab.entryId,
-  laboratoryName: uiLab.name,
-  laboratoryCode: uiLab.code,
-});
-
-const mapRecordApiToUi = (apiRecord) => ({
-  id: apiRecord.recordId,
-  entryId: apiRecord.entryId,
-  labId: apiRecord.laboratoryId,
-  date: apiRecord.recordDate,
-  status: apiRecord.status,
-  value: apiRecord.reading, // Using 'reading' as the primary value for history rows
-  recordedBy: apiRecord.recordedBy,
-  verifiedBy: apiRecord.verifiedBy,
-  verifiedDate: apiRecord.verifiedDate,
-  parameterValues: typeof apiRecord.parameterValues === "string"
-    ? JSON.parse(apiRecord.parameterValues)
-    : apiRecord.parameterValues || {},
-  remarks: apiRecord.remarks,
-});
-
-const mapRecordUiToApi = (uiRecord) => ({
-  recordId: uiRecord.id || 0,
-  entryId: uiRecord.entryId,
-  laboratoryId: uiRecord.labId,
-  recordDate: uiRecord.date,
-  status: uiRecord.status || "Pending",
-  reading: uiRecord.value || "",
-  parameterValues: uiRecord.parameterValues || {},
-  remarks: uiRecord.remarks || "",
-});
-
-// ==================== ENTRIES (Log Types) ====================
-
-/**
- * Get all entry types (Log Categories)
- */
-export const getAllEntries = async () => {
-  try {
-    const response = await api.get("/EntryManagement/GetAllEntries");
-    return (response.data || []).map(mapEntryApiToUi);
-  } catch (error) {
-    // Handle 400 "No entries found" gracefully
-    if (error.status === 400 || error.response?.status === 400) {
-      console.log("📝 GetAllEntries: No entries found (API returned 400). Returning empty set.");
-      return [];
+// entriesService.js - Local Storage Implementation for QMS Entries
+const storage = {
+  get: (key, def = []) => {
+    try {
+      const v = localStorage.getItem(key);
+      return v ? JSON.parse(v) : def;
+    } catch {
+      return def;
     }
-    console.error("❌ Error fetching all entries:", error);
-    throw error;
-  }
-};
-
-/**
- * Get a specific entry type by ID
- */
-export const getEntryById = async (id) => {
-  try {
-    const response = await api.get(`/EntryManagement/GetEntryById/${id}`);
-    return mapEntryApiToUi(response.data);
-  } catch (error) {
-    console.error("Error fetching entry by ID:", error);
-    throw error;
-  }
-};
-
-/**
- * Create a new entry type
- * @param {Object} entryData - { name, cycle, parameters: [] }
- */
-export const createEntry = async (entryData) => {
-  try {
-    const apiData = mapEntryUiToApi(entryData);
-    const response = await api.post("/EntryManagement/CreateEntry", apiData);
-    return mapEntryApiToUi(response.data.entry || response.data);
-  } catch (error) {
-    console.error("Error creating entry:", error);
-    throw error;
-  }
-};
-
-/**
- * Update an existing entry type
- */
-export const updateEntry = async (entryData) => {
-  try {
-    const apiData = mapEntryUiToApi(entryData);
-    const response = await api.put("/EntryManagement/UpdateEntry", apiData);
-    return response.data;
-  } catch (error) {
-    console.error("Error updating entry:", error);
-    throw error;
-  }
-};
-
-// ==================== LABORATORIES ====================
-
-/**
- * Get laboratories associated with a specific entry type
- */
-export const getLaboratoriesByEntryId = async (entryId) => {
-  try {
-    const response = await api.get(`/EntryManagement/GetLaboratoriesByEntryId/${entryId}`);
-    return (response.data || []).map(mapLabApiToUi);
-  } catch (error) {
-    if (error.status === 400 || error.response?.status === 400) {
-      console.log(`📝 GetLaboratoriesByEntryId: No labs found for entry ${entryId} (API returned 400). Returning empty set.`);
-      return [];
+  },
+  set: (key, val) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(val));
+    } catch (e) {
+      console.error("Storage error:", e);
     }
-    console.error("❌ Error fetching laboratories for entry:", error);
-    throw error;
-  }
+  },
 };
 
-/**
- * Create a new laboratory for an entry
- */
-export const createLaboratory = async (labData) => {
-  try {
-    const apiData = mapLabUiToApi(labData);
-    const response = await api.post("/EntryManagement/CreateLaboratory", apiData);
-    return mapLabApiToUi(response.data.laboratory || response.data);
-  } catch (error) {
-    console.error("Error creating laboratory:", error);
-    throw error;
+import { DUMMY_ENTRIES, INITIAL_RECORDS } from "../entry_data";
+
+export const seedInitialData = () => {
+  if (!storage.get("qms_entries", null)) {
+    storage.set("qms_entries", DUMMY_ENTRIES);
   }
-};
-
-/**
- * Update a laboratory
- */
-export const updateLaboratory = async (labData) => {
-  try {
-    const apiData = mapLabUiToApi(labData);
-    const response = await api.put("/EntryManagement/UpdateLaboratory", apiData);
-    return response.data;
-  } catch (error) {
-    console.error("Error updating laboratory:", error);
-    throw error;
-  }
-};
-
-/**
- * Delete a laboratory by ID
- */
-export const deleteLaboratory = async (labId) => {
-  try {
-    const response = await api.delete(`/EntryManagement/DeleteLaboratory/${labId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error deleting laboratory:", error);
-    throw error;
-  }
-};
-
-// ==================== RECORDS (Daily Logs) ====================
-
-/**
- * Get records for a specific laboratory
- */
-export const getRecordsByLaboratoryId = async (labId) => {
-  try {
-    const response = await api.get(`/EntryManagement/GetRecordsByLaboratoryId/${labId}`);
-    return (response.data || []).map(mapRecordApiToUi);
-  } catch (error) {
-    if (error.status === 400 || error.response?.status === 400) {
-      console.log(`📝 GetRecordsByLaboratoryId: No records found for lab ${labId} (API returned 400). Returning empty set.`);
-      return [];
-    }
-    console.error("❌ Error fetching records for lab:", error);
-    throw error;
-  }
-};
-
-/**
- * Create a new daily log record
- */
-export const createRecord = async (recordData) => {
-  try {
-    const apiData = mapRecordUiToApi(recordData);
-    const response = await api.post("/EntryManagement/CreateRecord", apiData);
-    return mapRecordApiToUi(response.data.record || response.data);
-  } catch (error) {
-    console.error("Error creating record:", error);
-    throw error;
-  }
-};
-
-/**
- * Update a log record
- */
-export const updateRecord = async (recordData) => {
-  try {
-    const apiData = mapRecordUiToApi(recordData);
-    const response = await api.put("/EntryManagement/UpdateRecord", apiData);
-    return response.data;
-  } catch (error) {
-    console.error("Error updating record:", error);
-    throw error;
-  }
-};
-
-/**
- * Delete a record by ID
- */
-export const deleteRecord = async (recordId) => {
-  try {
-    const response = await api.delete(`/EntryManagement/DeleteRecord/${recordId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error deleting record:", error);
-    throw error;
+  if (!storage.get("qms_records", null)) {
+    storage.set("qms_records", INITIAL_RECORDS);
   }
 };
 
 const entriesService = {
-  getAllEntries,
-  getEntryById,
-  createEntry,
-  updateEntry,
-  getLaboratoriesByEntryId,
-  createLaboratory,
-  updateLaboratory,
-  deleteLaboratory,
-  getRecordsByLaboratoryId,
-  createRecord,
-  updateRecord,
-  deleteRecord,
+  getEntries: () => storage.get("qms_entries"),
+  saveEntry: (entry) => {
+    const all = storage.get("qms_entries");
+    const exists = all.find((e) => e.id === entry.id);
+    const updated = exists
+      ? all.map((e) => (e.id === entry.id ? entry : e))
+      : [entry, ...all];
+    storage.set("qms_entries", updated);
+    return entry;
+  },
+  getRecords: () => storage.get("qms_records"),
+  saveRecord: (record) => {
+    const all = storage.get("qms_records");
+    const exists = all.find((r) => r.id === record.id);
+    const updated = exists
+      ? all.map((r) => (r.id === record.id ? record : r))
+      : [record, ...all];
+    storage.set("qms_records", updated);
+    return record;
+  },
+  getRecordsFor: (entryId, parameter) => {
+    return storage
+      .get("qms_records")
+      .filter((r) => r.entryId === entryId && r.parameter === parameter);
+  },
 };
 
 export default entriesService;
