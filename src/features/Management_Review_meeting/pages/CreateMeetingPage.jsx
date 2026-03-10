@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Calendar,
@@ -9,7 +9,7 @@ import {
   Save,
   X,
 } from "lucide-react";
-// import { dummyUSerData } from "../../../db/dummyUSerData";
+import staffService from "../../staff/services/staffService";
 
 const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
   const navigate = useNavigate();
@@ -28,6 +28,60 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
     initialData?.invitedAttendees || [],
   );
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [staffList, setStaffList] = useState([]);
+  const [loadingStaff, setLoadingStaff] = useState(false);
+
+  useEffect(() => {
+    const fetchStaff = async () => {
+      setLoadingStaff(true);
+      try {
+        const [staffRes, deptsRes] = await Promise.all([
+          staffService.getAllStaff(),
+          staffService.getAllDepartments(),
+        ]);
+
+        const staffFromServer = staffRes.data || [];
+        const deptsFromServer = deptsRes.data || [];
+
+        const deptMap = {};
+        deptsFromServer.forEach((d) => {
+          deptMap[d.departmentId] = d.departmentName;
+        });
+
+        const mappedStaff = staffFromServer.map((s) => ({
+          id: s.staffId,
+          username: `${s.firstName || ""} ${s.lastName || ""}`.trim() || `Staff ${s.staffId}`,
+          email: s.workEmail || "No Email",
+          role: s.jobTitle || "No Role",
+          department: deptMap[s.departmentId] || "General",
+        }));
+
+        setStaffList(mappedStaff);
+      } catch (error) {
+        console.error("Error fetching staff for meeting:", error);
+      } finally {
+        setLoadingStaff(false);
+      }
+    };
+
+    fetchStaff();
+  }, []);
+
+  // Enrich selected users with full details once staff list is loaded
+  useEffect(() => {
+    if (staffList.length > 0 && selectedUsers.length > 0) {
+      const enriched = selectedUsers.map((u) => {
+        // Only enrich if it's missing details (like username)
+        if (!u.username) {
+          const found = staffList.find((s) => s.id === u.id);
+          return found || u;
+        }
+        return u;
+      });
+      setSelectedUsers(enriched);
+    }
+  }, [staffList]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -57,7 +111,7 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
     onSave(meetingData);
   };
 
-  const filteredUsers = dummyUSerData.filter(
+  const filteredUsers = staffList.filter(
     (user) =>
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -246,41 +300,57 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {filteredUsers.map((user) => {
-                    const isSelected = selectedUsers.some(
-                      (u) => u.id === user.id,
-                    );
-                    return (
-                      <tr
-                        key={user.id}
-                        onClick={() => toggleUserSelection(user)}
-                        className={`cursor-pointer hover:bg-gray-50 transition-colors ${
-                          isSelected ? "bg-indigo-50" : ""
-                        }`}
-                      >
-                        <td className="px-4 py-3">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => {}}
-                            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                          />
-                        </td>
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                          {user.username}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">
-                          {user.email}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">
-                          {user.role}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">
-                          {user.department}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {loadingStaff ? (
+                    <tr>
+                      <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                          Loading staff members...
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
+                        {searchTerm ? "No staff members found matching your search." : "No staff members available."}
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredUsers.map((user) => {
+                      const isSelected = selectedUsers.some(
+                        (u) => u.id === user.id,
+                      );
+                      return (
+                        <tr
+                          key={user.id}
+                          onClick={() => toggleUserSelection(user)}
+                          className={`cursor-pointer hover:bg-gray-50 transition-colors ${isSelected ? "bg-indigo-50" : ""
+                            }`}
+                        >
+                          <td className="px-4 py-3">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => { }}
+                              className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                            {user.username}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {user.email}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {user.role}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {user.department}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>

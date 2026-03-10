@@ -99,7 +99,11 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) return; // Stop if validation fails
+    if (!validateForm()) {
+      console.log("Form validation failed:", errors);
+      alert("Please fill all required fields correctly.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -113,26 +117,26 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
         jobTitle: formData.jobTitle,
       };
 
-      console.log("Submitting staff payload:", payload);
-
       const isUpdate = !!initialData;
       const response = isUpdate
         ? await staffService.updateStaff(payload)
         : await staffService.createStaff(payload);
 
-      if (response.data) {
-        alert(
-          isUpdate
-            ? "Staff updated successfully"
-            : "Staff created successfully",
-        );
-        onSubmit(response.data);
+      if (response.data && (response.data.isSuccess || response.status === 200 || response.status === 201)) {
+        alert(isUpdate ? "Staff updated successfully" : "Staff created successfully");
+        onSubmit(response.data.value || response.data);
+      } else {
+        const msg = response.data?.message || "Operation failed on server";
+        alert(msg);
       }
     } catch (error) {
+      console.error("Staff submission error:", error);
       alert(error.response?.data?.message || "Failed to save staff.");
     } finally {
       setIsSubmitting(false);
     }
+
+
   };
 
   // Helper component for error messages
@@ -287,16 +291,17 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
       rounded-lg
       flex items-center gap-2
       transition-colors  duration-200
-      ${
-        isSubmitting
-          ? "bg-blue-400 text-gray-600 cursor-not-allowed"
-          : "bg-blue-600 text-gray-600 hover:bg-blue-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-      }
+      ${isSubmitting
+                ? "bg-blue-400 text-gray-600 cursor-not-allowed"
+                : "bg-blue-600 text-gray-600 hover:bg-blue-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              }
     `}
+
           >
             {isSubmitting ? (
               <Spinner size={18} className="text-gray-600" />
             ) : (
+
               <Save size={18} />
             )}
             {isSubmitting

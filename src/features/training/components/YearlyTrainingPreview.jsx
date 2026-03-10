@@ -2,8 +2,10 @@ import React from "react";
 import { X, Download, Printer } from "lucide-react";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import YearlySchedulePdf from "../pdf Creations/YearlySchedulePdf";
+import { useAuth } from "../../../auth/AuthContext";
 
 const YearlyTrainingPreview = ({ trainings, onClose }) => {
+  const { organization } = useAuth();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -22,7 +24,7 @@ const YearlyTrainingPreview = ({ trainings, onClose }) => {
           <div className="flex items-center gap-3">
             <PDFDownloadLink
               document={
-                <YearlySchedulePdf trainings={trainings} year={currentYear} />
+                <YearlySchedulePdf trainings={trainings} year={currentYear} organization={organization} />
               }
               fileName={`Yearly_Training_Schedule_${currentYear}.pdf`}
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-gray-600 rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all"
@@ -53,7 +55,7 @@ const YearlyTrainingPreview = ({ trainings, onClose }) => {
               className="border-none"
               showToolbar={true}
             >
-              <YearlySchedulePdf trainings={trainings} year={currentYear} />
+              <YearlySchedulePdf trainings={trainings} year={currentYear} organization={organization} />
             </PDFViewer>
           </div>
         </div>

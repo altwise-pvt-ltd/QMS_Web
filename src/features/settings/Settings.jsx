@@ -563,6 +563,53 @@ const Settings = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-10">
           <div className="h-80 bg-slate-50 rounded-3xl animate-pulse" />
           <div className="lg:col-span-2 h-96 bg-slate-50 rounded-3xl animate-pulse" />
+  return (
+    <div className="p-4 md:p-8 lg:p-12 w-full space-y-12 animate-in fade-in duration-700">
+      {/* Header */}
+      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-8 border-b border-slate-100 pb-10 px-2">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+              <ShieldCheck size={20} />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600/60">
+              System Configuration
+            </span>
+          </div>
+          <h1 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-none">
+            Organization{" "}
+            <span className="text-indigo-600 italic">Settings</span>
+          </h1>
+          <p className="text-slate-500 font-medium italic">
+            Manage your corporate identity and system-wide compliance defaults.
+          </p>
+        </div>
+
+        <div className="w-full xl:w-auto">
+          <button
+            type="submit"
+            form="settings-form"
+            disabled={loading}
+            className={`flex items-center justify-center gap-3 px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 w-full xl:w-auto ${success
+              ? "bg-indigo-500 grey-600 shadow-indigo-500/20"
+              : "bg-slate-900 grey-600 hover:bg-black shadow-slate-900/20"
+              }`}
+          >
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : success ? (
+              <CheckCircle2 size={18} />
+            ) : (
+              <Save size={18} />
+            )}
+            {loading
+              ? uploadProgress > 0
+                ? `Uploading... ${uploadProgress}%`
+                : "Saving..."
+              : success
+                ? "Updated Profile"
+                : "Update Profile"}
+          </button>
         </div>
       </div>
     );

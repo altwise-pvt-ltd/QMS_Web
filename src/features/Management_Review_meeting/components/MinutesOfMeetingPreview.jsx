@@ -31,32 +31,31 @@ const MinutesOfMeetingPreview = ({
     attendees:
       attendance && attendance.length > 0
         ? attendance
-            .filter((att) => att.status === "Present")
-            .map((att) => {
-              const roleInfo = att.role || att.department;
-              return roleInfo ? `${att.username} (${roleInfo})` : att.username;
-            })
+          .filter((att) => att.status === "Present")
+          .map((att) => {
+            const roleInfo = att.role || att.department;
+            return roleInfo ? `${att.username} (${roleInfo})` : att.username;
+          })
         : Array.isArray(meeting?.invitedAttendees || meeting?.invites)
           ? (meeting?.invitedAttendees || meeting?.invites).map((att) =>
-              typeof att === "string"
-                ? att
-                : `${att.username || att.name || "Unknown"} (${
-                    att.role || att.department || "Attendee"
-                  })`,
-            )
+            typeof att === "string"
+              ? att
+              : `${att.username || att.name || "Unknown"} (${att.role || att.department || "Attendee"
+              })`,
+          )
           : typeof (
-                meeting?.invitedAttendees ||
-                meeting?.invites ||
-                meeting?.attendees
-              ) === "string"
+            meeting?.invitedAttendees ||
+            meeting?.invites ||
+            meeting?.attendees
+          ) === "string"
             ? (
-                meeting?.invitedAttendees ||
-                meeting?.invites ||
-                meeting?.attendees
-              )
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean)
+              meeting?.invitedAttendees ||
+              meeting?.invites ||
+              meeting?.attendees
+            )
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
             : [],
   };
 
@@ -81,27 +80,37 @@ const MinutesOfMeetingPreview = ({
       padding: 20px;
     }
     .letterhead {
-      text-align: center;
       margin-bottom: 20px;
       padding-bottom: 15px;
       border-bottom: 2px solid #333;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
+    }
+    .logo-container {
+      width: 20%;
+      text-align: center;
+    }
+    .text-container {
+      width: 80%;
+      text-align: left;
+      padding-left: 20px;
     }
     .letterhead img {
       max-height: 80px;
-      margin-bottom: 10px;
+      max-width: 100%;
+      object-fit: contain;
     }
     .company-name {
       font-weight: bold;
       font-size: 16pt;
       margin: 0;
+      text-transform: uppercase;
     }
     .company-details {
       font-size: 10pt;
-      color: #555;
-      margin: 5px 0 0 0;
+      color: #333;
+      margin: 2px 0 0 0;
     }
     h1 {
       text-align: center;
@@ -182,36 +191,36 @@ const MinutesOfMeetingPreview = ({
 </head>
 <body>
   <div class="letterhead">
-    ${companyInfo?.logo ? `<img src="${companyInfo.logo}" alt="Logo">` : ""}
-    <p class="company-name">${companyInfo?.name || "Your Company Name"}</p>
-    ${companyInfo?.address ? `<p class="company-details">${companyInfo.address}</p>` : ""}
-    ${
-      companyInfo?.phone || companyInfo?.websiteUrl
+    <div class="logo-container">
+      ${companyInfo?.logo ? `<img src="${companyInfo.logo}" alt="Logo">` : ""}
+    </div>
+    <div class="text-container">
+      <p class="company-name">${companyInfo?.name || "Your Company Name"}</p>
+      ${companyInfo?.address ? `<p class="company-details">${companyInfo.address}</p>` : ""}
+      ${companyInfo?.phone || companyInfo?.websiteUrl
         ? `
-      <p class="company-details">
-        ${companyInfo.phone ? `Tel: ${companyInfo.phone}` : ""}
-        ${companyInfo.phone && companyInfo.websiteUrl ? " | " : ""}
-        ${companyInfo.websiteUrl ? `${companyInfo.websiteUrl}` : ""}
-      </p>
-    `
+        <p class="company-details">
+          ${companyInfo.phone ? `Tel: ${companyInfo.phone}` : ""}
+          ${companyInfo.phone && companyInfo.websiteUrl ? " | " : ""}
+          ${companyInfo.websiteUrl ? `Web: ${companyInfo.websiteUrl}` : ""}
+        </p>
+      `
         : ""
-    }
+      }
+    </div>
   </div>
   
   <h1>Minutes of Management Review Meeting</h1>
   
   <div class="meeting-info">
-    <p><strong>Meeting Title:</strong> ${
-      meeting?.title || "Management Review Meeting"
-    }</p>
-    <p>Management review meeting as per ${
-      meetingData.standard
-    } is scheduled on ${meetingData.date} at ${meetingData.time}.</p>
+    <p><strong>Meeting Title:</strong> ${meeting?.title || "Management Review Meeting"
+      }</p>
+    <p>Management review meeting as per ${meetingData.standard
+      } is scheduled on ${meetingData.date} at ${meetingData.time}.</p>
     <p><strong>Venue:</strong> ${meetingData.venue}</p>
     <p>Following points were discussed in the meeting. Chaired by Lab Director</p>
-    <p>As per the requirements of ${
-      meetingData.standard
-    }, the following points were included in the agenda.</p>
+    <p>As per the requirements of ${meetingData.standard
+      }, the following points were included in the agenda.</p>
     <p>The quality manager has prepared the report on various relevant review parameters</p>
   </div>
 
@@ -323,33 +332,37 @@ const MinutesOfMeetingPreview = ({
           {showPreview && (
             <div className="border border-gray-300 rounded-lg p-8 bg-white mb-6 overflow-auto">
               <div className="w-full">
-                <div className="flex flex-col items-center border-b-2 border-gray-800 pb-6 mb-6">
-                  {companyInfo?.logo && (
-                    <ImageWithFallback
-                      src={companyInfo.logo}
-                      alt="Company Logo"
-                      className="h-20 mb-3 object-contain"
-                    />
-                  )}
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {companyInfo?.name || "Your Company Name"}
-                  </h2>
-                  {companyInfo?.address && (
-                    <p className="text-gray-600 text-sm mt-1 max-w-lg text-center">
-                      {companyInfo.address}
-                    </p>
-                  )}
-                  <div className="text-gray-500 text-xs mt-2 flex gap-3">
-                    {companyInfo?.phone && (
-                      <span>
-                        <strong>Tel:</strong> {companyInfo.phone}
-                      </span>
+                <div className="flex flex-row items-center border-b-2 border-gray-800 pb-6 mb-6">
+                  <div className="w-[20%] flex justify-center">
+                    {companyInfo?.logo && (
+                      <ImageWithFallback
+                        src={companyInfo.logo}
+                        alt="Company Logo"
+                        className="h-20 object-contain"
+                      />
                     )}
-                    {companyInfo?.websiteUrl && (
-                      <span>
-                        <strong>Web:</strong> {companyInfo.websiteUrl}
-                      </span>
+                  </div>
+                  <div className="w-[80%] pl-6">
+                    <h2 className="text-2xl font-bold text-gray-900 uppercase">
+                      {companyInfo?.name || "Your Company Name"}
+                    </h2>
+                    {companyInfo?.address && (
+                      <p className="text-gray-700 text-sm mt-1">
+                        {companyInfo.address}
+                      </p>
                     )}
+                    <div className="text-gray-600 text-xs mt-1 flex gap-4">
+                      {companyInfo?.phone && (
+                        <span>
+                          <strong>Tel:</strong> {companyInfo.phone}
+                        </span>
+                      )}
+                      {companyInfo?.websiteUrl && (
+                        <span>
+                          <strong>Web:</strong> {companyInfo.websiteUrl}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 

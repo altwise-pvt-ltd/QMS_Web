@@ -1,26 +1,50 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   page: { padding: 30, fontSize: 10, fontFamily: "Helvetica" },
   header: {
-    marginBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#111",
-    paddingBottom: 10,
+    padding: "20px 30px",
+    borderBottomWidth: 2,
+    borderBottomColor: "#000",
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  logoContainer: {
+    width: "20%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  logo: {
+    height: 40,
+    objectFit: "contain",
+  },
+  orgInfo: {
+    width: "80%",
+    textAlign: "center",
+    justifyContent: "center",
   },
   orgName: {
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: "bold",
+    textTransform: "uppercase",
+    marginBottom: 2,
+  },
+  orgAddress: {
+    fontSize: 9,
+    color: "#444",
+  },
+  titleContainer: {
     textAlign: "center",
-    marginBottom: 4,
+    padding: "10px 0",
+    marginBottom: 15,
   },
   title: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "bold",
-    textAlign: "center",
     textTransform: "uppercase",
+    textDecoration: "underline",
   },
-  year: { fontSize: 10, textAlign: "center", marginTop: 4 },
 
   table: {
     display: "table",
@@ -75,16 +99,30 @@ const styles = StyleSheet.create({
   },
 });
 
-const YearlySchedulePdf = ({ trainings, year }) => {
+const YearlySchedulePdf = ({ trainings, year, organization }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.orgName}>QMS ORGANIZATION</Text>
-          <Text style={styles.title}>Yearly Training Schedule</Text>
-          <Text style={styles.year}>
-            Year: {year || new Date().getFullYear()}
-          </Text>
+          <View style={styles.logoContainer}>
+            {organization?.logo ? (
+              <Image src={organization.logo} style={styles.logo} />
+            ) : (
+              <View style={{ width: 40, height: 40, backgroundColor: "#000", borderRadius: 4 }} />
+            )}
+          </View>
+          <View style={styles.orgInfo}>
+            <Text style={styles.orgName}>{organization?.name || "Your Company Name"}</Text>
+            <Text style={styles.orgAddress}>
+              {organization?.address || "Your Company Address"}
+              {organization?.phone && ` | Tel: ${organization.phone}`}
+              {organization?.websiteUrl && ` | Web: ${organization.websiteUrl}`}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Yearly Training Schedule - {year || new Date().getFullYear()}</Text>
         </View>
 
         <View style={styles.table}>

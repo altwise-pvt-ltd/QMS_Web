@@ -1,13 +1,52 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
-  page: { padding: 24, fontSize: 11 },
-  header: { textAlign: "center", fontSize: 9, marginBottom: 10 },
+  page: { padding: 24, fontSize: 12 },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 2,
+    borderBottomColor: "#000",
+    paddingBottom: 10,
+    marginBottom: 15,
+  },
+  logoColumn: {
+    width: "20%",
+  },
+  textColumn: {
+    width: "80%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logo: {
+    height: 60,
+    width: "auto",
+    objectFit: "contain",
+  },
+  companyName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  headerAddress: { fontSize: 10, textAlign: "center", lineHeight: 1.4 },
   title: {
-    fontSize: 16,
+    fontSize: 20,
     textAlign: "center",
     fontWeight: "bold",
-    marginBottom: 12,
+    textTransform: "uppercase",
+    marginTop: 10,
+    marginBottom: 5,
   },
   section: { marginBottom: 10 },
   bold: { fontWeight: "bold" },
@@ -21,8 +60,18 @@ const styles = StyleSheet.create({
 const MinutesOfMeetingPdf = ({ data }) => (
   <Document>
     <Page size="A4" style={styles.page}>
-      {/* Address */}
-      <Text style={styles.header}>{data.header.address}</Text>
+      {/* Header Row: Logo(20%) | Address(80%) */}
+      <View style={styles.headerRow}>
+        <View style={styles.logoColumn}>
+          {data.header.logo && (
+            <Image src={data.header.logo} style={styles.logo} />
+          )}
+        </View>
+        <View style={styles.textColumn}>
+          <Text style={styles.companyName}>{data.header.companyName}</Text>
+          <Text style={styles.headerAddress}>{data.header.address}</Text>
+        </View>
+      </View>
 
       {/* Title */}
       <Text style={styles.title}>{data.meeting.title}</Text>

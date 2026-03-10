@@ -39,6 +39,47 @@ const MrmPage = () => {
     attendance: [],
   });
 
+  // Load state from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedView = localStorage.getItem("mrm_current_view");
+      const savedMeeting = localStorage.getItem("mrm_selected_meeting");
+
+      if (savedView && savedView !== "LIST") {
+        setView(savedView);
+      }
+      if (savedMeeting) {
+        setSelectedMeeting(JSON.parse(savedMeeting));
+      }
+    } catch (e) {
+      console.error("Failed to restore MRM state:", e);
+    }
+
+    // 🔥 Reset state when navigating away from this module
+    return () => {
+      console.log("Leaving MRM module, clearing flow state...");
+      localStorage.removeItem("mrm_current_view");
+      localStorage.removeItem("mrm_selected_meeting");
+    };
+  }, []);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("mrm_current_view", view);
+    if (selectedMeeting) {
+      localStorage.setItem("mrm_selected_meeting", JSON.stringify(selectedMeeting));
+    } else {
+      localStorage.removeItem("mrm_selected_meeting");
+    }
+  }, [view, selectedMeeting]);
+
+  const clearFlowState = () => {
+    localStorage.removeItem("mrm_current_view");
+    localStorage.removeItem("mrm_selected_meeting");
+    setSelectedMeeting(null);
+    setView("LIST");
+  };
+
   // Seed sample data on first mount
   useEffect(() => {
     const initData = async () => {
@@ -54,6 +95,10 @@ const MrmPage = () => {
   const handleCreateNew = () => {
     setSelectedMeeting(null);
     setView("CREATE");
+  };
+
+  const handleCancelCreate = () => {
+    clearFlowState();
   };
 
   const handleSelectMeeting = async (meeting) => {
@@ -101,19 +146,18 @@ const MrmPage = () => {
   const handleSaveMeeting = async (data) => {
     if (selectedMeeting) {
       await updateMeeting(selectedMeeting.id, data);
+      clearFlowState();
     } else {
       const newMeeting = await createMeeting(data);
       setSelectedMeeting(newMeeting);
       setView("ACTIONS"); // After creating, go to action items
-      return;
     }
-    setView("LIST");
   };
 
   const handleSaveActions = async (actionItems) => {
     try {
       // Save action items to IndexedDB
-      await saveActionItems(selectedMeeting.id, actionItems);
+      const result = await saveActionItems(selectedMeeting.id, actionItems);
 
       // Update meeting status if needed
       await updateMeeting(selectedMeeting.id, {
@@ -121,8 +165,10 @@ const MrmPage = () => {
       });
 
       console.log("Action items saved successfully");
+      return result;
     } catch (error) {
       console.error("Error saving action items:", error);
+      return null;
     }
   };
 
@@ -138,18 +184,32 @@ const MrmPage = () => {
     setView("MINUTES");
   };
 
-  const handleSaveMinutes = async (minutesData) => {
-    // We don't save to DB yet, we just hold it and move to attendance
-    setTempMinutes(minutesData);
+  const handleSaveMinutes = async (minutesData, shouldNavigate = true) => {
+    try {
+      // 1. Save to Backend immediately
+      const mId = selectedMeeting.backendId || selectedMeeting.id;
+      const updatedData = await saveMinutes(mId, minutesData);
 
-    // Load existing attendance if any for initial state
-    const existingAttendance = await getAttendance(selectedMeeting.id);
-    setSelectedMeeting({
-      ...selectedMeeting,
-      attendance: existingAttendance,
-    });
+      // 2. Load existing attendance if any for initial state
+      const existingAttendance = await getAttendance(mId);
 
-    setView("ATTENDANCE");
+      // Batch updates to selectedMeeting
+      setSelectedMeeting({
+        ...selectedMeeting,
+        attendance: existingAttendance,
+      });
+
+      // 3. Update local sync state
+      setTempMinutes(updatedData);
+
+      // 4. Move to next step if requested
+      if (shouldNavigate) setView("ATTENDANCE");
+      console.log("Minutes saved to backend successfully");
+      return updatedData; // Return the fresh list to the UI
+    } catch (error) {
+      console.error("Failed to save minutes to backend:", error);
+      alert("Failed to save minutes to server. Please check your connection.");
+    }
   };
 
   const handleFinalizeMeeting = async (attendanceData) => {
@@ -166,7 +226,7 @@ const MrmPage = () => {
       });
 
       console.log("Meeting finalized successfully");
-      setView("LIST");
+      clearFlowState();
     } catch (error) {
       console.error("Error finalizing meeting:", error);
     }
@@ -188,7 +248,7 @@ const MrmPage = () => {
         <CreateMeetingPage
           initialData={selectedMeeting}
           onSave={handleSaveMeeting}
-          onCancel={() => setView("LIST")}
+          onCancel={handleCancelCreate}
         />
       )}
 
@@ -196,7 +256,7 @@ const MrmPage = () => {
         <ActionItemsPage
           meeting={selectedMeeting}
           onSave={handleSaveActions}
-          onBack={() => setView("LIST")}
+          onBack={handleCancelCreate}
           onNext={handleNextToMinutes}
         />
       )}

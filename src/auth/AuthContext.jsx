@@ -107,8 +107,8 @@ export const AuthProvider = ({ children }) => {
           dispatch(
             setCredentials({
               user: profileData,
-              organization: orgData, // null is fine — slice handles it
-              accessToken: token,
+              organization: orgData,
+              accessToken: localStorage.getItem("accessToken"),
               refreshToken: localStorage.getItem("refreshToken"),
             }),
           );

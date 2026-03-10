@@ -146,8 +146,8 @@ const AttendanceSelection = ({
                       <button
                         onClick={() => toggleStatus(user.id)}
                         className={`group flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all font-bold text-xs ${user.status === "Present"
-                            ? "bg-green-50 border-green-200 text-green-700"
-                            : "bg-red-50 border-red-200 text-red-700"
+                          ? "bg-green-50 border-green-200 text-green-700"
+                          : "bg-red-50 border-red-200 text-red-700"
                           }`}
                       >
                         {user.status === "Present" ? (

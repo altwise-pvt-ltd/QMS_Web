@@ -1,6 +1,7 @@
 import React from "react";
 import { ArrowLeft, Printer, Download, Share2 } from "lucide-react";
 import html2pdf from "html2pdf.js";
+import { useAuth } from "../../../auth/AuthContext";
 
 const MrmPdfView = ({
   meeting,
@@ -9,6 +10,7 @@ const MrmPdfView = ({
   attendance = [],
   onBack,
 }) => {
+  const { organization } = useAuth();
   if (!meeting) return null;
 
   const show = (v) => v || "—";
@@ -88,18 +90,29 @@ const MrmPdfView = ({
           <thead>
             <tr>
               <td className="p-0">
-                <div className="pdf-header text-center border-b-2 border-black px-10 py-4 mb-2">
-                  <h2 className="text-xl font-bold uppercase tracking-tight">
-                    Your Company Name
-                  </h2>
-                  <p className="text-xs leading-5 mt-1">
-                    Your Company Address
-                    <br />
-                    City, State, ZIP Code
-                  </p>
-                  <h3 className="mt-3 text-base font-bold uppercase underline decoration-1 underline-offset-4">
-                    Minutes of Management Review Meeting
-                  </h3>
+                <div className="pdf-header flex flex-row items-center border-b-2 border-black px-10 py-4 mb-2 text-left">
+                  <div className="w-[20%] flex justify-center pr-4">
+                    {organization?.logo && (
+                      <img
+                        src={organization.logo}
+                        alt="Logo"
+                        className="h-16 object-contain"
+                      />
+                    )}
+                  </div>
+                  <div className="w-[80%] pl-6 border-l border-black/10">
+                    <h2 className="text-xl font-bold uppercase tracking-tight">
+                      {organization?.name || "Your Company Name"}
+                    </h2>
+                    <p className="text-xs leading-5 mt-1 text-slate-700">
+                      {organization?.address || "Your Company Address"}
+                      {organization?.phone && ` | Tel: ${organization.phone}`}
+                      {organization?.websiteUrl && ` | Web: ${organization.websiteUrl}`}
+                    </p>
+                    <h3 className="mt-2 text-sm font-bold uppercase underline decoration-1 underline-offset-4 text-black">
+                      Minutes of Management Review Meeting
+                    </h3>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -174,18 +187,18 @@ const MrmPdfView = ({
 
                     const attendeesList = Array.isArray(rawAttendees)
                       ? rawAttendees
-                          .map((att) =>
-                            typeof att === "string"
-                              ? { username: att, role: "", status: "Present" }
-                              : {
-                                  username:
-                                    att.username || att.name || "Unknown",
-                                  role:
-                                    att.role || att.department || "Attendee",
-                                  status: att.status || "Present",
-                                },
-                          )
-                          .filter((att) => att.status === "Present")
+                        .map((att) =>
+                          typeof att === "string"
+                            ? { username: att, role: "", status: "Present" }
+                            : {
+                              username:
+                                att.username || att.name || "Unknown",
+                              role:
+                                att.role || att.department || "Attendee",
+                              status: att.status || "Present",
+                            },
+                        )
+                        .filter((att) => att.status === "Present")
                       : [];
 
                     if (attendeesList.length === 0) return null;
@@ -367,11 +380,10 @@ const MrmPdfView = ({
                               meeting.invitedAttendees || meeting.invites || [];
                             const list = Array.isArray(raw)
                               ? raw.map(
-                                  (a) =>
-                                    `${a.username || a.name} (${
-                                      a.role || a.department
-                                    })`,
-                                )
+                                (a) =>
+                                  `${a.username || a.name} (${a.role || a.department
+                                  })`,
+                              )
                               : [];
                             return (
                               list.find((a) =>
@@ -388,11 +400,10 @@ const MrmPdfView = ({
                               meeting.invitedAttendees || meeting.invites || [];
                             const list = Array.isArray(raw)
                               ? raw.map(
-                                  (a) =>
-                                    `${a.username || a.name} (${
-                                      a.role || a.department
-                                    })`,
-                                )
+                                (a) =>
+                                  `${a.username || a.name} (${a.role || a.department
+                                  })`,
+                              )
                               : [];
                             return (
                               list.find((a) =>
@@ -411,11 +422,10 @@ const MrmPdfView = ({
                               meeting.invitedAttendees || meeting.invites || [];
                             const list = Array.isArray(raw)
                               ? raw.map(
-                                  (a) =>
-                                    `${a.username || a.name} (${
-                                      a.role || a.department
-                                    })`,
-                                )
+                                (a) =>
+                                  `${a.username || a.name} (${a.role || a.department
+                                  })`,
+                              )
                               : [];
                             return (
                               list.find(

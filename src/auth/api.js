@@ -25,6 +25,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
+
 /**
  * Response Interceptor:
  * Handles global API response logic, retries, and error mapping.
@@ -40,7 +55,21 @@ api.interceptors.response.use(
       !originalRequest._retry &&
       !originalRequest.url.includes("/AdminUser/RefreshToken")
     ) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers["Authorization"] = "Bearer " + token;
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
         const refreshToken = localStorage.getItem("refreshToken");
@@ -61,15 +90,26 @@ api.interceptors.response.use(
 
         api.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
         originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+
+        processQueue(null, newAccessToken);
         return api(originalRequest);
       } catch (refreshError) {
+        processQueue(refreshError, null);
         console.error("Session expired, logging out...", refreshError);
         store.dispatch(logout());
-        if (!window.location.pathname.includes("/login")) {
+
+        // Don't redirect if we're already on a public/auth-setup page
+        const publicPaths = ["/login", "/confirm-password"];
+        const isPublicPath = publicPaths.some(path => window.location.pathname.includes(path));
+
+        if (!isPublicPath) {
           window.location.href = "/login";
         }
         return Promise.reject(handleError(refreshError));
+      } finally {
+        isRefreshing = false;
       }
+
     }
 
     // 2. Handle Transient Retries (503/504)

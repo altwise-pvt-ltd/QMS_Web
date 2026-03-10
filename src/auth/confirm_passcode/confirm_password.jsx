@@ -1,13 +1,16 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { changePassword } from "../authService";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { changeStaffPassword } from "../authService";
 import "../login.css";
 import passwordImg from "../../assets/password1.jpg";
 
 
 const ConfirmPassword = () => {
     const navigate = useNavigate();
-    const [oldPassword, setOldPassword] = useState("");
+    const [searchParams] = useSearchParams();
+    const staffId = searchParams.get("staffId");
+
+    const [oldPasscode, setOldPasscode] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -21,6 +24,11 @@ const ConfirmPassword = () => {
         e.preventDefault();
         setError(null);
 
+        if (!staffId) {
+            setError("Staff ID is missing. Please use the link provided in your email.");
+            return;
+        }
+
         if (newPassword !== confirmPassword) {
             setError("New passwords do not match");
             return;
@@ -29,8 +37,11 @@ const ConfirmPassword = () => {
         setLoading(true);
 
         try {
-            await changePassword(oldPassword, newPassword);
+            await changeStaffPassword(parseInt(staffId), oldPasscode, newPassword, confirmPassword);
             setSuccess(true);
+
+
+
 
             // Redirect after a short delay
             setTimeout(() => {
@@ -75,17 +86,18 @@ const ConfirmPassword = () => {
 
                         <form onSubmit={handleSubmit} className="login-form">
                             <div className="form-group">
-                                <label htmlFor="oldPassword">Old Password</label>
+                                <label htmlFor="oldPasscode">Old Passcode</label>
                                 <div className="password-input-wrapper">
                                     <input
-                                        id="oldPassword"
+                                        id="oldPasscode"
                                         type={showOldPassword ? "text" : "password"}
-                                        value={oldPassword}
-                                        onChange={(e) => setOldPassword(e.target.value)}
+                                        value={oldPasscode}
+                                        onChange={(e) => setOldPasscode(e.target.value)}
                                         disabled={loading || success}
                                         required
-                                        placeholder="Enter current password"
+                                        placeholder="Enter current passcode"
                                     />
+
                                     <button
                                         type="button"
                                         className="toggle-password"

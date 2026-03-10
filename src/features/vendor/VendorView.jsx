@@ -4,43 +4,10 @@ import html2pdf from "html2pdf.js";
 import api from "../../auth/api";
 import staffService from "../staff/services/staffService";
 import ImageWithFallback from "../../components/ui/ImageWithFallback";
+import { useAuth } from "../../auth/AuthContext";
 
 const VendorView = ({ vendor, onCancel }) => {
-  const [orgInfo, setOrgInfo] = useState({
-    name: "Alpine Diagnostic Centre",
-    address:
-      "Plot No: A232, Road No: 21, Y-Lane, Behind Cyber Tech Solution, Nehru Nagar, Wagle Industrial Estate, Thane (W), Maharashtra – 400604",
-    phone: "",
-    website: "",
-    logoUrl: null,
-  });
-
-  useEffect(() => {
-    const fetchOrgInfo = async () => {
-      try {
-        const response = await api.get("/Organization/GetAllOrganization");
-        if (response.data?.isSuccess && response.data?.value?.length > 0) {
-          const org = response.data.value[0];
-          setOrgInfo({
-            name:
-              org.legalCompanyName ||
-              org.LegalCompanyName ||
-              "Alpine Diagnostic Centre",
-            address:
-              org.registeredAddress ||
-              org.RegisteredAddress ||
-              "Plot No: A232, Road No: 21, Y-Lane, Behind Cyber Tech Solution, Nehru Nagar, Wagle Industrial Estate, Thane (W), Maharashtra – 400604",
-            phone: org.businessPhone || org.BusinessPhone || "",
-            website: org.corporateWebsite || org.CorporateWebsite || "",
-            logoUrl: staffService.getAssetUrl(org.logoPath || org.LogoPath),
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching organization info:", error);
-      }
-    };
-    fetchOrgInfo();
-  }, []);
+  const { organization } = useAuth();
 
   if (!vendor) return null;
 
@@ -68,7 +35,7 @@ const VendorView = ({ vendor, onCancel }) => {
         useCORS: true,
         letterRendering: true,
         scrollY: 0,
-        windowWidth: 1240,
+        windowWidth: document.getElementById("report-content")?.scrollWidth || 1240,
       },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       pagebreak: { mode: ["css", "legacy"] },
@@ -83,7 +50,7 @@ const VendorView = ({ vendor, onCancel }) => {
   return (
     <div className="min-h-screen bg-slate-100 p-4 md:p-8">
       {/* TOP ACTION BAR */}
-      <div className="w-full mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200 no-print">
+      <div className="max-w-[900px] mx-auto mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200 no-print">
         <button
           onClick={onCancel}
           className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-xl font-bold"
@@ -129,8 +96,7 @@ const VendorView = ({ vendor, onCancel }) => {
       >
         {/* Watermark - print only */}
         <div
-          className="hidden print:block fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none whitespace-nowrap rotate-[-30deg] text-[64px] font-bold"
-          style={{ zIndex: 9999, color: "rgba(0,0,0,0.05)" }}
+          className="hidden print:block fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[64px] font-bold text-black/10 pointer-events-none select-none z-[9999] whitespace-nowrap rotate-[-30deg]"
         >
           CONTROLLED COPY
         </div>
@@ -140,42 +106,40 @@ const VendorView = ({ vendor, onCancel }) => {
           <thead>
             <tr>
               <td className="p-0">
-                <div className="pdf-header border-b-2 border-black px-10 py-6 mb-2">
-                  <div className="flex items-center justify-between gap-6">
-                    {/* Logo Section */}
-                    {orgInfo.logoUrl && (
+                <div className="pdf-header flex flex-row items-center border-b-2 border-black px-10 py-4 mb-2 text-left">
+                  {/* Logo Section (20%) */}
+                  <div className="w-[20%] flex justify-center pr-4">
+                    {organization?.logo ? (
                       <div className="shrink-0">
                         <ImageWithFallback
-                          src={orgInfo.logoUrl}
+                          src={organization.logo}
                           alt="Logo"
-                          className="h-20 w-auto object-contain"
+                          className="h-16 object-contain"
                         />
                       </div>
-                    )}
-
-                    {/* Organization Info Section */}
-                    <div className="flex-1 text-center">
-                      <h2 className="text-xl font-bold uppercase tracking-tight">
-                        {orgInfo.name}
-                      </h2>
-                      <p className="text-xs leading-5 mt-1 whitespace-pre-line">
-                        {orgInfo.address}
-                      </p>
-                      <div className="flex justify-center gap-4 mt-1 text-[10px] font-bold">
-                        {orgInfo.phone && <span>Phone: {orgInfo.phone}</span>}
-                        {orgInfo.website && (
-                          <span>Website: {orgInfo.website}</span>
-                        )}
+                    ) : (
+                      <div className="w-16 h-16 bg-slate-900 rounded-lg flex items-center justify-center text-white font-black text-xl italic">
+                        {organization?.name?.charAt(0) || "A"}
                       </div>
-                    </div>
-
-                    {/* Placeholder to balance the logo if needed, or another element */}
-                    {orgInfo.logoUrl && (
-                      <div className="w-20 hidden md:block" />
                     )}
                   </div>
 
-                  <h3 className="mt-6 text-center text-base font-bold uppercase underline decoration-1 underline-offset-4">
+                  {/* Organization Info Section (80%) */}
+                  <div className="w-[80%] flex flex-col items-center justify-center">
+                    <h2 className="text-2xl font-bold uppercase tracking-tight text-center">
+                      {organization?.name || "Your Company Name"}
+                    </h2>
+                    <p className="text-sm leading-5 mt-1 text-center font-medium">
+                      {organization?.address || "Your Company Address"}
+                      {organization?.phone && ` | Tel: ${organization.phone}`}
+                      {organization?.websiteUrl &&
+                        ` | Web: ${organization.websiteUrl}`}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-center py-5">
+                  <h3 className="text-lg font-bold uppercase underline decoration-1 underline-offset-4">
                     Vendor Assessment Record
                   </h3>
                 </div>
@@ -190,7 +154,7 @@ const VendorView = ({ vendor, onCancel }) => {
                 <div className="pdf-body px-10 py-6">
                   {/* PART A — General Organization Details */}
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-black">
-                    <span className="bg-slate-900 text-gray-600 px-2 py-0.5 text-[10px] font-black tracking-tighter">
+                    <span className="bg-slate-900 text-white px-2 py-0.5 text-[10px] font-black tracking-tighter">
                       PART A
                     </span>
                     <h4 className="font-bold uppercase text-sm tracking-tight">
@@ -198,7 +162,10 @@ const VendorView = ({ vendor, onCancel }) => {
                     </h4>
                   </div>
 
-                  <table className="w-full border border-black text-sm mb-8 table-fixed border-collapse">
+                  <table
+                    className="w-full border border-black text-sm mb-8 border-collapse"
+                    style={{ wordBreak: "break-word" }}
+                  >
                     <tbody>
                       <tr>
                         <td className="border border-black p-2 font-bold w-[25%] bg-slate-50 text-[11px] uppercase">
@@ -269,12 +236,9 @@ const VendorView = ({ vendor, onCancel }) => {
 
                   {/* PART B — Performance Assessment */}
                   {evaluation ? (
-                    <div
-                      className="mb-8 break-inside-avoid"
-                      style={{ pageBreakInside: "avoid" }}
-                    >
+                    <div className="mb-8 break-inside-avoid">
                       <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-black">
-                        <span className="bg-slate-900 text-gray-600 px-2 py-0.5 text-[10px] font-black tracking-tighter">
+                        <span className="bg-slate-900 text-white px-2 py-0.5 text-[10px] font-black tracking-tighter">
                           PART B
                         </span>
                         <h4 className="font-bold uppercase text-sm tracking-tight">
@@ -284,7 +248,7 @@ const VendorView = ({ vendor, onCancel }) => {
 
                       <table className="w-full border border-black text-sm border-collapse mb-6">
                         <thead>
-                          <tr className="bg-slate-900 text-gray-600 text-[10px] uppercase font-black tracking-widest">
+                          <tr className="bg-slate-900 text-white text-[10px] uppercase font-black tracking-widest">
                             <th className="border border-black p-3 text-left w-[75%]">
                               Evaluation Criteria & Performance Indicators
                             </th>
@@ -322,7 +286,7 @@ const VendorView = ({ vendor, onCancel }) => {
                             ],
                           ].map(([label, sub, score], i) => (
                             <tr key={i}>
-                              <td className="border border-black p-3 font-bold text-slate-800">
+                              <td className="border border-black p-3 font-bold text-slate-800 text-[13px]">
                                 {label}
                                 <div className="text-[10px] font-medium text-slate-500 mt-0.5 uppercase">
                                   {sub}
@@ -333,7 +297,7 @@ const VendorView = ({ vendor, onCancel }) => {
                               </td>
                             </tr>
                           ))}
-                          <tr className="bg-slate-900 text-gray-600 font-black">
+                          <tr className="bg-slate-900 text-white font-black">
                             <td className="border border-black p-4 text-right uppercase tracking-widest text-xs">
                               Gross Aggregate Score
                             </td>
@@ -348,10 +312,7 @@ const VendorView = ({ vendor, onCancel }) => {
                       </table>
 
                       {/* FINAL STATUS BLOCK */}
-                      <div
-                        className="border-2 border-black p-6 flex justify-between items-center break-inside-avoid"
-                        style={{ pageBreakInside: "avoid" }}
-                      >
+                      <div className="border-2 border-black p-6 flex justify-between items-center break-inside-avoid">
                         <div>
                           <div className="text-[10px] uppercase font-black text-slate-500 mb-1 tracking-widest">
                             Formal Certification Status
@@ -377,7 +338,7 @@ const VendorView = ({ vendor, onCancel }) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-8 border-2 border-dashed border-slate-300 text-center mb-8">
+                    <div className="p-8 border-2 border-dashed border-slate-300 text-center mb-8 break-inside-avoid">
                       <p className="text-slate-400 font-bold text-sm">
                         Assessment performance data not yet recorded.
                       </p>
@@ -386,10 +347,7 @@ const VendorView = ({ vendor, onCancel }) => {
 
                   {/* REMARKS */}
                   {vendor.remarks && (
-                    <div
-                      className="mb-6 break-inside-avoid"
-                      style={{ pageBreakInside: "avoid" }}
-                    >
+                    <div className="mb-6 break-inside-avoid">
                       <h4 className="font-bold uppercase border-b border-black text-sm mb-2">
                         Remarks / Additional Notes
                       </h4>
@@ -400,10 +358,7 @@ const VendorView = ({ vendor, onCancel }) => {
                   )}
 
                   {/* SIGNATURE SECTION */}
-                  <div
-                    className="mt-10 flex justify-between px-4 pb-2 break-inside-avoid"
-                    style={{ pageBreakInside: "avoid" }}
-                  >
+                  <div className="mt-10 flex justify-between px-4 pb-2 break-inside-avoid">
                     <div className="text-center">
                       <div className="h-16 flex items-end justify-center">
                         <div className="w-44 border-t-2 border-black pt-2 font-bold text-sm">
@@ -435,7 +390,10 @@ const VendorView = ({ vendor, onCancel }) => {
             <tr>
               <td className="p-0">
                 <div className="pdf-footer px-10 pb-8 pt-4 border-t-2 border-black">
-                  <table className="w-full border border-black text-[10px] table-fixed border-collapse">
+                  <table
+                    className="w-full border border-black text-[10px] border-collapse"
+                    style={{ tableLayout: "fixed" }}
+                  >
                     <tbody>
                       <tr>
                         <td className="border border-black p-2">
@@ -484,7 +442,7 @@ const VendorView = ({ vendor, onCancel }) => {
                     </tbody>
                   </table>
                   <div className="mt-2 text-[8px] text-right text-slate-400">
-                    Proprietary Information — {orgInfo.name} ©{" "}
+                    Proprietary Information — {organization?.name || "QMS"} ©{" "}
                     {new Date().getFullYear()}
                   </div>
                 </div>
@@ -493,9 +451,74 @@ const VendorView = ({ vendor, onCancel }) => {
           </tfoot>
         </table>
       </div>
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 15mm;
+          }
+          
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          /* Hide UI elements */
+          nav, aside, .sidebar, .sidebar-container, 
+          button, .no-print, header, footer,
+          .fixed {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+          }
+
+          /* Show only report */
+          body * {
+            visibility: hidden !important;
+          }
+
+          .print-area, .print-area * {
+            visibility: visible !important;
+          }
+
+          .print-area {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            max-width: 900px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            display: block !important;
+          }
+
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+
+          tr {
+            page-break-inside: avoid !important;
+          }
+
+          .break-inside-avoid {
+            page-break-inside: avoid !important;
+          }
+        }
+      `,
+        }}
+      />
     </div>
   );
 };
 
 export default VendorView;
-

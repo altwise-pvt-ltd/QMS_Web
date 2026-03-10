@@ -84,15 +84,31 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           <ul className="space-y-2 font-medium pb-4">
             {filteredSidebarItems.map((item) => (
               <li key={item.path}>
-                <Link to={item.path} className={menuItemClass(item.path)}>
+                <Link
+                  to={item.path}
+                  className={menuItemClass(item.path)}
+                  onClick={() => {
+                    // Force refresh/reset for specifically important modules like MRM
+                    if (item.path === "/mrm") {
+                      localStorage.removeItem("mrm_current_view");
+                      localStorage.removeItem("mrm_selected_meeting");
+                      // If already on the page, we can force a state refresh by dispatching a custom event
+                      // or just rely on the user navigating and coming back later. 
+                      // Actually, let's also force a reload if they click the already active link
+                      if (location.pathname === item.path) {
+                        window.location.reload();
+                      }
+                    }
+                  }}
+                >
                   {isActive(item.path) && (
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-600 rounded-r-full"></span>
                   )}
                   <item.icon className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
                   <span
                     className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                        ? "w-0 opacity-0 ml-0"
-                        : "w-auto opacity-100 ms-3"
+                      ? "w-0 opacity-0 ml-0"
+                      : "w-auto opacity-100 ms-3"
                       }`}
                   >
                     {item.label}
@@ -137,8 +153,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <Settings className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Settings
@@ -153,8 +169,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 <LogOut className="min-w-5 w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:-translate-x-1" />
                 <span
                   className={`whitespace-nowrap overflow-hidden transition-all duration-300 font-medium ${isCollapsed
-                      ? "w-0 opacity-0 ml-0"
-                      : "w-auto opacity-100 ms-3"
+                    ? "w-0 opacity-0 ml-0"
+                    : "w-auto opacity-100 ms-3"
                     }`}
                 >
                   Sign Out

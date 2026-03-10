@@ -1,7 +1,9 @@
 import React, { forwardRef } from "react";
 import QIFormFooter from "./QIFormFooter";
+import { useAuth } from "../../../auth/AuthContext";
 const QIReportTable = forwardRef(
   ({ selectedMonth, displayedIndicators, categories = [], metadata }, ref) => {
+    const { organization } = useAuth();
     const days = Array.from({ length: 31 }, (_, i) =>
       String(i + 1).padStart(2, "0"),
     );
@@ -60,36 +62,49 @@ const QIReportTable = forwardRef(
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-x-auto p-8 overflow-y-hidden printable-report">
         <div ref={ref} className="min-w-[1000px] p-4 text-black bg-white">
           {/* Report Header */}
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-slate-900 rounded-lg flex items-center justify-center text-gray-600 font-black text-xl italic">
-                A
+          <div className="border-b-2 border-black mb-4">
+            <div className="flex flex-row items-center px-10 py-4 text-left">
+              <div className="w-[20%] flex justify-center pr-4">
+                {organization?.logo ? (
+                  <img
+                    src={organization.logo}
+                    alt="Logo"
+                    className="h-16 object-contain"
+                  />
+                ) : (
+                  <div className="w-16 h-16 bg-slate-900 rounded-lg flex items-center justify-center text-gray-600 font-black text-xl italic">
+                    {organization?.name?.charAt(0) || "A"}
+                  </div>
+                )}
               </div>
-              <div>
-                <h1 className="text-2xl font-black tracking-tight text-slate-900">
-                  ALPINE DIAGNOSTIC CENTRE
+              <div className="w-[80%] flex flex-col items-center justify-center">
+                <h1 className="text-2xl font-bold uppercase tracking-tight text-center">
+                  {organization?.name || "Your Company Name"}
                 </h1>
-                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest">
-                  Quality Assurance Department
+                <p className="text-sm leading-5 mt-1 text-center font-medium">
+                  {organization?.address || "Your Company Address"}
+                  {organization?.phone && ` | Tel: ${organization.phone}`}
+                  {organization?.websiteUrl && ` | Web: ${organization.websiteUrl}`}
                 </p>
               </div>
             </div>
-            <div className="text-right">
-              <h2 className="text-lg font-bold border-b-2 border-slate-900 inline-block px-4 py-1">
-                QUALITY INDICATORS
-              </h2>
-            </div>
+          </div>
+
+          <div className="text-center py-3 mb-4">
+            <h2 className="text-lg font-bold uppercase underline decoration-1 underline-offset-4">
+              {metadata.documentName || "QUALITY INDICATOR CHART FORM"}
+            </h2>
           </div>
 
           {/* Table Body */}
           <table className="w-full border-collapse border-2 border-slate-800">
             <thead>
               <tr className="bg-slate-50 h-10">
-                <td className="border border-slate-800 px-3 py-1 font-bold text-[11px] min-w-[30px]">
+                <td className="border border-slate-800 px-3 py-1 font-bold text-xs min-w-[30px]">
                   Month:
                 </td>
                 <td
-                  className="border border-slate-800 px-3 py-1 font-bold text-[11px] text-indigo-700"
+                  className="border border-slate-800 px-3 py-1 font-bold text-sm text-indigo-700"
                   colSpan={2}
                 >
                   {selectedMonth}
@@ -97,7 +112,7 @@ const QIReportTable = forwardRef(
                 {days.map((day) => (
                   <td
                     key={day}
-                    className="border border-slate-800 text-center font-bold text-[10px] w-6 italic"
+                    className="border border-slate-800 text-center font-bold text-[11px] w-6 italic"
                   >
                     {day}
                   </td>
@@ -109,7 +124,7 @@ const QIReportTable = forwardRef(
               <tr className="h-12 border-t-2 border-slate-800">
                 <td
                   colSpan={33}
-                  className="px-4 py-2 italic font-medium text-slate-700 text-xs text-left"
+                  className="px-4 py-3 italic font-medium text-slate-700 text-sm text-left"
                 >
                   No major observations in {selectedMonth}{" "}
                   <span className="float-right font-bold text-slate-900 not-italic mr-20">
