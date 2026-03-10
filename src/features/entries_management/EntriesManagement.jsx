@@ -1,186 +1,157 @@
-import React, { useState } from "react";
-import EntryList from "./components/EntryList";
-import EntryForm from "./components/EntryForm";
-import LabList from "./components/LabList";
-import LabDetail from "./components/LabDetail";
-import DataFeedForm from "./components/DataFeedForm";
-import LabForm from "./components/LabForm";
-import ReceptionLog from "./components/ReceptionLog";
-import entriesService from "./services/entriesService";
+import React, { useState, useCallback } from "react";
+import entriesService, { seedInitialData } from "./services/entriesService";
+import { Modal, TODAY } from "./components/Common";
+import { DashboardScreen } from "./components/DashboardScreen";
+import { EntryDetailScreen } from "./components/EntryDetailScreen";
+import { ParameterScreen } from "./components/ParameterScreen";
+import { EntryForm, FillRecordForm } from "./components/ManagementForms";
 
-const EntriesManagement = () => {
-  const [view, setView] = useState("list");
-  const [showLabForm, setShowLabForm] = useState(false);
+// Initialize data
+seedInitialData();
+
+export default function EntriesManagement() {
+  const [entries, setEntries] = useState(() => entriesService.getEntries());
+  const [records, setRecords] = useState(() => entriesService.getRecords());
+  const [screen, setScreen] = useState("dashboard"); // dashboard | entryDetail | paramScreen
+  const [selEntry, setSelEntry] = useState(null);
+  const [selParam, setSelParam] = useState(null);
+
+  // Modals
   const [showEntryForm, setShowEntryForm] = useState(false);
-  const [entries, setEntries] = useState([]);
-  const [labs, setLabs] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [filter, setFilter] = useState("All");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [selectedLab, setSelectedLab] = useState(null);
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [showFillForm, setShowFillForm] = useState(false);
+  const [fillDate, setFillDate] = useState(null);
+  const [editingRecord, setEditingRecord] = useState(null);
 
-  // Fetch all entries on mount
-  React.useEffect(() => {
-    const fetchEntries = async () => {
-      try {
-        setIsLoading(true);
-        const data = await entriesService.getAllEntries();
-        setEntries(data);
-      } catch (err) {
-        setError("Failed to fetch entries");
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchEntries();
+  const saveEntry = useCallback(
+    (entry) => {
+      const saved = entriesService.saveEntry(entry);
+      setEntries(entriesService.getEntries());
+      setShowEntryForm(false);
+      setEditingEntry(null);
+      if (selEntry?.id === entry.id) setSelEntry(saved);
+    },
+    [selEntry],
+  );
+
+  const saveRecord = useCallback((record) => {
+    entriesService.saveRecord(record);
+    setRecords(entriesService.getRecords());
+    setShowFillForm(false);
+    setEditingRecord(null);
+    setFillDate(null);
   }, []);
 
-  // Fetch labs when an entry is selected
-  React.useEffect(() => {
-    if (selectedEntry && view === "labList") {
-      const fetchLabs = async () => {
-        try {
-          setIsLoading(true);
-          const data = await entriesService.getLaboratoriesByEntryId(
-            selectedEntry.id,
-          );
-          setLabs(data);
-        } catch (err) {
-          setError("Failed to fetch laboratories");
-          console.error(err);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchLabs();
-    }
-  }, [selectedEntry, view]);
+  const openFill = (date) => {
+    setFillDate(date || TODAY);
+    setEditingRecord(null);
+    setShowFillForm(true);
+  };
 
-  const filteredEntries = entries.filter((entry) => {
-    const matchesFilter = filter === "All" || entry.cycle === filter;
-    const matchesSearch = entry.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+  const openEdit = (record) => {
+    setEditingRecord(record);
+    setFillDate(record.date);
+    setShowFillForm(true);
+  };
 
   return (
-    <div className="bg-slate-100 min-h-screen text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900">
-      <main className="max-w-7xl mx-auto">
-        {view === "list" ? (
-          <EntryList
-            filteredEntries={filteredEntries}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            filter={filter}
-            setFilter={setFilter}
-            onViewDetails={(entry) => {
-              setSelectedEntry(entry);
-              setView("labList");
+    <div
+      className="min-h-screen bg-slate-50 font-sans"
+      style={{
+        fontFamily: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
+      }}
+    >
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        {screen === "dashboard" && (
+          <DashboardScreen
+            entries={entries}
+            onSelect={(e) => {
+              setSelEntry(e);
+              setScreen("entryDetail");
             }}
-            onCreateNew={() => setShowEntryForm(true)}
-            isLoading={isLoading}
-          />
-        ) : view === "labList" ? (
-          <LabList
-            selectedEntry={selectedEntry}
-            labs={labs}
-            setLabs={setLabs}
-            onBack={() => setView("list")}
-            onAddLab={() => setShowLabForm(true)}
-            onSelectLab={(lab) => {
-              setSelectedLab(lab);
-              setView("labDetail");
+            onCreateNew={() => {
+              setEditingEntry(null);
+              setShowEntryForm(true);
             }}
-            isLoading={isLoading}
-          />
-        ) : view === "labDetail" ? (
-          <LabDetail
-            selectedLab={selectedLab}
-            selectedEntry={selectedEntry}
-            onBack={() => setView("labList")}
-            onMonthlyPreview={() => setView("preview")}
-            onFeedData={() => setView("feedForm")}
-          />
-        ) : (
-          <ReceptionLog
-            entry={selectedEntry}
-            lab={selectedLab}
-            onBack={() => setView("labDetail")}
+            onEditEntry={(e) => {
+              setEditingEntry(e);
+              setShowEntryForm(true);
+            }}
           />
         )}
-      </main>
 
-      {error && (
-        <div className="fixed bottom-4 right-4 bg-red-600 text-white px-6 py-3 rounded-2xl shadow-2xl animate-in slide-in-from-right-4">
-          {error}
-        </div>
-      )}
+        {screen === "entryDetail" && selEntry && (
+          <EntryDetailScreen
+            entry={selEntry}
+            records={records}
+            onBack={() => setScreen("dashboard")}
+            onSelectParam={(param) => {
+              setSelParam(param);
+              setScreen("paramScreen");
+            }}
+          />
+        )}
 
-      {/* Entry Creation Popup */}
-      {showEntryForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200">
-            <EntryForm
-              onSave={async (newEntryData) => {
-                try {
-                  const savedEntry =
-                    await entriesService.createEntry(newEntryData);
-                  setEntries([savedEntry, ...entries]);
-                  setShowEntryForm(false);
-                } catch (err) {
-                  console.error("Error creating entry:", err);
-                }
-              }}
-              onCancel={() => setShowEntryForm(false)}
-            />
-          </div>
-        </div>
-      )}
+        {screen === "paramScreen" && selEntry && selParam && (
+          <ParameterScreen
+            entry={selEntry}
+            parameter={selParam}
+            records={records}
+            onBack={() => setScreen("entryDetail")}
+            onFill={openFill}
+            onEdit={openEdit}
+          />
+        )}
+      </div>
 
-      {/* Laboratory Addition Popup */}
-      {showLabForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200">
-            <LabForm
-              onSave={async (newLabData) => {
-                try {
-                  const labToCreate = {
-                    entryId: selectedEntry?.id,
-                    ...newLabData,
-                  };
-                  const savedLab =
-                    await entriesService.createLaboratory(labToCreate);
-                  setLabs([savedLab, ...labs]);
-                  setShowLabForm(false);
-                } catch (err) {
-                  console.error("Error creating lab:", err);
-                }
-              }}
-              onCancel={() => setShowLabForm(false)}
-            />
-          </div>
-        </div>
-      )}
+      {/* Entry Create/Edit Modal */}
+      <Modal
+        open={showEntryForm}
+        onClose={() => {
+          setShowEntryForm(false);
+          setEditingEntry(null);
+        }}
+      >
+        <EntryForm
+          initial={editingEntry}
+          onSave={saveEntry}
+          onCancel={() => {
+            setShowEntryForm(false);
+            setEditingEntry(null);
+          }}
+        />
+      </Modal>
 
-      {/* Simplest Ever Popup Modal */}
-      {view === "feedForm" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200">
-            <DataFeedForm
-              selectedLab={selectedLab}
-              selectedEntry={selectedEntry}
-              onSave={() => setView("labDetail")}
-              onCancel={() => setView("labDetail")}
-            />
-          </div>
-        </div>
-      )}
+      {/* Fill/Edit Record Modal */}
+      <Modal
+        open={showFillForm}
+        onClose={() => {
+          setShowFillForm(false);
+          setEditingRecord(null);
+          setFillDate(null);
+        }}
+      >
+        {selEntry && selParam && (
+          <FillRecordForm
+            entry={selEntry}
+            parameter={selParam}
+            existingRecord={
+              editingRecord
+                ? editingRecord
+                : fillDate
+                  ? { date: fillDate }
+                  : null
+            }
+            onSave={saveRecord}
+            onCancel={() => {
+              setShowFillForm(false);
+              setEditingRecord(null);
+              setFillDate(null);
+            }}
+            TODAY={TODAY}
+          />
+        )}
+      </Modal>
     </div>
   );
-};
-
-export default EntriesManagement;
+}
