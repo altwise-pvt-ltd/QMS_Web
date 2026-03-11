@@ -45,12 +45,12 @@ const QMSDashboard = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-black rounded-lg hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 shadow-md shadow-indigo-300/50 text-sm font-medium">
+          <button className="flex items-center gap-2 px-4 py-2 bg-indigo-400 text-white rounded-lg hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 shadow-md shadow-indigo-300/50 text-sm font-medium">
             <Calendar className="w-4 h-4" /> Date Range
           </button>
           <button
             onClick={() => navigate("/incidents/new")}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-black rounded-lg hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 shadow-md shadow-indigo-300/50 text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-400 text-white rounded-lg hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 shadow-md shadow-indigo-300/50 text-sm font-medium"
           >
             <FileText className="w-4 h-4" /> New Incident
           </button>

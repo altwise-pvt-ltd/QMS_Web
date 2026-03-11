@@ -14,7 +14,6 @@ import {
 import { Skeleton } from "../../components/ui/Skeleton";
 import QalityIndicatorForm from "./qalityindicatorform";
 import qiService from "./services/qiService";
-import DeleteConfirmationModal from "../../components/ui/DeleteConfirmationModal";
 
 const SEVERITY_LABELS = {
   0: { label: "Low", color: "bg-emerald-100 text-emerald-700" },
@@ -33,39 +32,141 @@ const QualityIndicator = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingIndicator, setEditingIndicator] = useState(null);
   const [error, setError] = useState(null);
-  const [deletingIndicator, setDeletingIndicator] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form state
-  // ... (keeping lines 37-145)
+  const [form, setForm] = useState({
+    qualityIndicatorCategoryId: "",
+    qualitySubCategoryName: "",
+    thresholdPercentage: "",
+    severity: "0",
+    status: "Inactive",
+  });
 
-  // ── Delete ──────────────────────────────────────────────────────────────────
-  const handleDelete = (indicator, e) => {
-    e.stopPropagation();
-    setDeletingIndicator(indicator);
+  // ── Load data on mount ──────────────────────────────────────────────────────
+  useEffect(() => {
+    loadAll();
+  }, []);
+
+  const loadAll = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [subCategoryData, categoryData] = await Promise.all([
+        qiService.getAllQualitySubCategories(),
+        qiService.getAllCategories(),
+      ]);
+      setIndicators(Array.isArray(subCategoryData) ? subCategoryData : []);
+      setCategories(Array.isArray(categoryData) ? categoryData : []);
+    } catch (err) {
+      console.error("Error loading quality indicators:", err);
+      setError("Failed to load quality indicators.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const confirmDelete = async () => {
-    if (!deletingIndicator) return;
-    setIsDeleting(true);
+  // ── Sync form when editing ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (editingIndicator) {
+      setForm({
+        qualityIndicatorCategoryId:
+          editingIndicator.qualityIndicatorCategoryId || "",
+        qualitySubCategoryName: editingIndicator.qualitySubCategoryName || "",
+        thresholdPercentage:
+          editingIndicator.thresholdPercentage?.toString() || "",
+        severity: editingIndicator.severity?.toString() || "0",
+        status: editingIndicator.status || "Inactive",
+      });
+    } else {
+      setForm({
+        qualityIndicatorCategoryId: "",
+        qualitySubCategoryName: "",
+        thresholdPercentage: "",
+        severity: "0",
+        status: "Inactive",
+      });
+    }
+  }, [editingIndicator]);
+
+  const handleFieldChange = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // ── Save (create or update) ─────────────────────────────────────────────────
+  const handleSave = async () => {
+    if (!form.qualitySubCategoryName || !form.qualityIndicatorCategoryId)
+      return;
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const payload = {
+        qualityIndicatorCategoryId: parseInt(form.qualityIndicatorCategoryId),
+        qualitySubCategoryName: form.qualitySubCategoryName,
+        thresholdPercentage: parseFloat(form.thresholdPercentage) || 0,
+        severity: parseInt(form.severity) || 0,
+        status: form.status,
+      };
+
+      if (editingIndicator) {
+        // UPDATE
+        const response = await qiService.updateSubCategory(
+          editingIndicator.qualityIndicatorSubCategoryId,
+          {
+            ...payload,
+            qualityIndicatorSubCategoryId:
+              editingIndicator.qualityIndicatorSubCategoryId,
+          },
+        );
+        const updated = response.success ? response.data : response;
+        setIndicators((prev) =>
+          prev.map((i) =>
+            i.qualityIndicatorSubCategoryId ===
+            editingIndicator.qualityIndicatorSubCategoryId
+              ? { ...i, ...updated }
+              : i,
+          ),
+        );
+      } else {
+        // CREATE
+        const created = await qiService.createSubCategory(payload);
+        setIndicators((prev) => [created, ...prev]);
+      }
+
+      closeModal();
+    } catch (err) {
+      console.error("Error saving quality indicator:", err);
+      setError("Failed to save indicator. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── Delete ──────────────────────────────────────────────────────────────────
+  const handleDelete = async (indicator, e) => {
+    e.stopPropagation();
+    if (
+      !window.confirm(
+        `Delete "${indicator.qualitySubCategoryName}"? This cannot be undone.`,
+      )
+    )
+      return;
 
     try {
       await qiService.deleteQualityIndicator(
-        deletingIndicator.qualityIndicatorSubCategoryId,
+        indicator.qualityIndicatorSubCategoryId,
       );
       setIndicators((prev) =>
         prev.filter(
           (i) =>
             i.qualityIndicatorSubCategoryId !==
-            deletingIndicator.qualityIndicatorSubCategoryId,
+            indicator.qualityIndicatorSubCategoryId,
         ),
       );
-      setDeletingIndicator(null);
     } catch (err) {
       console.error("Error deleting indicator:", err);
       setError("Failed to delete indicator.");
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -532,7 +633,7 @@ const QualityIndicator = () => {
                     !form.qualityIndicatorCategoryId ||
                     saving
                   }
-                  className="flex-1 py-4 bg-indigo-600 text-slate-900 font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0 flex items-center justify-center gap-2"
+                  className="flex-1 py-4 bg-indigo-600 text-gray-900 font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0 flex items-center justify-center gap-2"
                 >
                   {saving ? (
                     <>
@@ -550,15 +651,6 @@ const QualityIndicator = () => {
           </div>
         </div>
       )}
-
-      <DeleteConfirmationModal
-        isOpen={!!deletingIndicator}
-        onClose={() => !isDeleting && setDeletingIndicator(null)}
-        onConfirm={confirmDelete}
-        title="Delete Quality Indicator"
-        message={`Are you sure you want to delete "${deletingIndicator?.qualitySubCategoryName}"? This action cannot be undone.`}
-        isDeleting={isDeleting}
-      />
     </div>
   );
 };
