@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Printer, Download, RefreshCcw } from "lucide-react";
 import documentService from "../services/documentService";
 import SavedDocumentsTable from "./SavedDocumentsTable";
+import Toast from "../../../components/ui/Toast";
+import DeleteConfirmationModal from "../../../components/ui/DeleteConfirmationModal";
 
 export default function DocumentPreviewPage() {
   const navigate = useNavigate();
@@ -36,6 +38,11 @@ export default function DocumentPreviewPage() {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Deletion State
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingDoc, setDeletingDoc] = useState(null);
+  const [toast, setToast] = useState(null);
 
   const fetchDocuments = async () => {
     if (!categoryId || !subCategoryId) return;
@@ -114,12 +121,48 @@ export default function DocumentPreviewPage() {
     );
   }
 
-  const handleDelete = async (doc) => {
-    await documentService.deleteDocument(doc.id);
+  const handleDeleteClick = (doc) => {
+    setDeletingDoc(doc);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingDoc) return;
+
+    try {
+      setIsDeleting(true);
+      await documentService.deleteDocument(deletingDoc.id);
+
+      setDocuments((prev) => prev.filter((d) => d.id !== deletingDoc.id));
+      setToast({ type: "success", message: "Document deleted successfully" });
+      setDeletingDoc(null);
+    } catch (err) {
+      console.error("Failed to delete document", err);
+      setToast({ type: "error", message: "Failed to delete document" });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
     <div className="h-[calc(100vh-64px)] flex overflow-hidden bg-slate-50 font-sans">
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={!!deletingDoc}
+        onClose={() => !isDeleting && setDeletingDoc(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Document"
+        message={`Are you sure you want to delete "${deletingDoc?.name}"? This action will remove the document entry from the library.`}
+        isDeleting={isDeleting}
+      />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
         <div className="bg-white border-b border-slate-200 px-6 py-4 shrink-0">
@@ -187,7 +230,7 @@ export default function DocumentPreviewPage() {
               onDocumentDeleted={(id) =>
                 setDocuments((docs) => docs.filter((d) => d.id !== id))
               }
-              onDelete={handleDelete}
+              onDelete={handleDeleteClick}
             />
           )}
         </div>

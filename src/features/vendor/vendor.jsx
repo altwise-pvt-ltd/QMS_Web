@@ -3,13 +3,9 @@ import VendorList from "./VendorList";
 import VendorForm from "./VendorForm";
 import VendorView from "./VendorView";
 import { vendorService } from "./services/vendorService";
-import {
-  Store,
-  Plus,
-  ChevronRight,
-  PencilLine,
-  Eye,
-} from "lucide-react";
+import { Store, Plus, ChevronRight, PencilLine, Eye } from "lucide-react";
+
+import DeleteConfirmationModal from "../../components/ui/DeleteConfirmationModal";
 
 // ── View meta config ──────────────────────────────────────────────────────────
 const VIEW_CONFIG = {
@@ -42,8 +38,9 @@ const VIEW_CONFIG = {
 // ── Top progress bar ──────────────────────────────────────────────────────────
 const ProgressBar = ({ visible }) => (
   <div
-    className={`fixed top-0 left-0 w-full h-0.5 z-50 transition-opacity duration-300 ${visible ? "opacity-100" : "opacity-0 pointer-events-none"
-      }`}
+    className={`fixed top-0 left-0 w-full h-0.5 z-50 transition-opacity duration-300 ${
+      visible ? "opacity-100" : "opacity-0 pointer-events-none"
+    }`}
   >
     <div className="h-full bg-indigo-100">
       <div
@@ -115,9 +112,12 @@ const PageHeader = ({ view, vendorName, onAdd, loading }) => {
         <button
           onClick={onAdd}
           disabled={loading}
-          className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-gray-600 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-slate-700 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Plus className="group-hover:rotate-180 transition-transform duration-500" size={20} />
+          <Plus
+            className="group-hover:rotate-180 transition-transform duration-500"
+            size={20}
+          />
           Register Vendor
         </button>
       )}
@@ -132,6 +132,8 @@ const VendorModule = () => {
   const [filterType, setFilterType] = useState("All");
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const loadVendors = async () => {
@@ -175,16 +177,21 @@ const VendorModule = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to remove this vendor?")) return;
-    setLoading(true);
+  const handleDelete = (id) => {
+    setDeletingId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingId) return;
+    setIsDeleting(true);
     try {
-      await vendorService.deleteVendor(id);
-      setVendors((prev) => prev.filter((v) => v.id !== id));
+      await vendorService.deleteVendor(deletingId);
+      setVendors((prev) => prev.filter((v) => v.id !== deletingId));
+      setDeletingId(null);
     } catch (err) {
       console.error("Deletion failed:", err);
     } finally {
-      setLoading(false);
+      setIsDeleting(false);
     }
   };
 
@@ -221,8 +228,9 @@ const VendorModule = () => {
 
         {/* View content */}
         <div
-          className={`transition-opacity duration-200 ${loading ? "opacity-40 pointer-events-none" : "opacity-100"
-            }`}
+          className={`transition-opacity duration-200 ${
+            loading ? "opacity-40 pointer-events-none" : "opacity-100"
+          }`}
         >
           {view === "list" && (
             <VendorList
@@ -269,6 +277,15 @@ const VendorModule = () => {
         </div>
       </main>
 
+      <DeleteConfirmationModal
+        isOpen={!!deletingId}
+        onClose={() => !isDeleting && setDeletingId(null)}
+        onConfirm={confirmDelete}
+        title="Remove Vendor"
+        message="Are you sure you want to remove this vendor from the registry? This action cannot be undone."
+        isDeleting={isDeleting}
+      />
+
       <style>{`
         @keyframes fadeSlideUp {
           from { opacity: 0; transform: translateY(12px); }
@@ -280,4 +297,3 @@ const VendorModule = () => {
 };
 
 export default VendorModule;
-

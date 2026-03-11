@@ -94,19 +94,19 @@ const SavedDocumentsTable = ({
   };
 
   const handleDeleteDocument = async (doc) => {
+    if (onDelete) {
+      // Parent handles confirmation and alerts
+      await onDelete(doc);
+      return;
+    }
+
     if (!confirm(`Are you sure you want to delete "${doc.name}"?`)) {
       return;
     }
 
     try {
-      if (onDelete) {
-        await onDelete(doc);
-      } else {
-        await deleteDocumentLegacy(doc.id);
-      }
-
+      await deleteDocumentLegacy(doc.id);
       alert("Document deleted successfully!");
-      // Notify parent component to refresh the list
       if (onDocumentDeleted) {
         onDocumentDeleted(doc.id);
       }
@@ -164,10 +164,10 @@ const SavedDocumentsTable = ({
         </div>
       </div>
 
-      {/* ✅ ONLY horizontal scroll lives here */}
-      <div className="overflow-x-auto overflow-y-hidden flex-1 min-w-0">
+      {/* ✅ Vertical and horizontal scroll container */}
+      <div className="overflow-auto flex-1 min-w-0">
         <table className="min-w-275 w-full text-left border-collapse">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
             <tr className="text-xs font-semibold uppercase text-slate-500">
               <th className="p-4">ID</th>
               <th className="p-4">Name</th>
@@ -258,16 +258,13 @@ const SavedDocumentsTable = ({
                       <Download size={16} />
                     </button>
 
-                    {/* Delete Button - Only show for Dexie documents (those with fileUrl) */}
-                    {doc.fileUrl && (
-                      <button
-                        onClick={() => handleDeleteDocument(doc)}
-                        className="p-2 rounded-lg hover:bg-red-50 text-red-600 hover:text-red-700 transition-colors group relative"
-                        title="Delete Document"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleDeleteDocument(doc)}
+                      className="p-2 rounded-lg hover:bg-red-50 text-red-600 hover:text-red-700 transition-colors group relative"
+                      title="Delete Document"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </td>
               </tr>

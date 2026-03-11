@@ -11,6 +11,7 @@ import {
 import InstrumentForm from "./components/Instrumentform";
 import InstrumentList from "./components/Instrument_list";
 import instrumentService from "./services/instrumentService";
+import DeleteConfirmationModal from "../../components/ui/DeleteConfirmationModal";
 
 const Instrument = () => {
   const [instruments, setInstruments] = useState([]);
@@ -18,6 +19,8 @@ const Instrument = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [editingInstrument, setEditingInstrument] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchInstruments = async () => {
     try {
@@ -76,14 +79,21 @@ const Instrument = () => {
     fetchInstruments();
   }, []);
 
-  const handleDeleteInstrument = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this instrument?"))
-      return;
+  const handleDeleteInstrument = (id) => {
+    setDeletingId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingId) return;
+    setIsDeleting(true);
     try {
-      await instrumentService.deleteInstrument(id);
+      await instrumentService.deleteInstrument(deletingId);
       fetchInstruments();
+      setDeletingId(null);
     } catch (error) {
       console.error("Error deleting instrument:", error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -245,6 +255,15 @@ const Instrument = () => {
         }}
         onAdd={fetchInstruments}
         editingInstrument={editingInstrument}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={!!deletingId}
+        onClose={() => !isDeleting && setDeletingId(null)}
+        onConfirm={confirmDelete}
+        title="Delete Instrument"
+        message="Are you sure you want to delete this instrument? This action cannot be undone."
+        isDeleting={isDeleting}
       />
     </div>
   );

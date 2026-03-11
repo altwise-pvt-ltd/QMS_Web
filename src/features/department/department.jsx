@@ -7,6 +7,7 @@ import { getDepartments, deleteDepartment } from "./services/departmentService";
 import staffService from "../staff/services/staffService";
 import CustomPagination from "../../components/ui/CustomPagination";
 import { Skeleton } from "../../components/ui/Skeleton";
+import DeleteConfirmationModal from "../../components/ui/DeleteConfirmationModal";
 
 const Department = () => {
   const [departments, setDepartments] = useState([]);
@@ -17,6 +18,8 @@ const Department = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [deletingDept, setDeletingDept] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const rowsPerPage = 4;
 
   const fetchDepartments = async () => {
@@ -88,26 +91,29 @@ const Department = () => {
     setIsAddModalOpen(true);
   };
 
-  const handleDelete = async (id, name) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete the "${name}" department? This action cannot be undone.`,
-      )
-    ) {
-      try {
-        await deleteDepartment(id);
-        const updatedDepts = departments.filter((d) => d.id !== id);
-        setDepartments(updatedDepts);
-        if (selectedDeptId === id) {
-          const firstNext = updatedDepts[0];
-          setSelectedDeptId(firstNext?.id || null);
-          setSelectedDeptName(firstNext?.name || "");
-        }
-        alert("Department deleted successfully");
-      } catch (error) {
-        console.error("Delete failed", error);
-        alert("Failed to delete department. Please try again.");
+  const handleDelete = (id, name) => {
+    setDeletingDept({ id, name });
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingDept) return;
+    setIsDeleting(true);
+    try {
+      await deleteDepartment(deletingDept.id);
+      const updatedDepts = departments.filter((d) => d.id !== deletingDept.id);
+      setDepartments(updatedDepts);
+      if (selectedDeptId === deletingDept.id) {
+        const firstNext = updatedDepts[0];
+        setSelectedDeptId(firstNext?.id || null);
+        setSelectedDeptName(firstNext?.name || "");
       }
+      setDeletingDept(null);
+      // alert("Department deleted successfully"); // Optional: Use toast or similar
+    } catch (error) {
+      console.error("Delete failed", error);
+      alert("Failed to delete department. Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -351,6 +357,15 @@ const Department = () => {
         }}
         onAdd={fetchDepartments} // Refresh after add/edit
         editingData={editingDepartment}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={!!deletingDept}
+        onClose={() => !isDeleting && setDeletingDept(null)}
+        onConfirm={confirmDelete}
+        title="Delete Department"
+        message={`Are you sure you want to delete the "${deletingDept?.name}" department? This action cannot be undone.`}
+        isDeleting={isDeleting}
       />
     </div>
   );

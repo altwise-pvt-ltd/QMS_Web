@@ -227,9 +227,9 @@ export const documentService = {
   },
 
   /**
-   * Soft delete — DB flag only, R2 file intentionally kept for audit trail.
+   * Delete — DB flag only as per request.
    */
-  softDeleteDocument: async (documentId) => {
+  deleteDocument: async (documentId) => {
     try {
       const response = await api.delete(`/DocumentLibrary/DeleteDocument/${documentId}`);
       return response.data;

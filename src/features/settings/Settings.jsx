@@ -28,7 +28,7 @@ import organizationService from "../onboarding/services/organizationService";
 import FloatingField from "./components/FloatingField";
 import FloatingTextarea from "./components/FloatingTextarea";
 import SectionCard from "./components/SectionCard";
-import Toast from "./components/Toast";
+import Toast from "../../components/ui/Toast";
 import SettingsSkeleton from "./components/SettingsSkeleton";
 
 /* ═══════════════════════════════════════════════
