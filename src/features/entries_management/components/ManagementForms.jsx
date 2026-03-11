@@ -7,8 +7,9 @@ export function EntryForm({ initial, onSave, onCancel }) {
     const [params, setParams] = useState(
         initial?.entryParameters?.length ? initial.entryParameters : [""],
     );
+    const [loading, setLoading] = useState(false);
 
-    const valid = name.trim() && params.some((p) => p.trim());
+    const valid = name.trim() && params.some((p) => p.trim()) && !loading;
 
     const handleParamChange = (index, value) => {
         const newParams = [...params];
@@ -28,16 +29,24 @@ export function EntryForm({ initial, onSave, onCancel }) {
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const entryParameters = params
             .map((p) => p.trim())
             .filter(Boolean);
-        onSave({
-            id: initial?.id || Date.now(),
-            name: name.trim(),
-            recordingCycle: cycle,
-            entryParameters,
-        });
+
+        setLoading(true);
+        try {
+            await onSave({
+                id: initial?.id || Date.now(),
+                name: name.trim(),
+                recordingCycle: cycle,
+                entryParameters,
+            });
+        } catch (error) {
+            console.error("Save failed:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -66,6 +75,7 @@ export function EntryForm({ initial, onSave, onCancel }) {
                         placeholder="e.g. Blood Refrigerator Temperature"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        disabled={loading}
                     />
                 </div>
                 <div>
@@ -75,10 +85,11 @@ export function EntryForm({ initial, onSave, onCancel }) {
                             <button
                                 key={c}
                                 onClick={() => setCycle(c)}
+                                disabled={loading}
                                 className={`py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest border-2 transition-all active:scale-95 ${cycle === c
-                                    ? "border-indigo-600 bg-indigo-600 text-red-600"
+                                    ? "border-indigo-600 bg-indigo-600 text-white"
                                     : "border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300"
-                                    }`}
+                                    } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                             >
                                 {CYCLE_LABEL[c]}
                             </button>
@@ -91,7 +102,8 @@ export function EntryForm({ initial, onSave, onCancel }) {
                         <button
                             type="button"
                             onClick={addParamField}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors"
+                            disabled={loading}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors disabled:opacity-50"
                         >
                             <Icon d={Icons.plus} size={14} strokeWidth={3} />
                             Add Parameter
@@ -106,12 +118,13 @@ export function EntryForm({ initial, onSave, onCancel }) {
                                         placeholder={`Parameter ${index + 1} (e.g. Morning)`}
                                         value={param}
                                         onChange={(e) => handleParamChange(index, e.target.value)}
+                                        disabled={loading}
                                     />
                                 </div>
                                 <button
                                     onClick={() => removeParamField(index)}
-                                    disabled={params.length === 1 && !params[0]}
-                                    className="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                    disabled={loading || (params.length === 1 && !params[0])}
+                                    className="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all disabled:opacity-30"
                                     title="Remove parameter"
                                 >
                                     <Icon d={Icons.trash} size={18} />
@@ -133,14 +146,18 @@ export function EntryForm({ initial, onSave, onCancel }) {
                 </button>
                 <button
                     onClick={handleSave}
-                    disabled={!valid}
+                    disabled={!valid || loading}
                     className={
                         css.btnPri +
-                        ` flex-1 justify-center ${!valid ? "opacity-40 cursor-not-allowed" : ""}`
+                        ` flex-1 justify-center ${(!valid || loading) ? "opacity-40 cursor-not-allowed" : ""}`
                     }
                 >
-                    <Icon d={Icons.check} size={16} />
-                    {initial ? "Save Changes" : "Create Entry"}
+                    {loading ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />
+                    ) : (
+                        <Icon d={Icons.check} size={16} />
+                    )}
+                    {loading ? "Saving..." : (initial ? "Save Changes" : "Create Entry")}
                 </button>
             </div>
         </div>
@@ -154,17 +171,25 @@ export function FillRecordForm({ entry, parameter, existingRecord, onSave, onCan
     );
     const [value, setValue] = useState(existingRecord?.value || "");
     const [remarks, setRemarks] = useState(existingRecord?.remarks || "");
+    const [loading, setLoading] = useState(false);
 
-    const handleSave = () => {
-        onSave({
-            id: existingRecord?.id || Date.now(),
-            entryId: entry.id,
-            parameter,
-            date,
-            time,
-            value: value.trim(),
-            remarks: remarks.trim(),
-        });
+    const handleSave = async () => {
+        setLoading(true);
+        try {
+            await onSave({
+                id: existingRecord?.id || Date.now(),
+                entryId: entry.id,
+                parameterId: parameter.id,
+                date,
+                time,
+                value: value.trim(),
+                remarks: remarks.trim(),
+            });
+        } catch (error) {
+            console.error("Save failed:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -176,7 +201,7 @@ export function FillRecordForm({ entry, parameter, existingRecord, onSave, onCan
                     </h2>
                     <p className="text-xs text-slate-400 mt-0.5">
                         {entry.name} ·{" "}
-                        <span className="font-semibold text-indigo-600">{parameter}</span>
+                        <span className="font-semibold text-indigo-600">{parameter.name}</span>
                     </p>
                 </div>
                 <button
@@ -195,6 +220,7 @@ export function FillRecordForm({ entry, parameter, existingRecord, onSave, onCan
                             className={css.input}
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
+                            disabled={loading}
                         />
                     </div>
                     <div>
@@ -204,6 +230,7 @@ export function FillRecordForm({ entry, parameter, existingRecord, onSave, onCan
                             className={css.input}
                             value={time}
                             onChange={(e) => setTime(e.target.value)}
+                            disabled={loading}
                         />
                     </div>
                 </div>
@@ -214,6 +241,7 @@ export function FillRecordForm({ entry, parameter, existingRecord, onSave, onCan
                         placeholder="Enter measurement or value..."
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
+                        disabled={loading}
                         autoFocus
                     />
                 </div>
@@ -225,21 +253,28 @@ export function FillRecordForm({ entry, parameter, existingRecord, onSave, onCan
                         placeholder="Any notes or observations..."
                         value={remarks}
                         onChange={(e) => setRemarks(e.target.value)}
+                        disabled={loading}
                     />
                 </div>
                 <div className="flex gap-3 pt-2">
                     <button
                         onClick={onCancel}
-                        className={css.btnSec + " flex-1 justify-center"}
+                        disabled={loading}
+                        className={css.btnSec + " flex-1 justify-center disabled:opacity-50"}
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSave}
-                        className={css.btnPri + " flex-1 justify-center"}
+                        disabled={loading || !value.trim()}
+                        className={css.btnPri + " flex-1 justify-center disabled:opacity-50"}
                     >
-                        <Icon d={Icons.check} size={16} />
-                        Save Record
+                        {loading ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />
+                        ) : (
+                            <Icon d={Icons.check} size={16} />
+                        )}
+                        {loading ? "Saving..." : "Save Record"}
                     </button>
                 </div>
             </div>

@@ -30,10 +30,12 @@ export const Icons = {
     warning: "M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01",
     layers: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5",
     entry: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8",
+    download: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3",
 };
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
-export const TODAY = new Date().toISOString().split("T")[0];
+export const TODAY = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+
 export const CYCLES = ["daily", "weekly", "monthly"];
 export const CYCLE_LABEL = { daily: "Daily", weekly: "Weekly", monthly: "Monthly" };
 export const CYCLE_COLOR = {
@@ -46,7 +48,10 @@ export function getDaysInMonth(year, month) {
     const days = new Date(year, month + 1, 0).getDate();
     return Array.from({ length: days }, (_, i) => {
         const d = new Date(year, month, i + 1);
-        return d.toISOString().split("T")[0];
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
     });
 }
 

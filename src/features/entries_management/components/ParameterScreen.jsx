@@ -1,11 +1,14 @@
 import React from "react";
 import { Icons, Icon, css, CYCLE_COLOR, getDaysInMonth, formatDate, TODAY } from "./Common";
 
-export function ParameterScreen({ entry, parameter, records, onBack, onFill, onEdit }) {
+export function ParameterScreen({ entry, parameter, records, loading, onBack, onFill, onEdit }) {
     const now = new Date();
     const monthDates = getDaysInMonth(now.getFullYear(), now.getMonth());
+    const paramId = parameter.id;
+    const paramName = parameter.name;
+
     const paramRecords = records.filter(
-        (r) => r.entryId === entry.id && r.parameter === parameter,
+        (r) => r.parameterId === paramId,
     );
 
     const rows = monthDates.map((date) => ({
@@ -34,7 +37,7 @@ export function ParameterScreen({ entry, parameter, records, onBack, onFill, onE
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
                             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
-                                {parameter}
+                                {loading ? "..." : paramName}
                             </h1>
                         </div>
                         <p className="text-xs text-slate-500 font-medium truncate">{entry.name}</p>
@@ -77,7 +80,12 @@ export function ParameterScreen({ entry, parameter, records, onBack, onFill, onE
                     </h3>
                 </div>
                 <div className="divide-y divide-slate-50 max-h-[480px] overflow-y-auto">
-                    {rows.map(({ date, record, isMissed, isFuture }) => (
+                    {loading ? (
+                        <div className="p-8 text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-4 border-indigo-600/20 border-t-indigo-600 mx-auto" />
+                            <p className="text-xs text-slate-400 mt-4 font-bold uppercase tracking-widest">Fetching Records...</p>
+                        </div>
+                    ) : rows.map(({ date, record, isMissed, isFuture }) => (
                         <div
                             key={date}
                             className={`flex items-center justify-between px-5 py-3.5 transition-colors ${isMissed ? "bg-red-50/40 hover:bg-red-50" : "hover:bg-slate-50"

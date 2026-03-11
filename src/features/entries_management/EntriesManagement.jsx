@@ -5,13 +5,16 @@ import { DashboardScreen } from "./components/DashboardScreen";
 import { EntryDetailScreen } from "./components/EntryDetailScreen";
 import { ParameterScreen } from "./components/ParameterScreen";
 import { EntryForm, FillRecordForm } from "./components/ManagementForms";
+import ReceptionLog from "./components/entiresPdfView";
+
 
 // Initialize data
 seedInitialData();
 
 export default function EntriesManagement() {
-  const [entries, setEntries] = useState(() => entriesService.getEntries());
-  const [records, setRecords] = useState(() => entriesService.getRecords());
+  const [entries, setEntries] = useState([]);
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [screen, setScreen] = useState("dashboard"); // dashboard | entryDetail | paramScreen
   const [selEntry, setSelEntry] = useState(null);
   const [selParam, setSelParam] = useState(null);
@@ -23,24 +26,66 @@ export default function EntriesManagement() {
   const [fillDate, setFillDate] = useState(null);
   const [editingRecord, setEditingRecord] = useState(null);
 
+  const fetchEntries = useCallback(async () => {
+    setLoading(true);
+    const data = await entriesService.getEntries();
+    setEntries(data);
+    setLoading(false);
+  }, []);
+
+  React.useEffect(() => {
+    fetchEntries();
+  }, [fetchEntries]);
+
   const saveEntry = useCallback(
-    (entry) => {
-      const saved = entriesService.saveEntry(entry);
-      setEntries(entriesService.getEntries());
+    async (entry) => {
+      const saved = await entriesService.saveEntry(entry);
+      fetchEntries(); // Refresh list after save
       setShowEntryForm(false);
       setEditingEntry(null);
       if (selEntry?.id === entry.id) setSelEntry(saved);
     },
-    [selEntry],
+    [selEntry, fetchEntries],
   );
 
-  const saveRecord = useCallback((record) => {
-    entriesService.saveRecord(record);
-    setRecords(entriesService.getRecords());
+  const fetchAllEntryRecords = useCallback(async (params) => {
+    setLoading(true);
+    try {
+      const all = [];
+      for (const p of params) {
+        const data = await entriesService.getTransactionsByEntity(p.id);
+        all.push(...data);
+      }
+      setRecords(all);
+    } catch (error) {
+      console.error("Error fetching all records:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchTransactions = useCallback(async (parameterId) => {
+    if (!parameterId || typeof parameterId === 'string' && parameterId.includes('pdf')) return;
+    setLoading(true);
+    try {
+      const data = await entriesService.getTransactionsByEntity(parameterId);
+      setRecords(data);
+    } catch (err) {
+      console.error("Fetch records failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const saveRecord = useCallback(async (record) => {
+    await entriesService.saveRecord(record);
+    if (selEntry?.entryParameters) {
+      await fetchAllEntryRecords(selEntry.entryParameters);
+    }
     setShowFillForm(false);
     setEditingRecord(null);
     setFillDate(null);
-  }, []);
+  }, [selEntry, fetchAllEntryRecords]);
 
   const openFill = (date) => {
     setFillDate(date || TODAY);
@@ -65,8 +110,13 @@ export default function EntriesManagement() {
         {screen === "dashboard" && (
           <DashboardScreen
             entries={entries}
-            onSelect={(e) => {
-              setSelEntry(e);
+            loading={loading}
+            onSelect={async (e) => {
+              setLoading(true);
+              const entities = await entriesService.getEntitiesByCategory(e.id);
+              const updatedEntry = { ...e, entryParameters: entities };
+              setSelEntry(updatedEntry);
+              await fetchAllEntryRecords(entities);
               setScreen("entryDetail");
             }}
             onCreateNew={() => {
@@ -84,10 +134,18 @@ export default function EntriesManagement() {
           <EntryDetailScreen
             entry={selEntry}
             records={records}
+            loading={loading}
             onBack={() => setScreen("dashboard")}
-            onSelectParam={(param) => {
-              setSelParam(param);
-              setScreen("paramScreen");
+            onSelectParam={async (param) => {
+              if (param?.id === 'pdf-view') {
+                setScreen("pdfView");
+                return;
+              }
+              if (param?.id) {
+                setSelParam(param);
+                await fetchTransactions(param.id);
+                setScreen("paramScreen");
+              }
             }}
           />
         )}
@@ -97,9 +155,22 @@ export default function EntriesManagement() {
             entry={selEntry}
             parameter={selParam}
             records={records}
-            onBack={() => setScreen("entryDetail")}
+            loading={loading}
+            onBack={async () => {
+              if (selEntry?.entryParameters) {
+                await fetchAllEntryRecords(selEntry.entryParameters);
+              }
+              setScreen("entryDetail");
+            }}
             onFill={openFill}
             onEdit={openEdit}
+          />
+        )}
+
+        {screen === "pdfView" && selEntry && (
+          <ReceptionLog
+            entry={selEntry}
+            onBack={() => setScreen("entryDetail")}
           />
         )}
       </div>

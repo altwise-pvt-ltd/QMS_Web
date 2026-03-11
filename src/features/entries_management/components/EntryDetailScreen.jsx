@@ -1,7 +1,7 @@
 import React from "react";
 import { Icons, Icon, css, CYCLE_COLOR, CycleBadge, getDaysInMonth, formatDate, TODAY } from "./Common";
 
-export function EntryDetailScreen({ entry, records, onBack, onSelectParam }) {
+export function EntryDetailScreen({ entry, records, loading, onBack, onSelectParam }) {
     const now = new Date();
     const monthDates = getDaysInMonth(now.getFullYear(), now.getMonth());
     const monthLabel = now.toLocaleDateString("en-GB", {
@@ -15,21 +15,31 @@ export function EntryDetailScreen({ entry, records, onBack, onSelectParam }) {
                 <button onClick={onBack} className={css.btnSec + " py-2 px-3 w-fit"}>
                     <Icon d={Icons.back} size={16} />
                 </button>
-                <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-gray-600 shrink-0 shadow-lg shadow-indigo-200">
-                        <Icon d={Icons.entry} size={28} color="#fff" />
-                    </div>
-                    <div className="min-w-0">
-                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
-                            {entry.name}
-                        </h1>
-                        <div className="flex items-center gap-2 mt-1">
-                            <CycleBadge cycle={entry.recordingCycle} />
-                            <span className="text-xs text-slate-400 font-medium">
-                                {entry.entryParameters?.length} parameters
-                            </span>
+                <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-gray-600 shrink-0 shadow-lg shadow-indigo-200">
+                            <Icon d={Icons.entry} size={28} color="#fff" />
+                        </div>
+                        <div className="min-w-0">
+                            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight truncate">
+                                {entry.name}
+                            </h1>
+                            <div className="flex items-center gap-2 mt-1">
+                                <CycleBadge cycle={entry.recordingCycle} />
+                                <span className="text-xs text-slate-400 font-medium">
+                                    {loading ? "..." : (entry.entryParameters?.length || 0)} parameters
+                                </span>
+                            </div>
                         </div>
                     </div>
+
+                    <button
+                        onClick={() => onSelectParam({ id: 'pdf-view', name: 'Report' })}
+                        className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-all border border-indigo-100 shrink-0"
+                    >
+                        <Icon d={Icons.download} size={16} />
+                        View PDF
+                    </button>
                 </div>
             </div>
 
@@ -38,9 +48,13 @@ export function EntryDetailScreen({ entry, records, onBack, onSelectParam }) {
                     Select a Parameter
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {(entry.entryParameters || []).map((param, idx) => {
+                    {loading ? (
+                        [1, 2, 3].map(n => (
+                            <div key={n} className={css.card + " p-5 h-32 animate-pulse bg-slate-50 border-slate-100"} />
+                        ))
+                    ) : (entry.entryParameters || []).map((param, idx) => {
                         const paramRecords = records.filter(
-                            (r) => r.entryId === entry.id && r.parameter === param,
+                            (r) => r.parameterId === param.id,
                         );
                         const filled = monthDates.filter((d) =>
                             paramRecords.some((r) => r.date === d),
@@ -53,7 +67,7 @@ export function EntryDetailScreen({ entry, records, onBack, onSelectParam }) {
 
                         return (
                             <button
-                                key={param}
+                                key={param.id}
                                 onClick={() => onSelectParam(param)}
                                 className={
                                     css.card +
@@ -73,7 +87,7 @@ export function EntryDetailScreen({ entry, records, onBack, onSelectParam }) {
                                     </span>
                                 </div>
                                 <h3 className="font-black text-slate-800 text-base group-hover:text-indigo-600 transition-colors">
-                                    {param}
+                                    {param.name}
                                 </h3>
                                 <p className="text-[11px] text-slate-400 mt-1">
                                     {filled} filled · {missed} missed this month
@@ -106,10 +120,10 @@ export function EntryDetailScreen({ entry, records, onBack, onSelectParam }) {
                                 </th>
                                 {(entry.entryParameters || []).map((p) => (
                                     <th
-                                        key={p}
+                                        key={p.id}
                                         className="px-4 py-3 text-center font-bold text-slate-400 uppercase tracking-widest"
                                     >
-                                        {p}
+                                        {p.name}
                                     </th>
                                 ))}
                             </tr>
@@ -123,13 +137,12 @@ export function EntryDetailScreen({ entry, records, onBack, onSelectParam }) {
                                     {(entry.entryParameters || []).map((param) => {
                                         const rec = records.find(
                                             (r) =>
-                                                r.entryId === entry.id &&
-                                                r.parameter === param &&
+                                                r.parameterId === param.id &&
                                                 r.date === date,
                                         );
                                         const isMissed = !rec && date <= TODAY;
                                         return (
-                                            <td key={param} className="px-4 py-3 text-center">
+                                            <td key={param.id} className="px-4 py-3 text-center">
                                                 {rec ? (
                                                     <span className="font-bold text-slate-800">
                                                         {rec.value}

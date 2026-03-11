@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Icons, Icon, css, CYCLE_COLOR, CycleBadge } from "./Common";
 import { SummaryCards } from "./SummaryCards";
 
-export function DashboardScreen({ entries, onSelect, onCreateNew, onEditEntry }) {
+export function DashboardScreen({ entries, loading, onSelect, onCreateNew, onEditEntry }) {
     const [filter, setFilter] = useState("all");
     const [search, setSearch] = useState("");
 
@@ -55,7 +55,22 @@ export function DashboardScreen({ entries, onSelect, onCreateNew, onEditEntry })
                     </div>
                 </div>
 
-                {filtered.length === 0 ? (
+                {loading ? (
+                    <div className="divide-y divide-slate-100">
+                        {[1, 2, 3].map((n) => (
+                            <div key={n} className="flex items-center justify-between px-5 py-5 gap-4 animate-pulse">
+                                <div className="flex items-center gap-4 flex-1">
+                                    <div className="w-10 h-10 rounded-xl bg-slate-100" />
+                                    <div className="flex-1 space-y-2">
+                                        <div className="h-4 bg-slate-100 rounded w-1/4" />
+                                        <div className="h-3 bg-slate-100 rounded w-1/6" />
+                                    </div>
+                                </div>
+                                <div className="w-24 h-9 bg-slate-100 rounded-xl" />
+                            </div>
+                        ))}
+                    </div>
+                ) : filtered.length === 0 ? (
                     <div className="py-16 text-center text-slate-400">
                         <Icon d={Icons.search} size={32} color="#CBD5E1" />
                         <p className="mt-3 text-sm font-medium text-slate-400">
