@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { getActionItems } from "../services/mrmService";
 
-const ActionItemsPage = ({ meeting, onSave, onBack, onNext }) => {
+const ActionItemsPage = ({ meeting, onSave, onDelete, onBack, onNext, onEditMeeting }) => {
   const [actionItems, setActionItems] = useState(meeting?.actionItems || []);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -81,35 +81,19 @@ const ActionItemsPage = ({ meeting, onSave, onBack, onNext }) => {
           dueDate: formData.dueDate,
         };
 
-        const updated = await onSave(itemToUpdate);
-
-        // Replace only the edited item in local state — do NOT append
-        setActionItems((prev) =>
-          prev.map((item) =>
-            item.id === editingItem.id ? { ...item, ...updated } : item
-          )
-        );
+        await onSave(itemToUpdate);
       } else {
         // ── CREATE: no id on the payload → service does POST ──────────────
         const newItem = {
           task: formData.task,
           description: formData.description,
           dueDate: formData.dueDate,
-          // No id — intentional
         };
 
-        const savedItem = await onSave(newItem);
-
-        if (savedItem) {
-          // Prepend only if we don't already have this id in state
-          setActionItems((prev) => {
-            const alreadyExists = prev.some((i) => i.id === savedItem.id);
-            return alreadyExists ? prev : [savedItem, ...prev];
-          });
-        }
+        await onSave(newItem);
       }
 
-      setLastSaved(new Date().toLocaleTimeString());
+      await fetchItems(); // 🚀 AUTO-REFRESH: Get fresh data from backend
       resetForm();
     } catch (error) {
       console.error("Failed to save action item:", error);
@@ -129,9 +113,17 @@ const ActionItemsPage = ({ meeting, onSave, onBack, onNext }) => {
     setShowForm(true);
   };
 
-  const deleteActionItem = (id) => {
+  const deleteActionItem = async (id) => {
     if (window.confirm("Are you sure you want to remove this action item?")) {
-      setActionItems((items) => items.filter((item) => item.id !== id));
+      try {
+        if (onDelete && !String(id).startsWith("local_")) {
+          await onDelete(id);
+        }
+        await fetchItems(); // 🚀 AUTO-REFRESH
+      } catch (error) {
+        console.error("Failed to delete action item:", error);
+        alert("Failed to delete item from server.");
+      }
     }
   };
 
@@ -174,28 +166,19 @@ const ActionItemsPage = ({ meeting, onSave, onBack, onNext }) => {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium flex items-center gap-2 text-sm shadow-sm active:scale-95 disabled:opacity-50"
+              onClick={onEditMeeting}
+              className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium flex items-center gap-2 text-sm shadow-sm active:scale-95"
             >
-              {saving ? (
-                <Loader2 size={18} className="animate-spin text-indigo-600" />
-              ) : (
-                <Save size={18} />
-              )}
-              {saving ? "Saving..." : "Save Changes"}
+              <Edit2 size={18} className="text-indigo-600" />
+              Edit Meeting
             </button>
 
             {onNext && (
               <button
-                onClick={async () => {
-                  await handleSave();
-                  onNext();
-                }}
-                disabled={saving}
-                className="px-5 py-2.5 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-all font-semibold flex items-center gap-2 shadow-md text-sm active:scale-95 disabled:opacity-50"
+                onClick={onNext}
+                className="px-5 py-2.5 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-all font-semibold flex items-center gap-2 shadow-md text-sm active:scale-95"
               >
-                {saving ? "Processing..." : "Next Step: Minutes →"}
+                Next Step: Minutes →
               </button>
             )}
           </div>

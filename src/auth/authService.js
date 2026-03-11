@@ -91,11 +91,11 @@ export const changePassword = async (oldPassword, newPassword) => {
  * @returns {Promise<Object>} The API response.
  */
 export const changeStaffPassword = async (staffId, oldPassword, newPassword, confirmPassword) => {
-  const response = await api.post(`/Staff/ChangePassword/${staffId}`, {
+  const response = await api.put(`/Staff/ChangePassword/${staffId}`, {
     oldPassword,
     newPassword,
     confirmPassword,
-  });
+  }, { skipAuth: true });
   return response.data;
 };
 

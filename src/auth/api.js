@@ -8,7 +8,7 @@ import { handleError } from "../utils/errorHandler";
  */
 const api = axios.create({
   baseURL: "/api", // QMS API Base URL via Vite Proxy
-  timeout: 15000,   // 15s timeout
+  timeout: 60000,   // 60s timeout for stability
 });
 
 /**

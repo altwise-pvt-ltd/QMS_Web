@@ -28,8 +28,8 @@ async function uploadStaffFile(file, staffId, staffName, subType) {
   if (!(file instanceof File)) return "";
 
   const r2Result = await uploadFile(file, {
-    module:    "staff",
-    staffId:   String(staffId),
+    module: "staff",
+    staffId: String(staffId),
     staffName: staffName || "staff",  // slugified by Worker: "John Doe" → "john-doe"
     subType,                          // "passport"|"resume"|"qualifications"|etc.
   });
@@ -65,6 +65,9 @@ const staffService = {
 
   deleteStaffById: (id) => api.delete(`/Staff/DeleteStaffById/${id}`),
 
+  changePassword: (staffId, passwordData) =>
+    api.put(`/Staff/ChangePassword/${staffId}`, passwordData, { skipAuth: true }),
+
   // ── Staff Documents — Read ────────────────────────────────────────────────
 
   getStaffDocuments: (staffId) =>
@@ -92,7 +95,7 @@ const staffService = {
   submitStaffDocuments: async (data, onProgress = null) => {
     const { staffId, staffName } = data;
 
-    if (!staffId)   throw new Error("staffId is required");
+    if (!staffId) throw new Error("staffId is required");
     if (!staffName) throw new Error("staffName is required");
 
     const report = (pct) => onProgress?.(pct);
@@ -104,7 +107,7 @@ const staffService = {
     // Single files
     const [passportUrl, resumeUrl] = await Promise.all([
       uploadStaffFile(data.passportPhoto, staffId, staffName, "passport"),
-      uploadStaffFile(data.resume,        staffId, staffName, "resume"),
+      uploadStaffFile(data.resume, staffId, staffName, "resume"),
     ]);
     report(20);
 
@@ -131,7 +134,7 @@ const staffService = {
 
     // Trainings have two files per record
     const [inductionUrls, competencyUrls] = await Promise.all([
-      uploadMany((data.trainings || []).map((t) => t.inductionFile),  staffId, staffName, "trainings"),
+      uploadMany((data.trainings || []).map((t) => t.inductionFile), staffId, staffName, "trainings"),
       uploadMany((data.trainings || []).map((t) => t.competencyFile), staffId, staffName, "trainings"),
     ]);
     report(90);
@@ -140,38 +143,38 @@ const staffService = {
 
     const formData = new FormData();
 
-    formData.append("StaffId",       String(staffId));
+    formData.append("StaffId", String(staffId));
     formData.append("PassportPhoto", passportUrl);  // R2 URL string
-    formData.append("Resume",        resumeUrl);    // R2 URL string
+    formData.append("Resume", resumeUrl);    // R2 URL string
 
     (data.qualifications || []).forEach((q, i) => {
-      formData.append(`Qualifications[${i}].File`,           qualUrls[i]      || "");
-      formData.append(`Qualifications[${i}].DocumentTitle`,  q.documentTitle  || "");
-      formData.append(`Qualifications[${i}].CollegeName`,    q.collegeName    || "");
+      formData.append(`Qualifications[${i}].File`, qualUrls[i] || "");
+      formData.append(`Qualifications[${i}].DocumentTitle`, q.documentTitle || "");
+      formData.append(`Qualifications[${i}].CollegeName`, q.collegeName || "");
       formData.append(`Qualifications[${i}].GraduationYear`, q.graduationYear || "");
     });
 
     (data.appointments || []).forEach((a, i) => {
-      formData.append(`Appointments[${i}].File`,          apptUrls[i]      || "");
-      formData.append(`Appointments[${i}].DocumentTitle`, a.documentTitle  || "");
+      formData.append(`Appointments[${i}].File`, apptUrls[i] || "");
+      formData.append(`Appointments[${i}].DocumentTitle`, a.documentTitle || "");
     });
 
     (data.medicals || []).forEach((m, i) => {
-      formData.append(`Medicals[${i}].File`,        medUrls[i]    || "");
+      formData.append(`Medicals[${i}].File`, medUrls[i] || "");
       formData.append(`Medicals[${i}].RecordTitle`, m.recordTitle || "");
-      formData.append(`Medicals[${i}].IssueDate`,   m.issueDate   || "");
+      formData.append(`Medicals[${i}].IssueDate`, m.issueDate || "");
     });
 
     (data.vaccinations || []).forEach((v, i) => {
-      formData.append(`Vaccinations[${i}].File`,            vacUrls[i]        || "");
+      formData.append(`Vaccinations[${i}].File`, vacUrls[i] || "");
       formData.append(`Vaccinations[${i}].CertificateName`, v.certificateName || "");
-      formData.append(`Vaccinations[${i}].DoseDate`,        v.doseDate        || "");
+      formData.append(`Vaccinations[${i}].DoseDate`, v.doseDate || "");
     });
 
     (data.trainings || []).forEach((t, i) => {
-      formData.append(`Trainings[${i}].TrainingTitle`,  t.trainingTitle    || "");
-      formData.append(`Trainings[${i}].InductionFile`,  inductionUrls[i]   || "");
-      formData.append(`Trainings[${i}].CompetencyFile`, competencyUrls[i]  || "");
+      formData.append(`Trainings[${i}].TrainingTitle`, t.trainingTitle || "");
+      formData.append(`Trainings[${i}].InductionFile`, inductionUrls[i] || "");
+      formData.append(`Trainings[${i}].CompetencyFile`, competencyUrls[i] || "");
     });
 
     report(95);

@@ -109,7 +109,7 @@ const MrmList = ({
                   hover:text-green-400
                   transition-colors shadow-sm font-medium"
                 >
-                  Edit
+                  Add Data
                 </button>
               </div>
             </div>

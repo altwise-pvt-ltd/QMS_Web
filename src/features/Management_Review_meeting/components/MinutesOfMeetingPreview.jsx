@@ -18,45 +18,31 @@ const MinutesOfMeetingPreview = ({
     date: meeting?.date || "Not specified",
     time: meeting?.time || "Not specified",
     venue: meeting?.location || "Not specified",
-    standard: "ISO 15189:2012",
+    standard: meeting?.standard || "ISO Quality Standard",
     agendaItems:
       minutes?.agendaItems?.map((item, index) => ({
         id: String.fromCharCode(97 + index), // a, b, c, etc.
         agenda: item.input || item.topic || "—",
         reviewInput: item.activity || item.discussion || "—",
-        reviewActivities: item.reviewActivities || "—",
         responsibility: item.responsibility || "—",
         status: item.status || "Completed",
       })) || [],
     attendees:
       attendance && attendance.length > 0
-        ? attendance
-          .filter((att) => att.status === "Present")
-          .map((att) => {
-            const roleInfo = att.role || att.department;
-            return roleInfo ? `${att.username} (${roleInfo})` : att.username;
-          })
+        ? attendance.map((att) => {
+          const roleInfo = att.role || att.department;
+          const namePart = roleInfo ? `${att.username} (${roleInfo})` : att.username;
+          const statusPart = att.status ? ` — ${att.status}` : " — Present";
+          return `${namePart}${statusPart}`;
+        })
         : Array.isArray(meeting?.invitedAttendees || meeting?.invites)
-          ? (meeting?.invitedAttendees || meeting?.invites).map((att) =>
-            typeof att === "string"
-              ? att
-              : `${att.username || att.name || "Unknown"} (${att.role || att.department || "Attendee"
-              })`,
-          )
-          : typeof (
-            meeting?.invitedAttendees ||
-            meeting?.invites ||
-            meeting?.attendees
-          ) === "string"
-            ? (
-              meeting?.invitedAttendees ||
-              meeting?.invites ||
-              meeting?.attendees
-            )
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
-            : [],
+          ? (meeting?.invitedAttendees || meeting?.invites).map((att) => {
+            const roleInfo = att.role || att.department || "Attendee";
+            const namePart = (att.username || att.name || "Unknown");
+            const statusPart = att.status ? ` — ${att.status}` : " — Present";
+            return `${namePart} (${roleInfo})${statusPart}`;
+          })
+          : [],
   };
 
   const generatePDFContent = () => {
@@ -151,10 +137,7 @@ const MinutesOfMeetingPreview = ({
       width: 26%;
     }
     .review-input {
-      width: 30%;
-    }
-    .review-activities {
-      width: 15%;
+      width: 45%;
     }
     .responsibility {
       width: 15%;
@@ -215,12 +198,10 @@ const MinutesOfMeetingPreview = ({
   <div class="meeting-info">
     <p><strong>Meeting Title:</strong> ${meeting?.title || "Management Review Meeting"
       }</p>
-    <p>Management review meeting as per ${meetingData.standard
-      } is scheduled on ${meetingData.date} at ${meetingData.time}.</p>
+    <p>Management review meeting is scheduled on ${meetingData.date} at ${meetingData.time}.</p>
     <p><strong>Venue:</strong> ${meetingData.venue}</p>
     <p>Following points were discussed in the meeting. Chaired by Lab Director</p>
-    <p>As per the requirements of ${meetingData.standard
-      }, the following points were included in the agenda.</p>
+    <p>As per the requirements, the following points were included in the agenda.</p>
     <p>The quality manager has prepared the report on various relevant review parameters</p>
   </div>
 
@@ -230,7 +211,6 @@ const MinutesOfMeetingPreview = ({
         <th class="sr-no">Sr no</th>
         <th class="agenda">MRM Agenda</th>
         <th class="review-input">Review Input</th>
-        <th class="review-activities">Review Activities</th>
         <th class="responsibility">Responsibility</th>
         <th class="status">Status</th>
       </tr>
@@ -243,7 +223,6 @@ const MinutesOfMeetingPreview = ({
           <td class="sr-no">${item.id})</td>
           <td class="agenda">${item.agenda}</td>
           <td class="review-input">${item.reviewInput}</td>
-          <td class="review-activities">${item.reviewActivities}</td>
           <td class="responsibility">${item.responsibility}</td>
           <td class="status">${item.status}</td>
         </tr>
@@ -269,6 +248,23 @@ const MinutesOfMeetingPreview = ({
     <div class="signature-block">
       <div class="signature-line">Signature of Quality Manager</div>
     </div>
+  </div>
+
+  <div style="margin-top: 50px; border-top: 2px solid #000; padding-top: 10px;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 8pt;">
+      <tr>
+        <td style="border: 1px solid #000; padding: 4px;"><b>Document No:</b> ${meeting.documentMeta?.documentNo || "ADC/QM/VM/04"}</td>
+        <td style="border: 1px solid #000; padding: 4px;"><b>Issue No:</b> ${meeting.documentMeta?.issueNo || "02"}</td>
+        <td style="border: 1px solid #000; padding: 4px;"><b>Issue Date:</b> ${meeting.documentMeta?.issueDate || "15/05/2024"}</td>
+        <td style="border: 1px solid #000; padding: 4px;"><b>Status:</b> ${meeting.documentMeta?.status || "Active"}</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #000; padding: 4px;"><b>Amendment No:</b> ${meeting.documentMeta?.amendmentNo || "01"}</td>
+        <td style="border: 1px solid #000; padding: 4px;"><b>Amendment Date:</b> ${meeting.documentMeta?.amendmentDate || "10/06/2024"}</td>
+        <td style="border: 1px solid #000; padding: 4px;"><b>Issued By:</b> ${meeting.documentMeta?.issuedBy || "Quality Manager"}</td>
+        <td style="border: 1px solid #000; padding: 4px;"><b>Reviewed By:</b> ${meeting.documentMeta?.reviewedBy || "Lab Director"}</td>
+      </tr>
+    </table>
   </div>
 </body>
 </html>
@@ -372,7 +368,7 @@ const MinutesOfMeetingPreview = ({
 
                 <div className="mb-6 text-sm space-y-2">
                   <p>
-                    Management review meeting as per ISO15189 is scheduled on{" "}
+                    Management review meeting is scheduled on{" "}
                     {meetingData.date} at {meetingData.time}.
                   </p>
                   <p>
@@ -380,12 +376,11 @@ const MinutesOfMeetingPreview = ({
                   </p>
                   <p>
                     Following points were discussed in the meeting. The meeting
-                    started at 2 pm, Chaired by Lab Director
+                    started at {meetingData.time}, Chaired by Lab Director
                   </p>
                   <p>
                     As per the requirements of {meetingData.standard}, the
-                    following points were included in the agenda, though Our
-                    Molecular Laboratory is newly established.
+                    following points were included in the agenda.
                   </p>
                   <p>
                     The quality manager has prepared the report on various
@@ -407,9 +402,6 @@ const MinutesOfMeetingPreview = ({
                           Review Input
                         </th>
                         <th className="border border-gray-800 p-2 text-left">
-                          Review Activities
-                        </th>
-                        <th className="border border-gray-800 p-2 text-left">
                           Responsibility
                         </th>
                         <th className="border border-gray-800 p-2 text-left">
@@ -428,9 +420,6 @@ const MinutesOfMeetingPreview = ({
                           </td>
                           <td className="border border-gray-800 p-2">
                             {item.reviewInput}
-                          </td>
-                          <td className="border border-gray-800 p-2">
-                            {item.reviewActivities}
                           </td>
                           <td className="border border-gray-800 p-2">
                             {item.responsibility}
@@ -455,16 +444,55 @@ const MinutesOfMeetingPreview = ({
                   </ol>
                 </div>
 
-                <div className="flex justify-between mt-16">
+                <div className="flex justify-between mt-16 px-4">
                   <div className="text-center">
-                    <div className="border-t border-gray-800 pt-2 w-64">
+                    <div className="border-t border-gray-800 pt-2 w-64 font-bold">
                       Signature Lab Director
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="border-t border-gray-800 pt-2 w-64">
+                    <div className="border-t border-gray-800 pt-2 w-64 font-bold">
                       Signature of Quality Manager
                     </div>
+                  </div>
+                </div>
+
+                {/* PDF FOOTER (MATCHING VIEW) */}
+                <div className="mt-20 border-t-2 border-black pt-4">
+                  <table className="w-full border border-black text-[10px] table-fixed border-collapse">
+                    <tbody>
+                      <tr>
+                        <td className="border border-black p-2">
+                          <b>Document No</b><br />{meeting.documentMeta?.documentNo || "ADC/QM/VM/04"}
+                        </td>
+                        <td className="border border-black p-2">
+                          <b>Issue No</b><br />{meeting.documentMeta?.issueNo || "02"}
+                        </td>
+                        <td className="border border-black p-2">
+                          <b>Issue Date</b><br />{meeting.documentMeta?.issueDate || "15/05/2024"}
+                        </td>
+                        <td className="border border-black p-2">
+                          <b>Status</b><br />{meeting.documentMeta?.status || "Active"}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="border border-black p-2">
+                          <b>Amendment No</b><br />{meeting.documentMeta?.amendmentNo || "01"}
+                        </td>
+                        <td className="border border-black p-2">
+                          <b>Amendment Date</b><br />{meeting.documentMeta?.amendmentDate || "10/06/2024"}
+                        </td>
+                        <td className="border border-black p-2">
+                          <b>Issued By</b><br />{meeting.documentMeta?.issuedBy || "Quality Manager"}
+                        </td>
+                        <td className="border border-black p-2">
+                          <b>Reviewed By</b><br />{meeting.documentMeta?.reviewedBy || "Lab Director"}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div className="mt-2 text-[8px] text-right text-gray-400">
+                    Proprietary Information — {companyInfo?.name || "ALPINE DIAGNOSTIC CENTRE"} © {new Date().getFullYear()}
                   </div>
                 </div>
               </div>

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { getMinutes } from "../services/mrmService";
 
-const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
+const MinutesOfMeeting = ({ onSave, onBack, onNext, meeting, onEditMeeting, onDelete }) => {
   const [items, setItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -68,25 +68,25 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
       return;
     }
 
-    let updatedItems;
     if (editingItem) {
-      updatedItems = items.map((item) =>
-        item.id === editingItem.id ? { ...editingItem, ...formData } : item
-      );
+      // 🔥 AUTO-SAVE EDIT: Just update this single item via PUT
+      console.log("Auto-saving edited agenda point...");
+      const updatedItem = { ...editingItem, ...formData };
+      await handleSave(false, [updatedItem], true);
     } else {
+      // 🔥 AUTO-SAVE NEW: Add to list and POST
       const newItem = {
         ...formData,
         id: `local_${Date.now()}`,
       };
-      updatedItems = [...items, newItem];
+      const updatedItems = [...items, newItem];
+      setItems(updatedItems);
+      console.log("Auto-saving new agenda point...");
+      await handleSave(false, updatedItems, false);
     }
 
-    setItems(updatedItems);
     resetForm();
-
-    // 🔥 AUTO-SAVE: Push to backend immediately after adding/editing
-    console.log("Auto-saving new agenda point...");
-    await handleSave(false, updatedItems);
+    await fetchMinutes(); // Refresh list to get fresh IDs from backend
   };
 
   const handleEdit = (item) => {
@@ -102,20 +102,25 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
 
   const removeItem = async (id) => {
     if (window.confirm("Are you sure you want to remove this agenda point?")) {
-      const updatedItems = items.filter((item) => item.id !== id);
-      setItems(updatedItems);
-      // 🔥 AUTO-SAVE: Sync removal with backend
-      await handleSave(false, updatedItems);
+      try {
+        if (onDelete && !String(id).startsWith("local_")) {
+          await onDelete(id);
+        }
+        await fetchMinutes(); // Auto-refresh list
+      } catch (error) {
+        console.error("Failed to delete minute item:", error);
+        alert("Failed to delete item from server.");
+      }
     }
   };
 
-  const handleSave = async (shouldNavigate = true, itemsToSave = null) => {
+  const handleSave = async (shouldNavigate = true, itemsToSave = null, isSingle = false) => {
     const listToPersist = itemsToSave || items;
     if (listToPersist.length === 0 && !shouldNavigate) return;
 
     setSaving(true);
     try {
-      const payload = { agendaItems: listToPersist };
+      const payload = { agendaItems: listToPersist, isSingle };
 
       // Save locally first
       sessionStorage.setItem(`mrm_minutes_${meeting.id}`, JSON.stringify(payload));
@@ -170,31 +175,20 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => handleSave(false)}
-              disabled={saving}
-              className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-semibold flex items-center gap-2 text-sm shadow-sm active:scale-95 disabled:opacity-50"
+              onClick={onEditMeeting}
+              className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium flex items-center gap-2 text-sm shadow-sm active:scale-95"
             >
-              {saving ? (
-                <Loader2 size={18} className="animate-spin text-indigo-600" />
-              ) : (
-                <Save size={18} />
-              )}
-              {saving ? "Saving..." : "Save Progress"}
+              <Edit2 size={18} className="text-indigo-600" />
+              Edit Meeting
             </button>
 
             <button
-              onClick={async () => {
-                await handleSave(true);
-              }}
+              onClick={onNext}
               disabled={saving}
-              className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all font-bold flex items-center gap-2 shadow-lg text-sm active:scale-95 disabled:opacity-50 whitespace-nowrap min-w-[180px] justify-center"
+              className="px-6 py-2.5 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-all font-bold flex items-center gap-2 shadow-lg text-sm active:scale-95 disabled:opacity-50 whitespace-nowrap min-w-[180px] justify-center"
             >
-              {saving ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <ArrowLeft size={18} className="rotate-180" />
-              )}
-              {saving ? "Processing..." : "Next Step: Attendance"}
+              Next Step: Attendance
+              <ArrowLeft size={18} className="rotate-180" />
             </button>
           </div>
         </div>
@@ -213,7 +207,7 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
               </div>
               <button
                 onClick={() => setShowForm(true)}
-                className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all font-semibold flex items-center gap-2 text-sm shadow-sm active:scale-95"
+                className="px-5 py-2.5 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-all font-semibold flex items-center gap-2 text-sm shadow-sm active:scale-95"
               >
                 <Plus size={18} />
                 New Agenda Point
@@ -328,7 +322,7 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
                     <button
                       onClick={handleAddItem}
                       disabled={saving}
-                      className="px-8 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all font-bold flex items-center gap-2 shadow-lg hover:shadow-indigo-200 active:scale-95 disabled:opacity-50"
+                      className="px-8 py-2.5 bg-indigo-600 text-gray-600 rounded-xl hover:bg-indigo-700 transition-all font-bold flex items-center gap-2 shadow-lg hover:shadow-indigo-200 active:scale-95 disabled:opacity-50"
                     >
                       {saving ? (
                         <Loader2 size={18} className="animate-spin" />
@@ -438,7 +432,7 @@ const MinutesOfMeeting = ({ onSave, onBack, meeting }) => {
           </div>
         </div>
       </main>
-    </div>
+    </div >
   );
 };
 
