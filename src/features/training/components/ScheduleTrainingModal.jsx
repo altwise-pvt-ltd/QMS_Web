@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   X,
   Calendar,
@@ -6,14 +6,38 @@ import {
   Repeat,
   FileText,
   CheckCircle2,
+  ChevronDown,
+  Loader2,
+  StickyNote,
 } from "lucide-react";
-import { db } from "../../../db";
-import staffService from "../../staff/services/staffService";
-import {
-  createEvent,
-  getAllEventTypes,
-} from "../../compliance_calendar/services/complianceService";
+import trainingService from "../services/trainingService";
 
+/* ═══════════════════════════════════════════════════════════════
+   REUSABLE SUB-COMPONENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+const FieldLabel = ({ icon: Icon, children }) => (
+  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+    {Icon && <Icon size={13} className="text-indigo-500" strokeWidth={2.25} />}
+    {children}
+  </label>
+);
+
+const inputBase =
+  "w-full py-2.5 px-3.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-400 transition-all duration-200";
+
+const selectBase = `${inputBase} appearance-none cursor-pointer pr-10`;
+
+const SelectChevron = () => (
+  <ChevronDown
+    size={14}
+    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+  />
+);
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ═══════════════════════════════════════════════════════════════ */
 const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
   const [loading, setLoading] = useState(false);
   const [staffLoading, setStaffLoading] = useState(true);
@@ -23,10 +47,11 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
     dueDate: new Date().toISOString().split("T")[0],
     assignedTo: "",
     givenBy: "",
-    recurrence: "one-time",
+    recurrence: "One-Time",
     notes: "",
   });
 
+  /* ── Lifecycle ── */
   useEffect(() => {
     if (isOpen) {
       loadStaff();
@@ -39,16 +64,27 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
     }
   }, [isOpen, initialDate]);
 
+  // Close on Escape
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "Escape" && isOpen) onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose]);
+
+  /* ── Data ── */
   const loadStaff = async () => {
     try {
       setStaffLoading(true);
-      const res = await staffService.getAllStaff();
-      const staffList = (res.data || []).map((s) => ({
-        id: s.staffId,
-        name: `${s.firstName || ""} ${s.lastName || ""}`.trim(),
-        role: s.jobTitle,
-      }));
-      setStaff(staffList);
+      const staffList = await trainingService.getStaff();
+      setStaff(
+        staffList.map((s) => ({
+          id: s.staffId,
+          name: `${s.firstName || ""} ${s.lastName || ""}`.trim(),
+          role: s.jobTitle,
+        })),
+      );
     } catch (error) {
       console.error("Error loading staff:", error);
     } finally {
@@ -56,118 +92,84 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
     }
   };
 
+  /* ── Form helpers ── */
+  const updateField = useCallback(
+    (field) => (e) =>
+      setFormData((prev) => ({ ...prev, [field]: e.target.value })),
+    [],
+  );
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      dueDate: new Date().toISOString().split("T")[0],
+      assignedTo: "",
+      givenBy: "",
+      recurrence: "One-Time",
+      notes: "",
+    });
+  };
+
+  /* ── Submit ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
 
-      const eventTypes = await getAllEventTypes();
+      const eventTypes = await trainingService.getEventTypes();
       const trainingType = eventTypes.find((t) => t.name === "Training");
 
       if (!trainingType) {
         throw new Error("Training event type not found");
       }
 
-      const newEvent = {
+      const trainingData = {
         eventTypeId: trainingType.id,
         title: formData.title,
         dueDate: formData.dueDate,
-        status: "pending",
+        status: "Pending",
         assignedTo: formData.assignedTo,
         givenBy: formData.givenBy,
         recurrence: formData.recurrence,
         notes: formData.notes,
       };
 
-      // 1. Create Calendar Entry
-      const createdEvent = await createEvent(newEvent);
-      const eventId = createdEvent.id;
+      const res = await trainingService.createTraining(trainingData);
+      const eventId = res.data?.complianceEventId;
 
-      // 2. Create Assignment Mapping (Snapshotting)
+      if (!eventId) throw new Error("Failed to retrieve new event ID");
+
+      // Create attendance mappings
+      const createAttendancePromises = [];
       if (formData.assignedTo === "All Staff") {
-        const attendanceRecords = staff.map((person) => ({
-          eventId,
-          staffId: person.id,
-          status: "pending",
-          completionDate: null,
-        }));
-        await db.training_attendance.bulkAdd(attendanceRecords);
+        staff.forEach((person) => {
+          createAttendancePromises.push(
+            trainingService.createAttendance({
+              eventId,
+              staffId: person.id,
+              status: "Pending",
+            }),
+          );
+        });
       } else {
-        // Find single staff member
         const assignedPerson = staff.find(
           (s) => s.name === formData.assignedTo,
         );
         if (assignedPerson) {
-          await db.training_attendance.add({
-            eventId,
-            staffId: assignedPerson.id,
-            status: "pending",
-            completionDate: null,
-          });
+          createAttendancePromises.push(
+            trainingService.createAttendance({
+              eventId,
+              staffId: assignedPerson.id,
+              status: "Pending",
+            }),
+          );
         }
       }
-
-      // 3. Handle Recurrence (Auto-generate future instances)
-      if (formData.recurrence !== "one-time") {
-        const nextDates = [];
-        let currentDate = new Date(formData.dueDate);
-
-        // Generate next 3 instances as a safeguard for compliance visibility
-        for (let i = 0; i < 3; i++) {
-          if (formData.recurrence === "monthly")
-            currentDate.setMonth(currentDate.getMonth() + 1);
-          if (formData.recurrence === "quarterly")
-            currentDate.setMonth(currentDate.getMonth() + 3);
-          if (formData.recurrence === "yearly")
-            currentDate.setFullYear(currentDate.getFullYear() + 1);
-
-          nextDates.push(currentDate.toISOString().split("T")[0]);
-        }
-
-        for (const futureDate of nextDates) {
-          const futureEvent = {
-            ...newEvent,
-            dueDate: futureDate,
-            status: "pending",
-          };
-          const fEvent = await createEvent(futureEvent);
-
-          // Duplicate attendance mapping for future events
-          if (formData.assignedTo === "All Staff") {
-            const attendanceRecords = staff.map((person) => ({
-              eventId: fEvent.id,
-              staffId: person.id,
-              status: "pending",
-              completionDate: null,
-            }));
-            await db.training_attendance.bulkAdd(attendanceRecords);
-          } else {
-            const assignedPerson = staff.find(
-              (s) => s.name === formData.assignedTo,
-            );
-            if (assignedPerson) {
-              await db.training_attendance.add({
-                eventId: fEvent.id,
-                staffId: assignedPerson.id,
-                status: "pending",
-                completionDate: null,
-              });
-            }
-          }
-        }
-      }
+      await Promise.all(createAttendancePromises);
 
       onSuccess();
       onClose();
-      // Reset form
-      setFormData({
-        title: "",
-        dueDate: new Date().toISOString().split("T")[0],
-        assignedTo: "",
-        givenBy: "",
-        recurrence: "one-time",
-        notes: "",
-      });
+      resetForm();
     } catch (error) {
       console.error("Error scheduling training:", error);
       alert("Failed to schedule training. Please try again.");
@@ -179,177 +181,185 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in zoom-in-95 duration-300">
-        {/* Header */}
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-indigo-50/20">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
-              Schedule New Training
-            </h2>
-            <p className="text-slate-500 font-medium mt-1">
-              Add a module to the compliance calendar
-            </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:ml-14">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/25 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Modal */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Schedule new training"
+        className="relative bg-white w-full max-w-2xl max-h-[92vh] rounded-2xl shadow-xl ring-1 ring-black/5 overflow-hidden flex flex-col"
+      >
+        {/* ── HEADER ── */}
+        <div className="flex-shrink-0 px-5 sm:px-7 py-5 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-sm">
+              <Calendar className="text-white" size={18} strokeWidth={2.5} />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold text-slate-900 leading-tight">
+                Schedule Training
+              </h2>
+              <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                Add a new module to the compliance calendar
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-3 hover:bg-white rounded-2xl transition-colors text-slate-400 hover:text-slate-600 shadow-sm border border-transparent hover:border-slate-100"
+            aria-label="Close modal"
+            className="p-2 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-lg transition-colors duration-150"
           >
-            <X size={24} />
+            <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-            {/* Title - Full Width in Grid */}
-            <div className="col-span-2 space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <FileText size={14} className="text-indigo-500" />
-                Training Title
-              </label>
+        {/* ── FORM ── */}
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 overflow-y-auto px-5 sm:px-7 py-6"
+        >
+          <div className="space-y-5">
+            {/* Title — full width */}
+            <div>
+              <FieldLabel icon={FileText}>Training Title</FieldLabel>
               <input
                 required
                 type="text"
                 placeholder="e.g. Annual Safety Protocol"
                 value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700"
+                onChange={updateField("title")}
+                className={inputBase}
               />
             </div>
 
-            {/* Due Date */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <Calendar size={14} className="text-indigo-500" />
-                Scheduled Date
-              </label>
-              <input
-                required
-                type="date"
-                value={formData.dueDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, dueDate: e.target.value })
-                }
-                className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700"
-              />
-            </div>
-
-            {/* Recurrence */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <Repeat size={14} className="text-indigo-500" />
-                Recurrence
-              </label>
-              <select
-                value={formData.recurrence}
-                onChange={(e) =>
-                  setFormData({ ...formData, recurrence: e.target.value })
-                }
-                className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700 appearance-none cursor-pointer"
-              >
-                <option value="one-time">One-time</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-              <p className="text-[10px] text-slate-400 mt-1 font-medium italic">
-                * Future instances will be auto-generated for compliance
-                visibility.
-              </p>
-            </div>
-
-            {/* Given By */}
-            <div className="col-span-2 md:col-span-1 space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <User size={14} className="text-indigo-500" />
-                Given By (Speaker/Trainer)
-              </label>
-              <input
-                required
-                type="text"
-                placeholder="e.g. Quality Manager"
-                value={formData.givenBy}
-                onChange={(e) =>
-                  setFormData({ ...formData, givenBy: e.target.value })
-                }
-                className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700"
-              />
-            </div>
-
-            {/* Assigned To */}
-            <div className="col-span-2 md:col-span-1 space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <User size={14} className="text-indigo-500" />
-                Assigned To / Target
-              </label>
-              <select
-                required
-                disabled={staffLoading}
-                value={formData.assignedTo}
-                onChange={(e) =>
-                  setFormData({ ...formData, assignedTo: e.target.value })
-                }
-                className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-700 appearance-none cursor-pointer disabled:opacity-50"
-              >
-                {staffLoading ? (
-                  <option>Loading staff data...</option>
-                ) : (
-                  <>
-                    <option value="">Select Personnel...</option>
-                    <option
-                      value="All Staff"
-                      className="font-black text-indigo-700"
-                    >
-                      ALL STAFF
-                    </option>
-                    {staff.map((person) => (
-                      <option key={person.id} value={person.name}>
-                        {person.name} — {person.role}
-                      </option>
-                    ))}
-                  </>
+            {/* Date + Recurrence row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <FieldLabel icon={Calendar}>Scheduled Date</FieldLabel>
+                <input
+                  required
+                  type="date"
+                  value={formData.dueDate}
+                  onChange={updateField("dueDate")}
+                  className={inputBase}
+                />
+              </div>
+              <div>
+                <FieldLabel icon={Repeat}>Recurrence</FieldLabel>
+                <div className="relative">
+                  <select
+                    value={formData.recurrence}
+                    onChange={updateField("recurrence")}
+                    className={selectBase}
+                  >
+                    <option value="One-Time">One-Time</option>
+                    <option value="Daily">Daily</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Quarterly">Quarterly</option>
+                    <option value="Yearly">Yearly</option>
+                  </select>
+                  <SelectChevron />
+                </div>
+                {formData.recurrence !== "One-Time" && (
+                  <p className="text-[10px] text-slate-400 mt-1.5 font-medium">
+                    Future instances will be auto-generated for compliance
+                    tracking.
+                  </p>
                 )}
-              </select>
+              </div>
+            </div>
+
+            {/* Given By + Assigned To row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <FieldLabel icon={User}>Given By</FieldLabel>
+                <input
+                  required
+                  type="text"
+                  placeholder="Instructor or department"
+                  value={formData.givenBy}
+                  onChange={updateField("givenBy")}
+                  className={inputBase}
+                />
+              </div>
+              <div>
+                <FieldLabel icon={User}>Assigned To</FieldLabel>
+                <div className="relative">
+                  <select
+                    required
+                    disabled={staffLoading}
+                    value={formData.assignedTo}
+                    onChange={updateField("assignedTo")}
+                    className={`${selectBase} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {staffLoading ? (
+                      <option>Loading staff…</option>
+                    ) : (
+                      <>
+                        <option value="">Select personnel</option>
+                        <option value="All Staff">All Staff</option>
+                        {staff.map((person) => (
+                          <option key={person.id} value={person.name}>
+                            {person.name}
+                            {person.role ? ` — ${person.role}` : ""}
+                          </option>
+                        ))}
+                      </>
+                    )}
+                  </select>
+                  {staffLoading ? (
+                    <Loader2
+                      size={14}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 animate-spin pointer-events-none"
+                    />
+                  ) : (
+                    <SelectChevron />
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Notes */}
-            <div className="col-span-2 space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                Additional Instructions
-              </label>
+            <div>
+              <FieldLabel icon={StickyNote}>Additional Instructions</FieldLabel>
               <textarea
-                rows="4"
-                placeholder="Provide context or links to training materials..."
+                rows={3}
+                placeholder="Context, links to materials, or special requirements…"
                 value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
-                className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium text-slate-700 resize-none"
-              ></textarea>
+                onChange={updateField("notes")}
+                className={`${inputBase} resize-none`}
+              />
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="pt-6 flex gap-4">
+          {/* ── ACTIONS ── */}
+          <div className="flex items-center gap-3 pt-6 mt-6 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all uppercase tracking-widest text-xs"
+              className="px-5 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors duration-150"
             >
               Cancel
             </button>
             <button
-              disabled={loading}
               type="submit"
-              className="flex-1 px-8 py-4 bg-indigo-600 text-gray-600 rounded-xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-[0.98] transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-3 disabled:opacity-50"
+              disabled={loading}
+              className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 active:scale-[0.98] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
-                "Scheduling..."
+                <Loader2 size={16} className="animate-spin" />
               ) : (
                 <>
-                  <CheckCircle2 size={20} /> Schedule Requirement
+                  <CheckCircle2 size={16} />
+                  Schedule Training
                 </>
               )}
             </button>

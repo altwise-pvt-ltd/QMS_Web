@@ -979,12 +979,25 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
           </div>
 
           {/* Submit Button */}
-          <div className="pt-6 flex justify-end">
+          <div className="pt-6 mt-4 border-t border-slate-100 flex justify-end">
             <button
               onClick={handleSubmit}
-              className="px-10 py-3 bg-slate-900 text-black rounded-md font-bold text-base hover:bg-black transition-all shadow-sm active:scale-95 flex items-center gap-2"
+              className="group px-8 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Submit Form
+              <span>Submit Form</span>
+              <svg
+                className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M14 5l7 7m0 0l-7 7m7-7H3"
+                />
+              </svg>
             </button>
           </div>
         </div>

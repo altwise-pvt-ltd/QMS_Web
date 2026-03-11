@@ -13,38 +13,44 @@ import {
   TrendingDown,
   Minus,
 } from "lucide-react";
-import { getAllEvents } from "../compliance_calendar/services/complianceService";
-import { db } from "../../db";
+import trainingService from "./services/trainingService";
 import CustomCalendar from "./components/CustomCalendar";
 import ScheduleTrainingModal from "./components/ScheduleTrainingModal";
+import TrainingDetailModal from "./components/TrainingDetailModal";
 import YearlyTrainingPdfView from "./components/YearlyTrainingPdfView";
 import CustomPagination from "../../components/ui/CustomPagination";
+import StatCard from "./components/StatCard";
+import SkeletonRow from "./components/SkeletonRow";
 
-// ── Status config ─────────────────────────────────────────────────────────────
+// ── Status config with unified professional palette ───────────────────────────
 const STATUS_CONFIG = {
   completed: {
     label: "Completed",
-    badge: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    row: "",
-    icon: "bg-emerald-100 text-emerald-600",
+    badge:
+      "bg-emerald-50/50 text-emerald-700 border-emerald-100/80 hover:bg-emerald-100/50",
+    icon: "bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100",
+    dot: "bg-emerald-500",
   },
   "in-progress": {
     label: "In Progress",
-    badge: "bg-blue-50 text-blue-700 border-blue-100",
-    row: "",
-    icon: "bg-blue-100 text-blue-600",
+    badge:
+      "bg-blue-50/50 text-blue-700 border-blue-100/80 hover:bg-blue-100/50",
+    icon: "bg-blue-50 text-blue-600 ring-1 ring-blue-100",
+    dot: "bg-blue-500",
   },
   overdue: {
     label: "Overdue",
-    badge: "bg-rose-100 text-rose-700 border-rose-200",
-    row: "bg-rose-50/30",
-    icon: "bg-rose-100 text-rose-600",
+    badge:
+      "bg-rose-50/50 text-rose-700 border-rose-100/80 hover:bg-rose-100/50",
+    icon: "bg-rose-50 text-rose-600 ring-1 ring-rose-100",
+    dot: "bg-rose-500",
   },
   pending: {
     label: "Pending",
-    badge: "bg-amber-50 text-amber-700 border-amber-100",
-    row: "",
-    icon: "bg-amber-50 text-amber-600",
+    badge:
+      "bg-amber-50/50 text-amber-700 border-amber-100/80 hover:bg-amber-100/50",
+    icon: "bg-amber-50 text-amber-600 ring-1 ring-amber-100",
+    dot: "",
   },
 };
 
@@ -56,104 +62,6 @@ const STATUS_FILTERS = [
   "overdue",
 ];
 
-// ── Stat card component ───────────────────────────────────────────────────────
-const StatCard = ({
-  title,
-  value,
-  icon: Icon,
-  bar,
-  accent,
-  isRisk,
-  trend,
-  trendType,
-}) => {
-  const isCritical = isRisk && value > 0;
-
-  return (
-    <div
-      className={`group relative bg-white rounded-2xl border transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/50 overflow-hidden
-        ${isCritical
-          ? "border-rose-100 ring-4 ring-rose-50/30"
-          : "border-slate-100 hover:border-slate-200"
-        }`}
-    >
-      <div
-        className={`h-1.5 w-full bg-gradient-to-r ${bar} opacity-80 ${isCritical ? "animate-pulse" : ""
-          }`}
-      />
-
-      <div className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.15em] mb-2.5">
-              {title}
-            </p>
-
-            <div className="flex flex-col gap-1">
-              <h3
-                className={`text-3xl font-black tracking-tight leading-none ${isCritical ? "text-rose-600" : "text-slate-900"
-                  }`}
-              >
-                {value}
-              </h3>
-
-              {trend && (
-                <div className="mt-2 flex items-center">
-                  <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ring-1 ring-inset ${trendType === "up"
-                        ? "bg-emerald-50 text-emerald-600 ring-emerald-600/10"
-                        : trendType === "down"
-                          ? "bg-rose-50 text-rose-600 ring-rose-600/10"
-                          : "bg-slate-50 text-slate-500 ring-slate-600/10"
-                      }`}
-                  >
-                    {trendType === "up" && <TrendingUp size={10} />}
-                    {trendType === "down" && <TrendingDown size={10} />}
-                    {trendType === "neutral" && <Minus size={10} />}
-                    {trend}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="relative">
-            <div
-              className={`absolute inset-0 rounded-xl blur-lg opacity-20 transition-all duration-500 group-hover:opacity-40 ${isCritical ? "bg-rose-400" : "bg-slate-400"
-                }`}
-            />
-            <div
-              className={`relative p-3.5 rounded-xl border transition-all duration-500 transform group-hover:rotate-6 ${isCritical
-                  ? "bg-rose-50 border-rose-100 text-rose-600 shadow-sm"
-                  : `bg-slate-50 border-slate-100 ${accent} shadow-sm group-hover:bg-white`
-                }`}
-            >
-              <Icon className="w-5 h-5 stroke-[2.2px]" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        className={`absolute -left-2 -bottom-2 opacity-[0.04] transition-all duration-700 pointer-events-none group-hover:scale-125 group-hover:rotate-12 ${accent}`}
-      >
-        <Icon size={72} />
-      </div>
-    </div>
-  );
-};
-
-// ── Skeleton row ──────────────────────────────────────────────────────────────
-const SkeletonRow = () => (
-  <tr className="animate-pulse border-b border-slate-50">
-    {[220, 100, 100, 80, 80, 60].map((w, i) => (
-      <td key={i} className="px-5 py-3.5">
-        <div className={`h-3 bg-slate-100 rounded`} style={{ width: w }} />
-      </td>
-    ))}
-  </tr>
-);
-
 // ── Main component ────────────────────────────────────────────────────────────
 const Training = () => {
   const [trainings, setTrainings] = useState([]);
@@ -162,6 +70,8 @@ const Training = () => {
   const [filterStatus, setFilterStatus] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedTraining, setSelectedTraining] = useState(null);
   const [date, setDate] = useState(null);
   const [selectRange, setSelectRange] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -178,31 +88,23 @@ const Training = () => {
   const fetchTrainings = async () => {
     try {
       setLoading(true);
-      const allEvents = await getAllEvents();
-      const eventTypes = await db.compliance_event_types.toArray();
-      const trainingType = eventTypes.find((t) => t.name === "Training");
+      const trainingEvents = await trainingService.getAllTrainings();
 
-      if (trainingType) {
-        const today = new Date().toISOString().split("T")[0];
-        const trainingEvents = allEvents
-          .filter((e) => e.eventTypeId === trainingType.id)
-          .map((e) => {
-            if (!e.givenBy) {
-              e.givenBy = "Quality Manager";
-              db.compliance_events.update(e.id, { givenBy: "Quality Manager" });
-            }
-            if (e.status !== "completed" && e.dueDate < today) {
-              return { ...e, status: "overdue" };
-            }
-            return e;
-          });
+      const today = new Date().toISOString().split("T")[0];
+      const normalizedEvents = trainingEvents.map((e) => {
+        const s = (e.status || "Pending").toLowerCase();
+        // Handle overdue status on client side if not set by backend
+        if (s !== "completed" && e.dueDate < today) {
+          return { ...e, status: "overdue" };
+        }
+        return { ...e, status: s };
+      });
 
-        setTrainings(
-          trainingEvents.sort(
-            (a, b) => new Date(a.dueDate) - new Date(b.dueDate),
-          ),
-        );
-      }
+      setTrainings(
+        normalizedEvents.sort(
+          (a, b) => new Date(a.dueDate) - new Date(b.dueDate),
+        ),
+      );
     } catch (error) {
       console.error("Error fetching trainings:", error);
     } finally {
@@ -270,35 +172,43 @@ const Training = () => {
 
   return (
     <div className="p-4 md:p-8 lg:p-12 w-full space-y-8 animate-in fade-in duration-700 pb-20">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      {/* Header with Glassmorphism subtle effect */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-4 border-b border-slate-100/80">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            <GraduationCap className="text-indigo-600" size={32} />
-            Training Management
-          </h1>
-          <p className="text-slate-500 mt-1 font-medium text-lg">
-            Monitor personnel competency and training schedules.
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2.5 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-100 ring-4 ring-indigo-50">
+              <GraduationCap className="text-white" size={24} />
+            </div>
+            <h1 className="text-4xl font-[950] text-slate-900 tracking-tight">
+              Training Center
+            </h1>
+          </div>
+          <p className="text-slate-500 font-semibold text-lg max-w-xl leading-relaxed">
+            Ensure team excellence with structured module assignment and unified
+            competency tracking.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => setIsPreviewOpen(true)}
-            className="flex items-center gap-2 px-6 py-3.5 bg-white border border-slate-200 text-slate-700 rounded-2xl font-black shadow-sm hover:border-indigo-300 hover:text-indigo-600 active:scale-95 transition-all text-sm"
+            className="group flex items-center gap-2.5 px-6 py-4 bg-white border border-slate-200 text-slate-600 rounded-2xl font-black shadow-sm hover:border-indigo-200 hover:text-indigo-600 hover:shadow-xl hover:shadow-slate-100 active:scale-95 transition-all text-xs uppercase tracking-widest"
           >
-            <FileText size={20} />
-            Yearly Preview
+            <FileText
+              size={18}
+              className="text-slate-400 group-hover:text-indigo-500 transition-colors"
+            />
+            Yearly Grid
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-gray-600 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
+            className="group flex items-center justify-center gap-3 px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-xs uppercase tracking-[0.15em]"
           >
             <Plus
-              className="group-hover:rotate-180 transition-transform duration-500"
-              size={20}
+              className="group-hover:rotate-90 transition-transform duration-500"
+              size={18}
             />
-            Schedule Training
+            Schedule Module
           </button>
         </div>
       </div>
@@ -339,33 +249,35 @@ const Training = () => {
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Table — 8 cols */}
-        <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+        <div className="lg:col-span-8 bg-white rounded-[2.5rem] border-0 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] ring-1 ring-slate-100 overflow-hidden flex flex-col">
           {/* Table Toolbar */}
-          <div className="p-6 border-b border-slate-50 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                <span className="w-1.5 h-4 bg-indigo-600 rounded-full" />
-                Training Schedule
-              </h2>
+          <div className="px-8 py-7 border-b border-slate-50 flex flex-wrap items-center justify-between gap-6 bg-linear-to-b from-white to-slate-50/30">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-5 bg-indigo-600 rounded-full" />
+                <h2 className="text-xs font-black text-slate-800 uppercase tracking-[0.2em]">
+                  Curriculum Pipeline
+                </h2>
+              </div>
               {date && (
                 <button
                   onClick={() => setDate(null)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase border border-indigo-100 hover:bg-indigo-100 transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50/50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-wider border border-indigo-100/50 hover:bg-indigo-100 transition-all active:scale-95"
                 >
-                  Filter Active <X size={10} />
+                  Clear Selection <X size={12} />
                 </button>
               )}
             </div>
 
-            <div className="relative w-full sm:w-64">
+            <div className="relative w-full sm:w-80 group">
               <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors"
                 size={16}
               />
               <input
                 type="text"
-                placeholder="Search trainings..."
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
+                placeholder="Find a module..."
+                className="w-full pl-12 pr-6 py-3.5 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] text-sm font-semibold placeholder:text-slate-400 placeholder:font-medium outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-200 transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -373,123 +285,154 @@ const Training = () => {
           </div>
 
           {/* Status Filters */}
-          <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-50 flex items-center gap-2 flex-wrap">
+          <div className="px-8 py-5 bg-white border-b border-slate-50 flex items-center gap-2.5 flex-wrap">
             {STATUS_FILTERS.map((s) => (
               <button
                 key={s}
                 onClick={() => setFilterStatus(s)}
-                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all
-                  ${filterStatus === s
-                    ? "bg-indigo-600 text-gray-600 border-indigo-600 shadow-md shadow-indigo-100"
-                    : "bg-white text-slate-500 border-slate-200 hover:border-indigo-300 hover:text-indigo-600"
+                className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300
+                  ${
+                    filterStatus === s
+                      ? "bg-slate-900 text-white border-slate-900 shadow-xl shadow-slate-200"
+                      : "bg-white text-slate-400 border-slate-100 hover:border-slate-200 hover:text-slate-600 hover:bg-slate-50"
                   }`}
               >
-                {s === "All" ? "All" : STATUS_CONFIG[s].label}
-                {s !== "All" && (
-                  <span className="ml-1.5 opacity-60">
-                    ({trainings.filter((t) => t.status === s).length})
-                  </span>
-                )}
+                {s === "All" ? "Overview" : STATUS_CONFIG[s].label}
+                <span
+                  className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] ${filterStatus === s ? "bg-white/20 text-white" : "bg-slate-50 text-slate-400 group-hover:bg-slate-100"}`}
+                >
+                  {s === "All"
+                    ? trainings.length
+                    : trainings.filter((t) => t.status === s).length}
+                </span>
               </button>
             ))}
           </div>
 
-          {/* Table Content */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-slate-50/50 text-left border-b border-slate-50">
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    Requirement
-                  </th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    Given By
-                  </th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    Assignee
-                  </th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
-                    Due Date
-                  </th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
-                    Status
-                  </th>
-                  <th className="px-6 py-4"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {loading ? (
-                  Array.from({ length: 6 }).map((_, i) => (
-                    <SkeletonRow key={i} />
-                  ))
-                ) : paginatedTrainings.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="py-20 text-center text-slate-400 font-bold italic"
-                    >
-                      No training events found matching current criteria.
-                    </td>
+          {/* Table Content with Enhanced Scrollability */}
+          <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col">
+            <div className="overflow-x-auto overflow-y-auto max-h-[min(640px,70vh)] scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent scrollbar-gutter-stable">
+              <table className="w-full border-separate border-spacing-0">
+                <thead className="sticky top-0 z-20">
+                  <tr className="bg-slate-50/90 backdrop-blur-md text-left border-b border-slate-100">
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      Requirement
+                    </th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      Assignee
+                    </th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                      Due Date
+                    </th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                      Status
+                    </th>
+                    <th className="px-6 py-4"></th>
                   </tr>
-                ) : (
-                  paginatedTrainings.map((training) => {
-                    const cfg =
-                      STATUS_CONFIG[training.status] || STATUS_CONFIG.pending;
-                    return (
-                      <tr
-                        key={training.id}
-                        className="group hover:bg-slate-50/50 transition-colors"
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {loading ? (
+                    Array.from({ length: 6 }).map((_, i) => (
+                      <SkeletonRow key={i} />
+                    ))
+                  ) : paginatedTrainings.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="py-20 text-center text-slate-400 font-bold italic"
                       >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${cfg.icon}`}
-                            >
-                              <GraduationCap size={16} />
+                        No training events found matching current criteria.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedTrainings.map((training) => {
+                      const cfg =
+                        STATUS_CONFIG[training.status] || STATUS_CONFIG.pending;
+                      return (
+                        <tr
+                          key={training.id}
+                          className="group hover:bg-slate-50/50 transition-colors"
+                        >
+                          <td className="px-8 py-5">
+                            <div className="flex items-center gap-4">
+                              <div
+                                className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 group-hover:rotate-3 ${cfg.icon}`}
+                              >
+                                <GraduationCap size={18} />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-sm font-[750] text-slate-800 line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                                  {training.title}
+                                </span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                  Requirement ID: #TRN-
+                                  {training.id || training.eventId}
+                                </span>
+                              </div>
                             </div>
-                            <span className="text-sm font-bold text-slate-800">
-                              {training.title}
+                          </td>
+                          <td className="px-8 py-5">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400">
+                                {training.assignedTo?.[0]}
+                              </div>
+                              <span className="text-[11px] font-bold text-slate-600">
+                                {training.assignedTo}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-8 py-5 text-center">
+                            <div className="flex flex-col items-center">
+                              <span
+                                className={`text-[11px] font-extrabold tracking-tight ${
+                                  training.status === "overdue"
+                                    ? "text-rose-600"
+                                    : "text-slate-600"
+                                }`}
+                              >
+                                {new Date(training.dueDate).toLocaleDateString(
+                                  "en-GB",
+                                  { day: "2-digit", month: "short" },
+                                )}
+                              </span>
+                              <span className="text-[9px] font-bold text-slate-300 uppercase mt-0.5">
+                                {new Date(training.dueDate).getFullYear()}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-8 py-5 text-center text-gray-600">
+                            <span
+                              className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] border transition-all ${cfg.badge}`}
+                            >
+                              {cfg.dot && (
+                                <span
+                                  className={`inline-block w-1.5 h-1.5 rounded-full mr-2 ${cfg.dot}`}
+                                />
+                              )}
+                              {cfg.label}
                             </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-[11px] font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
-                            {training.givenBy}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-[11px] font-bold text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded-md">
-                            {training.assignedTo}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span
-                            className={`text-[11px] font-black ${training.status === "overdue" ? "text-rose-600" : "text-slate-600"}`}
-                          >
-                            {new Date(training.dueDate).toLocaleDateString(
-                              "en-GB",
-                              { day: "numeric", month: "short" },
-                            )}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${cfg.badge}`}
-                          >
-                            {cfg.label}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <button className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
-                            <ChevronRight size={18} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                          </td>
+                          <td className="px-8 py-5 text-right">
+                            <button
+                              onClick={() => {
+                                setSelectedTraining(training);
+                                setIsDetailModalOpen(true);
+                              }}
+                              className="p-2.5 text-slate-300 hover:text-indigo-600 hover:bg-white hover:shadow-lg hover:shadow-slate-200/50 rounded-2xl transition-all active:scale-95 group/btn"
+                            >
+                              <ChevronRight
+                                size={20}
+                                className="transition-transform group-hover/btn:translate-x-1"
+                              />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {!loading && paginatedTrainings.length > 0 && (
@@ -524,6 +467,13 @@ const Training = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         initialDate={date}
+        onSuccess={fetchTrainings}
+      />
+
+      <TrainingDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        training={selectedTraining}
         onSuccess={fetchTrainings}
       />
     </div>
