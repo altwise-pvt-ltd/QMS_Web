@@ -13,8 +13,7 @@ import {
   TrendingDown,
   Minus,
 } from "lucide-react";
-import { getAllEvents } from "../compliance_calendar/services/complianceService";
-import { db } from "../../db";
+import { getAllEvents, getAllEventTypes } from "../compliance_calendar/services/complianceService";
 import CustomCalendar from "./components/CustomCalendar";
 import ScheduleTrainingModal from "./components/ScheduleTrainingModal";
 import YearlyTrainingPdfView from "./components/YearlyTrainingPdfView";
@@ -78,7 +77,7 @@ const StatCard = ({
         }`}
     >
       <div
-        className={`h-1.5 w-full bg-gradient-to-r ${bar} opacity-80 ${isCritical ? "animate-pulse" : ""
+        className={`h-1.5 w-full bg-linear-to-r ${bar} opacity-80 ${isCritical ? "animate-pulse" : ""
           }`}
       />
 
@@ -179,7 +178,7 @@ const Training = () => {
     try {
       setLoading(true);
       const allEvents = await getAllEvents();
-      const eventTypes = await db.compliance_event_types.toArray();
+      const eventTypes = await getAllEventTypes();
       const trainingType = eventTypes.find((t) => t.name === "Training");
 
       if (trainingType) {
@@ -189,7 +188,6 @@ const Training = () => {
           .map((e) => {
             if (!e.givenBy) {
               e.givenBy = "Quality Manager";
-              db.compliance_events.update(e.id, { givenBy: "Quality Manager" });
             }
             if (e.status !== "completed" && e.dueDate < today) {
               return { ...e, status: "overdue" };

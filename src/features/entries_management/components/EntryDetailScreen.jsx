@@ -1,10 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { Icons, Icon, css, CYCLE_COLOR, CycleBadge, getDaysInMonth, formatDate, TODAY } from "./Common";
 
 export function EntryDetailScreen({ entry, records, loading, onBack, onSelectParam }) {
-    const now = new Date();
-    const monthDates = getDaysInMonth(now.getFullYear(), now.getMonth());
-    const monthLabel = now.toLocaleDateString("en-GB", {
+    const [selectedMonth, setSelectedMonth] = useState(() => {
+        const today = new Date();
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    });
+
+    const currentYear = parseInt(selectedMonth.split('-')[0], 10);
+    const currentMonth = parseInt(selectedMonth.split('-')[1], 10) - 1;
+
+    const monthDates = getDaysInMonth(currentYear, currentMonth);
+    const monthLabel = new Date(currentYear, currentMonth).toLocaleDateString("en-GB", {
         month: "long",
         year: "numeric",
     });
@@ -38,7 +45,7 @@ export function EntryDetailScreen({ entry, records, loading, onBack, onSelectPar
                         className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-all border border-indigo-100 shrink-0"
                     >
                         <Icon d={Icons.download} size={16} />
-                        View PDF
+                        Print Monthly Report
                     </button>
                 </div>
             </div>
@@ -105,15 +112,23 @@ export function EntryDetailScreen({ entry, records, loading, onBack, onSelectPar
             </div>
 
             <div className={css.card + " overflow-hidden"}>
-                <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
-                    <Icon d={Icons.cal} size={16} color="#6366F1" />
-                    <h3 className="font-bold text-slate-700 text-sm">
-                        Monthly Overview — {monthLabel}
-                    </h3>
+                <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                        <Icon d={Icons.cal} size={16} color="#6366F1" />
+                        <h3 className="font-bold text-slate-700 text-sm">
+                            Monthly Overview — {monthLabel}
+                        </h3>
+                    </div>
+                    <input
+                        type="month"
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(e.target.value)}
+                        className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-indigo-700 outline-none focus:border-indigo-400 focus:bg-indigo-50 transition-all cursor-pointer shadow-sm hover:shadow"
+                    />
                 </div>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
                     <table className="w-full text-xs">
-                        <thead>
+                        <thead className="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 shadow-sm">
                             <tr className="bg-slate-50">
                                 <th className="px-4 py-3 text-left font-bold text-slate-400 uppercase tracking-widest">
                                     Date
@@ -129,7 +144,7 @@ export function EntryDetailScreen({ entry, records, loading, onBack, onSelectPar
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {monthDates.slice(0, 10).map((date) => (
+                            {monthDates.map((date) => (
                                 <tr key={date} className="hover:bg-slate-50 transition-colors">
                                     <td className="px-4 py-3 font-semibold text-slate-600">
                                         {formatDate(date)}
@@ -159,11 +174,6 @@ export function EntryDetailScreen({ entry, records, loading, onBack, onSelectPar
                             ))}
                         </tbody>
                     </table>
-                    {monthDates.length > 10 && (
-                        <p className="px-5 py-3 text-xs text-slate-400 text-center border-t border-slate-100">
-                            Showing first 10 days · Click a parameter to see all records
-                        </p>
-                    )}
                 </div>
             </div>
         </div>

@@ -9,7 +9,6 @@ import {
   UserPlus,
   X,
 } from "lucide-react";
-import { db } from "../../../db";
 import staffService from "../../staff/services/staffService";
 import UploadPreviewModal from "../../documents/component/UploadPreviewModal";
 

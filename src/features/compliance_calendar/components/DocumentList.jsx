@@ -7,7 +7,7 @@ import {
   Trash2,
   Eye,
 } from "lucide-react";
-import { db } from "../../../db/index";
+import { getDocuments, deleteDocument } from "../../../services/documentService";
 import { useNavigate } from "react-router-dom";
 import DocumentViewModal from "./DocumentViewModal";
 import AlertManager from "../../../services/alert/alertService";
@@ -25,8 +25,7 @@ const DocumentList = () => {
   const loadDocuments = async () => {
     setLoading(true);
     try {
-      // Get all documents from Dexie
-      const docs = await db.documents.toArray();
+      const docs = await getDocuments();
       setDocuments(docs);
     } catch (error) {
       console.error("Error loading documents:", error);
@@ -38,7 +37,7 @@ const DocumentList = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this document?")) {
       try {
-        await db.documents.delete(id);
+        await deleteDocument(id);
         AlertManager.success("Document deleted successfully", "Deleted");
         await loadDocuments();
       } catch (error) {

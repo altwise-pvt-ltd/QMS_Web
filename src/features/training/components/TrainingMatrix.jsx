@@ -8,7 +8,7 @@ import {
   Clock,
   Minus,
 } from "lucide-react";
-import { db } from "../../../db";
+import { getAllEvents, getAllEventTypes } from "../../compliance_calendar/services/complianceService";
 import staffService from "../../staff/services/staffService";
 
 // ── Status config ─────────────────────────────────────────────────────────────
@@ -94,7 +94,8 @@ const TrainingMatrix = () => {
           role: s.jobTitle,
         }));
 
-        const eventTypes = await db.compliance_event_types.toArray();
+        const allEvents = await getAllEvents();
+        const eventTypes = await getAllEventTypes();
         const trainingType = eventTypes.find((t) => t.name === "Training");
 
         if (!trainingType) {
@@ -103,10 +104,7 @@ const TrainingMatrix = () => {
           return;
         }
 
-        const trainingEvents = await db.compliance_events
-          .where("eventTypeId")
-          .equals(trainingType.id)
-          .toArray();
+        const trainingEvents = allEvents.filter(e => e.eventTypeId === trainingType.id);
 
         const uniqueTitles = [...new Set(trainingEvents.map((e) => e.title))];
         const moduleList = uniqueTitles.map((title, idx) => ({
@@ -115,7 +113,8 @@ const TrainingMatrix = () => {
         }));
         setModules(moduleList);
 
-        const attendance = await db.training_attendance.toArray();
+        // Training attendance is currently not in backend API
+        const attendance = []; 
         const today = new Date().toISOString().split("T")[0];
 
         const calculatedMatrix = {};

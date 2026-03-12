@@ -22,7 +22,11 @@ export const handleError = (error) => {
     const url = error.config?.url || "Unknown";
     const method = error.config?.method?.toUpperCase() || "METHOD";
 
-    console.error(`API Error [${statusCode}] ${method} ${url}: ${message}`, error.response.data);
+    if (statusCode === 404) {
+      console.warn(`API Info [404] ${method} ${url}: ${message}`);
+    } else {
+      console.error(`API Error [${statusCode}] ${method} ${url}: ${message}`, error.response.data);
+    }
 
     // Global notification/toast logic could go here
     return new AppError(message, statusCode);

@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { Skeleton } from "../../components/ui/Skeleton";
 import RiskIndicatorForm from "./risk_indicator_form";
-import { db } from "../../db";
 import { useEffect } from "react";
 import riService from "./services/riService";
 
@@ -98,40 +97,16 @@ const RiskIndicator = () => {
         console.log("Formatted Categories for state:", formattedCategories);
         setCategories(formattedCategories);
 
-        // Sync to local DB safely
-        try {
-          // Use a transaction for atomic operation
-          await db.transaction("rw", db.risk_categories, async () => {
-            await db.risk_categories.clear();
-            await db.risk_categories.bulkPut(formattedCategories);
-          });
-          console.log("Local DB synced with API categories");
-        } catch (dbErr) {
-          console.error("Failed to sync categories to local DB:", dbErr);
-        }
         return formattedCategories;
       } else {
-        // Fallback to local DB or defaults if API is empty
-        return await syncFromLocalDB();
+        return [];
       }
     } catch (error) {
       console.error("Error loading categories from API:", error);
-      return await syncFromLocalDB();
+      return [];
     }
   };
 
-  const syncFromLocalDB = async () => {
-    let localData = await db.risk_categories.toArray();
-
-    // Final sanity check on local data to prevent crashes if bad data exists
-    const safeData = localData.map((cat) => ({
-      ...cat,
-      name: typeof cat.name === "string" ? cat.name : "Recovered Category",
-    }));
-
-    setCategories(safeData);
-    return safeData;
-  };
 
   const handleAddCategory = async () => {
     const trimmedName = newCategoryName.trim();
@@ -158,13 +133,6 @@ const RiskIndicator = () => {
       console.log("Create category API response:", apiResponse);
 
       // Add to local state and DB
-      const newCat = {
-        id:
-          apiResponse?.riskIndicatorCategoryId || apiResponse?.id || Date.now(),
-        name: trimmedName,
-      };
-
-      await db.risk_categories.add(newCat);
       setCategories([...categories, newCat]);
       setNewCategoryName("");
       setIsAddingCategory(false);
@@ -201,19 +169,12 @@ const RiskIndicator = () => {
           };
         });
         setIndicators(formattedIndicators);
-
-        // Sync to local DB
-        await db.risk_indicators.clear();
-        await db.risk_indicators.bulkAdd(formattedIndicators);
       } else {
-        // Fallback to local DB
-        const localData = await db.risk_indicators.toArray();
-        setIndicators(localData);
+        setIndicators([]);
       }
     } catch (error) {
       console.error("Error loading indicators from API:", error);
-      const localData = await db.risk_indicators.toArray();
-      setIndicators(localData);
+      setIndicators([]);
     } finally {
       setLoading(false);
     }
@@ -268,7 +229,6 @@ const RiskIndicator = () => {
           threshold: parseFloat(newThreshold) || 0,
           severity: parseInt(newSeverity) || 1,
         };
-        await db.risk_indicators.put(updatedIndicator);
         setIndicators(
           indicators.map((i) =>
             i.id === editingIndicator.id ? updatedIndicator : i,
@@ -305,7 +265,6 @@ const RiskIndicator = () => {
           threshold: parseFloat(newThreshold) || 0,
           severity: parseInt(newSeverity) || 1,
         };
-        await db.risk_indicators.add(newIndicator);
         setIndicators([newIndicator, ...indicators]);
       }
       setIsModalOpen(false);

@@ -8,7 +8,7 @@ import MinutesOfMeeting from "./components/MinutesOfMeeting";
 import AttendanceSelection from "./components/AttendanceSelection";
 import MrmPdfView from "./components/MrmPdfView";
 import MinutesOfMeetingPreview from "./components/MinutesOfMeetingPreview";
-import { seedMrmData } from "./utils/seedData";
+
 
 import { Skeleton } from "../../components/ui/Skeleton";
 
@@ -302,7 +302,7 @@ const MrmPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50">
       {loading ? (
         <MrmSkeleton />
       ) : (
@@ -378,7 +378,7 @@ const MrmPage = () => {
           )}
         </>
       )}
-    </div>
+      </div>
   );
 };
 

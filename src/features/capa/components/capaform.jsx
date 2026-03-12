@@ -14,7 +14,6 @@ import {
   Users,
   UserPlus,
 } from "lucide-react";
-import { db } from "../../../db";
 import { getDepartments } from "../../department/services/departmentService";
 import staffService from "../../staff/services/staffService";
 
@@ -119,7 +118,7 @@ const QuestionPopup = ({
   const totalQuestions = questions.length;
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-[100] p-4">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-100 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
@@ -772,7 +771,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
 
           {/* Tag Staff */}
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 block flex items-center gap-2">
+            <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
               <Users className="w-4 h-4" /> Tag Staff involved in incident
             </label>
             <div className="relative">

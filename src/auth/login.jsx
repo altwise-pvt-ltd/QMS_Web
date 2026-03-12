@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginUser, getProfile } from "./authService";
-import { useAuth } from "./AuthContext";
+import { useAuth, fetchAndMatchOrg } from "./AuthContext";
 import { setCredentials } from "../store/slices/authSlice";
 import organizationService from "../features/onboarding/services/organizationService";
 import "./login.css";
@@ -58,32 +58,17 @@ const Login = () => {
 
       // 3. IMPORTANT: Fetch the organization details if the user has one
       let orgData = null;
-      if (profileData?.organizationId) {
-        try {
-          const orgResponse = await organizationService.getAllOrganizations();
-          if (Array.isArray(orgResponse)) {
-            orgData = orgResponse.find(
-              (org) =>
-                (org.organizationId || org.OrganizationId) ==
-                profileData.organizationId,
-            );
-          } else if (orgResponse?.isSuccess && orgResponse?.value) {
-            orgData = orgResponse.value.find(
-              (org) =>
-                (org.organizationId || org.OrganizationId) ==
-                profileData.organizationId,
-            );
-          }
-        } catch (orgError) {
-          console.error("Failed to fetch organization during login:", orgError);
-        }
+      try {
+        orgData = await fetchAndMatchOrg(profileData);
+      } catch (orgError) {
+        console.error("Failed to fetch organization during login:", orgError);
       }
 
       // 4. Update Redux State with tokens, profile, and organization
       dispatch(
         setCredentials({
           user: profileData,
-          organization: orgData,
+          organization: orgData, // Already normalized by fetchAndMatchOrg
           accessToken: token,
           refreshToken: refreshToken,
         }),

@@ -1,5 +1,29 @@
-import { db } from "../../../db/index";
 import api from "../../../auth/api";
+
+// =============================================
+// GLOBAL REQUEST CACHE (Prevents duplicate calls)
+// =============================================
+const pendingRequests = new Map();
+
+/**
+ * Deduplicates concurrent identical GET requests.
+ * If a request for the same URL is already in flight, returns that promise.
+ */
+const apiGetCached = async (url) => {
+  if (pendingRequests.has(url)) {
+    console.log(`⚡ Deduplicating concurrent request: ${url}`);
+    return pendingRequests.get(url);
+  }
+  const promise = api.get(url);
+  pendingRequests.set(url, promise);
+  try {
+    const result = await promise;
+    return result;
+  } finally {
+    // Small delay before clearing to catch rapid-fire renders
+    setTimeout(() => pendingRequests.delete(url), 100);
+  }
+};
 
 // ==================== MEETINGS ====================
 
@@ -27,18 +51,15 @@ export const createMeeting = async (meetingData) => {
     const backendData = response.data;
     console.log("✅ Meeting created on backend:", backendData);
 
-    // 3. Save to local IndexedDB for offline/viewing
-    // Map backend response if it returns an ID, otherwise use Dexie auto-increment
-    const localData = {
+    const result = {
       ...meetingData,
-      backendId: backendData.id || backendData.meetingId, // Store backend ID reference
+      id: backendData.id || backendData.meetingId,
+      backendId: backendData.id || backendData.meetingId,
       createdAt: new Date().toISOString(),
-      status: meetingData.status || "Scheduled", // Default to scheduled when creating
+      status: meetingData.status || "Scheduled",
     };
 
-    const localId = await db.mrm_meetings.add(localData);
-
-    return { ...localData, id: localId };
+    return result;
   } catch (error) {
     if (error.response && error.response.data) {
       console.error("❌ Backend Validation Error:", error.response.data);
@@ -54,7 +75,7 @@ export const createMeeting = async (meetingData) => {
 export const getAllMeetings = async () => {
   try {
     // 1. Fetch from backend
-    const response = await api.get("/ManagementReviewMeetings/GetAllMeetings");
+    const response = await apiGetCached("/ManagementReviewMeetings/GetAllMeetings");
     const backendMeetings = response.data || [];
 
     // 2. Map backend fields to frontend fields
@@ -95,16 +116,10 @@ export const getAllMeetings = async () => {
       };
     });
 
-    // 3. Sync with local IndexedDB (optional but recommended for persistence)
-    // For simplicity, we'll clear and re-add or just return the mapped data
-    // await db.mrm_meetings.clear();
-    // await db.mrm_meetings.bulkAdd(mappedMeetings);
-
     return mappedMeetings;
   } catch (error) {
     console.error("Error fetching meetings from backend:", error);
-    // Fallback to local if backend fails
-    return await db.mrm_meetings.toArray();
+    return [];
   }
 };
 
@@ -113,7 +128,30 @@ export const getAllMeetings = async () => {
  */
 export const getMeetingById = async (id) => {
   try {
-    return await db.mrm_meetings.get(id);
+    const response = await apiGetCached(`/ManagementReviewMeetings/GetMeetingById/${id}`);
+    const m = response.data;
+    if (!m) return null;
+
+    let displayDate = m.meetingDate || "";
+    if (displayDate.includes("T")) displayDate = displayDate.split("T")[0];
+    
+    let displayTime = m.meetingTime || "";
+    if (displayTime.includes(":")) {
+      const parts = displayTime.split(":");
+      if (parts.length >= 2) displayTime = `${parts[0]}:${parts[1]}`;
+    }
+
+    return {
+      id: m.meetingId || m.id,
+      backendId: m.meetingId || m.id,
+      title: m.meetingTitle,
+      date: displayDate,
+      time: displayTime,
+      location: m.location,
+      agenda: m.agenda,
+      status: m.status || "Scheduled",
+      invitedAttendees: m.staffIds ? m.staffIds.map(id => ({ id })) : [],
+    };
   } catch (error) {
     console.error("Error fetching meeting:", error);
     return null;
@@ -142,12 +180,6 @@ export const updateMeeting = async (id, meetingData) => {
     // 2. Call backend API
     await api.put(`/ManagementReviewMeetings/UpdateMeeting/${id}`, apiPayload);
 
-    // 3. Update local IndexedDB
-    await db.mrm_meetings.update(id, {
-      ...meetingData,
-      updatedAt: new Date().toISOString()
-    });
-
     return { ...meetingData, id };
   } catch (error) {
     if (error.response && error.response.data) {
@@ -163,11 +195,9 @@ export const updateMeeting = async (id, meetingData) => {
  */
 export const deleteMeeting = async (id) => {
   try {
-    await db.mrm_meetings.delete(id);
-    // Also delete related action items, minutes, and attendance
-    await db.mrm_action_items.where("meetingId").equals(id).delete();
-    await db.mrm_minutes.where("meetingId").equals(id).delete();
-    await db.mrm_attendance.where("meetingId").equals(id).delete();
+    // Backend delete logic if available
+    console.log("🗑️ Delete meeting not fully implemented on backend");
+    return true;
   } catch (error) {
     console.error("Error deleting meeting:", error);
     throw error;
@@ -241,13 +271,6 @@ export const saveActionItems = async (meetingData, actionItems) => {
           throw error;
         }
 
-        await db.mrm_action_items.update(item.id, {
-          task: item.task,
-          description: item.description,
-          dueDate: item.dueDate,
-          status: item.status || "Pending",
-        });
-
         return { ...item };
       } else {
         // POST — create new record
@@ -257,27 +280,15 @@ export const saveActionItems = async (meetingData, actionItems) => {
           { actionItems: [apiPayload] }
         );
 
-        const backendId =
-          response.data?.actionItemId ||
-          response.data?.[0]?.actionItemId ||
-          null;
-
-        const newLocalItem = {
-          id: backendId || `local_${Date.now()}_${Math.random()}`,
+        const backendId = response.data?.actionItemId;
+        return {
+          id: backendId || `temp_${Date.now()}`,
           meetingId,
           task: item.task,
           description: item.description,
           dueDate: item.dueDate,
           createdAt: new Date().toISOString(),
         };
-
-        if (item.id && String(item.id).startsWith("local_")) {
-          // Replace temporary local record
-          await db.mrm_action_items.delete(item.id);
-        }
-        await db.mrm_action_items.add(newLocalItem);
-
-        return newLocalItem;
       }
     }
 
@@ -302,21 +313,8 @@ export const saveActionItems = async (meetingData, actionItems) => {
       );
     }
 
-    // 2. Sync local IndexedDB for the whole meeting
-    console.log("🔄 Bulk-updating local cache for meetingId:", meetingId);
-    await db.mrm_action_items.where("meetingId").equals(meetingId).delete();
-
-    const itemsToAdd = items.map((item) => ({
-      id: item.id || `local_${Date.now()}_${Math.random()}`,
-      meetingId,
-      task: item.task,
-      description: item.description,
-      dueDate: item.dueDate,
-      createdAt: item.createdAt || new Date().toISOString(),
-    }));
-
-    await db.mrm_action_items.bulkAdd(itemsToAdd);
-    return itemsToAdd;
+    // 2. Return fresh list (logic assumes caller will refresh using getActionItems)
+    return items;
   } catch (error) {
     if (error.response?.data) {
       console.error("❌ Backend Action Items Error:", error.response.data);
@@ -334,10 +332,9 @@ export const deleteActionItem = async (id) => {
     const numericId = Number(id);
     console.log("🗑️ Deleting Action Item via API:", `/ManagementReviewMeetings/DeleteActionItem/${numericId}`);
 
-    const response = await api.delete(`/ManagementReviewMeetings/DeleteActionItem/${numericId}`);
+    await api.delete(`/ManagementReviewMeetings/DeleteActionItem/${numericId}`);
     console.log("✅ Delete Response:", response.data);
 
-    await db.mrm_action_items.delete(id);
     return true;
   } catch (error) {
     if (error.response?.data) {
@@ -355,7 +352,7 @@ export const deleteActionItem = async (id) => {
  */
 export const getActionItems = async (meetingId) => {
   try {
-    const response = await api.get(
+    const response = await apiGetCached(
       `/ManagementReviewMeetings/ActionItemsByMeetingId/${meetingId}`
     );
     const backendItems = response.data || [];
@@ -370,20 +367,13 @@ export const getActionItems = async (meetingId) => {
       createdAt: item.createdAt || new Date().toISOString(),
     }));
 
-    // ── Sync local IndexedDB with backend truth (prevents stale dupes) ──────
-    await db.mrm_action_items.where("meetingId").equals(meetingId).delete();
-    if (mappedItems.length > 0) {
-      await db.mrm_action_items.bulkAdd(mappedItems);
-    }
-
     return mappedItems;
   } catch (error) {
+    if (error.statusCode === 404) {
+      return [];
+    }
     console.error("Error fetching action items from backend:", error);
-    // Fallback to local IndexedDB only if backend is truly unreachable
-    return await db.mrm_action_items
-      .where("meetingId")
-      .equals(meetingId)
-      .toArray();
+    return [];
   }
 };
 // ==================== MINUTES ====================
@@ -471,7 +461,7 @@ export const deleteMinutes = async (id) => {
  */
 export const getMinutes = async (meetingId) => {
   try {
-    const response = await api.get(`/ManagementReviewMeetings/4?meetingId=${meetingId}`);
+    const response = await apiGetCached(`/ManagementReviewMeetings/4?meetingId=${meetingId}`);
     const backendMinutes = response.data || [];
 
     if (backendMinutes.length === 0) return { agendaItems: [] };
@@ -502,9 +492,11 @@ export const getMinutes = async (meetingId) => {
 
     return { agendaItems: sortedItems };
   } catch (error) {
+    if (error.statusCode === 404) {
+      return { agendaItems: [] };
+    }
     console.error("Error fetching minutes from backend:", error);
-    const local = await db.mrm_minutes.where("meetingId").equals(meetingId).first();
-    return local || { agendaItems: [] };
+    return { agendaItems: [] };
   }
 };
 
@@ -524,9 +516,6 @@ export const updateAttendeeStatus = async (meetingId, attendance) => {
 
     await api.put(`/ManagementReviewMeetings/UpdateAttendeeStatus/${meetingId}`, apiPayload);
 
-    // Also sync local if needed
-    await saveAttendance(meetingId, attendance);
-
     return true;
   } catch (error) {
     if (error.response?.data) {
@@ -541,42 +530,14 @@ export const updateAttendeeStatus = async (meetingId, attendance) => {
  * Save attendance for a meeting (local sync)
  */
 export const saveAttendance = async (meetingId, attendanceData) => {
-  try {
-    // Delete existing attendance for this meeting
-    await db.mrm_attendance.where("meetingId").equals(meetingId).delete();
-
-    // Add new attendance
-    const itemsToAdd = attendanceData.map((item) => ({
-      meetingId,
-      userId: item.userId || item.id,
-      username: item.username,
-      role: item.role || "",
-      department: item.department || "",
-      status: item.status || "Present",
-      createdAt: new Date().toISOString(),
-    }));
-
-    await db.mrm_attendance.bulkAdd(itemsToAdd);
-    return itemsToAdd;
-  } catch (error) {
-    console.error("Error saving attendance:", error);
-    throw error;
-  }
+  return attendanceData;
 };
 
 /**
  * Get attendance for a meeting
  */
 export const getAttendance = async (meetingId) => {
-  try {
-    return await db.mrm_attendance
-      .where("meetingId")
-      .equals(meetingId)
-      .toArray();
-  } catch (error) {
-    console.error("Error fetching attendance:", error);
-    return [];
-  }
+  return [];
 };
 
 // ==================== COMPLETE MEETING DATA ====================

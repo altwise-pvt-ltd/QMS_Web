@@ -21,17 +21,17 @@ const fixAvatarUrl = (url) => {
   return url;
 };
 
-const normalizeOrg = (org) => {
+export const normalizeOrg = (org) => {
   if (!org) return null;
   return {
-    organizationId: org.organizationId || org.OrganizationId,
-    name: org.legalCompanyName || org.LegalCompanyName || "",
+    organizationId: org.organizationId || org.OrganizationId || org.id || org.Id,
+    name: org.legalCompanyName || org.LegalCompanyName || org.name || org.Name || "",
     industry: org.industrySector || org.IndustrySector || "",
-    phone: org.businessPhone || org.BusinessPhone || "",
-    websiteUrl: org.corporateWebsite || org.CorporateWebsite || "",
-    address: org.registeredAddress || org.RegisteredAddress || "",
-    logo: org.logoPath || org.companyLogoPath || org.CompanyLogo || null,
-    status: org.status,
+    phone: org.businessPhone || org.BusinessPhone || org.phone || org.Phone || "",
+    websiteUrl: org.corporateWebsite || org.CorporateWebsite || org.websiteUrl || org.WebsiteUrl || "",
+    address: org.registeredAddress || org.RegisteredAddress || org.address || org.Address || "",
+    logo: org.logoPath || org.LogoPath || org.companyLogoPath || org.CompanyLogoPath || org.CompanyLogo || org.logo || org.Logo || null,
+    status: org.status || org.Status,
     createdAt: org.createdAt || org.CreatedAt,
     createdBy: org.createdBy || org.CreatedBy,
   };
@@ -42,7 +42,7 @@ const normalizeOrg = (org) => {
  * Tries organizationId first, then falls back to createdBy.
  * Uses String() coercion to avoid number-vs-string mismatches.
  */
-const fetchAndMatchOrg = async (profileData) => {
+export const fetchAndMatchOrg = async (profileData) => {
   const orgResponse = await organizationService.getAllOrganizations();
 
   const orgList = Array.isArray(orgResponse)

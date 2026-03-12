@@ -29,6 +29,7 @@ import NonConformanceForm from "./features/NC/NonConformanceForm.jsx";
 import Capa from "./features/capa/capa.jsx";
 import StaffModule from "./features/staff/StaffModule.jsx";
 import MrmPage from "./features/Management_Review_meeting/MrmPage.jsx";
+import { MrmProvider } from "./features/Management_Review_meeting/context/MrmContext.jsx";
 import QualityIndicator from "./features/qualityindicator/qualityindicator.jsx";
 import ComplianceCalendarPage from "./features/compliance_calendar/ComplianceCalendarPage.jsx";
 import Department from "./features/department/department.jsx";
@@ -45,7 +46,6 @@ import Settings from "./features/settings/Settings.jsx";
 import MainLayout from "./features/layout/MainLayout.jsx";
 
 // Database Initialization
-import { initDatabase } from "./db";
 import { useEffect } from "react";
 
 function App() {
@@ -84,34 +84,7 @@ function App() {
   }, [dispatch, accessTokenInRedux]);
 
   useEffect(() => {
-    const initializeData = async () => {
-      try {
-        // Step 1: Initialize local database (Dexie)
-        await initDatabase();
-
-        // Step 2: Seed & Migrate REST data only if authenticated
-        const token = localStorage.getItem("accessToken");
-
-        if (token) {
-          try {
-            // await initializeEventTypes();
-            // await seedComplianceData();
-            // await addExpiryDatesToDocuments();
-            console.log("✅ Application data initialized successfully.");
-          } catch (error) {
-            console.error("Authenticated initialization failed", error);
-          }
-        } else {
-          console.log("ℹ️ Skipping API-based initialization (User not authenticated)");
-          console.log("✅ Application data initialized successfully.");
-        }
-
-      } catch (error) {
-        console.error("Critical: Database initialization failed", error);
-      }
-    };
-
-    initializeData();
+    console.log("✅ Application initialized (Offline database removed).");
   }, []);
 
 
@@ -148,7 +121,14 @@ function App() {
               <Route path="/dashboard" element={<QMSDashboard />} />
               <Route path="/staff" element={<StaffModule />} />
               <Route path="/capa" element={<Capa />} />
-              <Route path="/mrm" element={<MrmPage />} />
+              <Route 
+                path="/mrm" 
+                element={
+                  <MrmProvider>
+                    <MrmPage />
+                  </MrmProvider>
+                } 
+              />
               <Route
                 path="/quality-indicators"
                 element={<QualityIndicator />}

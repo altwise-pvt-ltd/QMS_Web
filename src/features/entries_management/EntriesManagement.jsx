@@ -1,15 +1,13 @@
 import React, { useState, useCallback } from "react";
-import entriesService, { seedInitialData } from "./services/entriesService";
+import entriesService from "./services/entriesService";
 import { Modal, TODAY } from "./components/Common";
 import { DashboardScreen } from "./components/DashboardScreen";
 import { EntryDetailScreen } from "./components/EntryDetailScreen";
 import { ParameterScreen } from "./components/ParameterScreen";
 import { EntryForm, FillRecordForm } from "./components/ManagementForms";
-import ReceptionLog from "./components/entiresPdfView";
+import EntriesPdfView from "./pdfView/index";
 
 
-// Initialize data
-seedInitialData();
 
 export default function EntriesManagement() {
   const [entries, setEntries] = useState([]);
@@ -101,13 +99,12 @@ export default function EntriesManagement() {
 
   return (
     <div
-      className="min-h-screen bg-slate-50 font-sans"
+      className="p-4 md:p-8 lg:p-12 w-full min-h-screen bg-slate-50/30 font-sans space-y-8 animate-in fade-in duration-700"
       style={{
         fontFamily: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
       }}
     >
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        {screen === "dashboard" && (
+      {screen === "dashboard" && (
           <DashboardScreen
             entries={entries}
             loading={loading}
@@ -168,12 +165,11 @@ export default function EntriesManagement() {
         )}
 
         {screen === "pdfView" && selEntry && (
-          <ReceptionLog
+          <EntriesPdfView
             entry={selEntry}
             onBack={() => setScreen("entryDetail")}
           />
         )}
-      </div>
 
       {/* Entry Create/Edit Modal */}
       <Modal

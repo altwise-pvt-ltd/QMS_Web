@@ -7,7 +7,6 @@ import {
   FileText,
   CheckCircle2,
 } from "lucide-react";
-import { db } from "../../../db";
 import staffService from "../../staff/services/staffService";
 import {
   createEvent,
@@ -83,29 +82,7 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
       const createdEvent = await createEvent(newEvent);
       const eventId = createdEvent.id;
 
-      // 2. Create Assignment Mapping (Snapshotting)
-      if (formData.assignedTo === "All Staff") {
-        const attendanceRecords = staff.map((person) => ({
-          eventId,
-          staffId: person.id,
-          status: "pending",
-          completionDate: null,
-        }));
-        await db.training_attendance.bulkAdd(attendanceRecords);
-      } else {
-        // Find single staff member
-        const assignedPerson = staff.find(
-          (s) => s.name === formData.assignedTo,
-        );
-        if (assignedPerson) {
-          await db.training_attendance.add({
-            eventId,
-            staffId: assignedPerson.id,
-            status: "pending",
-            completionDate: null,
-          });
-        }
-      }
+      // 2. Attendance Mapping placeholder (Offline storage removed, logic moved to backend)
 
       // 3. Handle Recurrence (Auto-generate future instances)
       if (formData.recurrence !== "one-time") {
@@ -130,30 +107,8 @@ const ScheduleTrainingModal = ({ isOpen, onClose, onSuccess, initialDate }) => {
             dueDate: futureDate,
             status: "pending",
           };
-          const fEvent = await createEvent(futureEvent);
-
-          // Duplicate attendance mapping for future events
-          if (formData.assignedTo === "All Staff") {
-            const attendanceRecords = staff.map((person) => ({
-              eventId: fEvent.id,
-              staffId: person.id,
-              status: "pending",
-              completionDate: null,
-            }));
-            await db.training_attendance.bulkAdd(attendanceRecords);
-          } else {
-            const assignedPerson = staff.find(
-              (s) => s.name === formData.assignedTo,
-            );
-            if (assignedPerson) {
-              await db.training_attendance.add({
-                eventId: fEvent.id,
-                staffId: assignedPerson.id,
-                status: "pending",
-                completionDate: null,
-              });
-            }
-          }
+          await createEvent(futureEvent);
+          // Attendance mapping for future events should be handled by backend
         }
       }
 
