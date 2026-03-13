@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginUser, getProfile } from "./authService";
-import { useAuth } from "./AuthContext";
+import { useAuth, fetchAndMatchOrg } from "./AuthContext";
 import { setCredentials } from "../store/slices/authSlice";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import "./login.css";
@@ -51,7 +51,10 @@ const Login = () => {
 
       // 2. IMPORTANT: Fetch the detailed user profile using the token we just received
       // We pass the token explicitly to avoid any race conditions with Redux/localStorage
-      const profileData = await getProfile(token);
+      const rawProfile = await getProfile(token);
+      const profileData = rawProfile?.isSuccess
+        ? rawProfile.value
+        : rawProfile;
 
       // 3. IMPORTANT: Fetch and match the organization details
       const orgData = await fetchAndMatchOrg(profileData);
