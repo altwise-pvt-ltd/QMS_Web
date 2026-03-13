@@ -87,12 +87,12 @@ const SavedDocumentsPage = () => {
         <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                  <FileText className="text-indigo-600" size={32} />
+              <div className="flex-1">
+                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                  <FileText className="text-indigo-600 shrink-0" size={28} />
                   Document Repository
                 </h1>
-                <p className="text-slate-500 mt-1 font-medium text-lg">
+                <p className="text-slate-500 mt-1 font-medium text-sm sm:text-lg">
                   Search and manage all quality system documents
                 </p>
               </div>
@@ -110,11 +110,11 @@ const SavedDocumentsPage = () => {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {/* Text Search */}
-              <div className="relative group">
+              <div className="relative group col-span-1 sm:col-span-2 lg:col-span-1">
                 <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors"
                   size={18}
                 />
                 <input
@@ -122,28 +122,28 @@ const SavedDocumentsPage = () => {
                   placeholder="Search by name, sub-category..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all font-medium"
                 />
               </div>
 
               {/* Category Filter */}
               <div className="relative group">
                 <Filter
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                   size={16}
                 />
                 <select
                   value={selectedCategory}
                   onChange={(e) => {
                     setSelectedCategory(e.target.value);
-                    setSelectedSubCategory("All"); // Reset subcategory when category changes
+                    setSelectedSubCategory("All");
                   }}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all appearance-none font-medium cursor-pointer"
                 >
-                  <option disabled>Category</option>
-                  {categories.map((cat) => (
+                  <option value="All">All Categories</option>
+                  {categories.filter(c => c !== "All").map((cat) => (
                     <option key={cat} value={cat}>
-                      {cat === "All" ? "All Categories" : cat}
+                      {cat}
                     </option>
                   ))}
                 </select>
@@ -152,18 +152,18 @@ const SavedDocumentsPage = () => {
               {/* Sub-Category Filter */}
               <div className="relative group">
                 <Filter
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                   size={16}
                 />
                 <select
                   value={selectedSubCategory}
                   onChange={(e) => setSelectedSubCategory(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all appearance-none font-medium cursor-pointer"
                 >
-                  <option disabled>Sub-Category</option>
-                  {subCategories.map((sub) => (
+                  <option value="All">All Sub-Categories</option>
+                  {subCategories.filter(s => s !== "All").map((sub) => (
                     <option key={sub} value={sub}>
-                      {sub === "All" ? "All Sub-Categories" : sub}
+                      {sub}
                     </option>
                   ))}
                 </select>

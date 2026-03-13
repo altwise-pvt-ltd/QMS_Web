@@ -28,17 +28,17 @@ const QIReportTable = forwardRef(
       return categoryIndicators.map((indicator, idx) => (
         <tr
           key={indicator.qualityIndicatorSubCategoryId}
-          className="border-b border-slate-300 h-8"
+          className={`border-b border-slate-800 h-8 ${idx === 0 ? "border-t-2 border-slate-800" : ""}`}
         >
           {idx === 0 && (
             <td
               rowSpan={categoryIndicators.length}
-              className="border-r border-slate-300 py-2 px-1 text-center font-bold text-[10px] bg-slate-50 [writing-mode:vertical-rl] rotate-180"
+              className="border-r border-slate-800 py-2 px-1 text-center font-bold text-[10px] bg-slate-50 [writing-mode:vertical-rl] rotate-180"
             >
               {categoryName}
             </td>
           )}
-          <td className="border-r border-slate-300 px-3 text-[10px] font-medium text-slate-700 min-w-[200px]">
+          <td className="border-r border-slate-800 px-3 text-[10px] font-medium text-slate-700 min-w-[200px]">
             {indicator.qualitySubCategoryName}
           </td>
           {days.map((day) => {
@@ -48,7 +48,7 @@ const QIReportTable = forwardRef(
             return (
               <td
                 key={day}
-                className="border-r border-slate-300 text-center text-[10px] font-bold w-6"
+                className="border-r border-slate-800 text-center text-[10px] font-bold w-6"
               >
                 {incident ? incident.value : ""}
               </td>
@@ -124,9 +124,9 @@ const QIReportTable = forwardRef(
               <tr className="h-12 border-t-2 border-slate-800">
                 <td
                   colSpan={33}
-                  className="px-4 py-3 italic font-medium text-slate-700 text-sm text-left"
+                  className="px-4 py-3 border border-slate-800 italic font-medium text-slate-700 text-sm text-left"
                 >
-                  No major observations in {selectedMonth}{" "}
+                  Any major observations in {selectedMonth}{" "}
                   <span className="float-right font-bold text-slate-900 not-italic mr-20">
                     Assigned Signature / Date
                   </span>

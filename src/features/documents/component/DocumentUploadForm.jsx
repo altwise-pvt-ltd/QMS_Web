@@ -85,7 +85,7 @@ export default function DocumentUploadForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-2xl mx-auto space-y-6 bg-white p-6 rounded-lg shadow-sm border border-slate-200"
+      className="max-w-4xl mx-auto space-y-6 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200"
     >
       {/* --- File Upload Section (Enhanced UI) --- */}
       <div>
@@ -93,11 +93,10 @@ export default function DocumentUploadForm({
           Document File *
         </label>
         <div
-          className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-colors ${
-            formData.file
+          className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-colors ${formData.file
               ? "border-emerald-500 bg-emerald-50"
               : "border-slate-300 hover:bg-slate-50"
-          }`}
+            }`}
         >
           {!formData.file ? (
             <label className="cursor-pointer flex flex-col items-center w-full">
@@ -156,7 +155,7 @@ export default function DocumentUploadForm({
             Classification
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {defaultCategory && (
               <div>
                 <label className="block text-sm font-medium text-slate-700">
@@ -330,7 +329,7 @@ export default function DocumentUploadForm({
     inline-flex items-center gap-2 px-4 py-2
     border border-indigo-400
     rounded-md text-sm font-medium
-    bg-indigo-600 
+    bg-indigo-600 text-white
     shadow-sm shadow-indigo-900/40
     hover:bg-indigo-700 hover:border-indigo-300
     focus:outline-none
@@ -344,7 +343,7 @@ export default function DocumentUploadForm({
     transition-colors
   "
         >
-          <Upload className="h-4 w-4 text-indigo-400" />
+          <Upload className="h-4 w-4 text-white" />
           Upload Document
         </button>
       </div>

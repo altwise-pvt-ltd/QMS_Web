@@ -368,7 +368,7 @@ const CreateMeetingPage = ({ onSave, onCancel, initialData = null }) => {
 
             <button
               type="submit"
-              className="px-6 py-3 bg-indigo-600 text-black rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center gap-2 shadow-sm"
+              className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center gap-2 shadow-sm"
             >
               <Save size={20} />
               {initialData ? "Update Meeting" : "Create Meeting"}

@@ -53,7 +53,7 @@ const MrmList = ({
         </div>
         <button
           onClick={onCreate}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-gray-600 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
+          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm"
         >
           <Plus size={20} />
           New Meeting
@@ -105,9 +105,7 @@ const MrmList = ({
                     e.stopPropagation();
                     onSelect(meeting);
                   }}
-                  className="bg-blue-600 text-gray-600 px-4 py-2 rounded-lg hover:bg-blue-700
-                  hover:text-green-400
-                  transition-colors shadow-sm font-medium"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
                 >
                   Add Data
                 </button>

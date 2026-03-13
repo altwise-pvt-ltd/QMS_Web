@@ -420,7 +420,7 @@ const InstrumentForm = ({ isOpen, onClose, onAdd, editingInstrument }) => {
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 transition-colors"
+            className="px-6 py-2.5 text-sm font-bold text-red-600 hover:text-red-800 transition-colors"
           >
             Discard
           </button>
@@ -428,7 +428,7 @@ const InstrumentForm = ({ isOpen, onClose, onAdd, editingInstrument }) => {
             form="instrument-form"
             type="submit"
             disabled={isUploading}
-            className={`px-10 py-2.5 bg-slate-900 text-gray-600 rounded-md text-sm font-bold transition-all shadow-sm active:scale-95 uppercase tracking-widest ${isUploading ? "opacity-70 cursor-not-allowed" : "hover:bg-black"}`}
+            className={`px-10 py-2.5 bg-indigo-600 text-white rounded-md text-sm font-bold transition-all shadow-sm active:scale-95 uppercase tracking-widest ${isUploading ? "opacity-70 cursor-not-allowed" : "hover:bg-black"}`}
           >
             {isUploading
               ? `Uploading ${uploadProgress}%`

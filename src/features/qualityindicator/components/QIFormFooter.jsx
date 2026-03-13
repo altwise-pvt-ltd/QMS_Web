@@ -20,12 +20,11 @@ const QIFormFooter = ({ metadata }) => {
             <div className="p-3 border-r-2 border-b-2 border-slate-800 bg-slate-50">Document Name: {meta.documentName}</div>
             <div className="p-3 border-b-2 border-slate-800">Issue No: {meta.issueNo}</div>
 
-            <div className="p-3 border-r-2 border-slate-800">Issue Date: {meta.issueDate}</div>
-            <div className="p-3 border-r-2 border-slate-800">Status: {meta.status}</div>
-            <div className="p-3">Page {meta.page}</div>
+            <div className="p-3 border-r-2 border-b-2 border-slate-800">Issue Date: {meta.issueDate}</div>
+            <div className="p-3 col-span-2 border-b-2 border-slate-800">Page {meta.page}</div>
 
-            <div className="p-3 border-t-2 border-r-2 border-slate-800">Amendment No: {meta.amendmentNo}</div>
-            <div className="p-3 border-t-2 border-slate-800" colSpan={2}>Amendment Date: {meta.amendmentDate}</div>
+            <div className="p-3 border-r-2 border-slate-800">Amendment No: {meta.amendmentNo}</div>
+            <div className="p-3 col-span-2 border-slate-800">Amendment Date: {meta.amendmentDate}</div>
         </div>
     );
 };

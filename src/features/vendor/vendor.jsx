@@ -38,9 +38,8 @@ const VIEW_CONFIG = {
 // ── Top progress bar ──────────────────────────────────────────────────────────
 const ProgressBar = ({ visible }) => (
   <div
-    className={`fixed top-0 left-0 w-full h-0.5 z-50 transition-opacity duration-300 ${
-      visible ? "opacity-100" : "opacity-0 pointer-events-none"
-    }`}
+    className={`fixed top-0 left-0 w-full h-0.5 z-50 transition-opacity duration-300 ${visible ? "opacity-100" : "opacity-0 pointer-events-none"
+      }`}
   >
     <div className="h-full bg-indigo-100">
       <div
@@ -112,7 +111,7 @@ const PageHeader = ({ view, vendorName, onAdd, loading }) => {
         <button
           onClick={onAdd}
           disabled={loading}
-          className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-slate-700 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus
             className="group-hover:rotate-180 transition-transform duration-500"
@@ -228,9 +227,8 @@ const VendorModule = () => {
 
         {/* View content */}
         <div
-          className={`transition-opacity duration-200 ${
-            loading ? "opacity-40 pointer-events-none" : "opacity-100"
-          }`}
+          className={`transition-opacity duration-200 ${loading ? "opacity-40 pointer-events-none" : "opacity-100"
+            }`}
         >
           {view === "list" && (
             <VendorList

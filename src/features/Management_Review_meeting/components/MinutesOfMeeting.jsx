@@ -185,7 +185,7 @@ const MinutesOfMeeting = ({ onSave, onBack, onNext, meeting, onEditMeeting, onDe
             <button
               onClick={onNext}
               disabled={saving}
-              className="px-6 py-2.5 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-all font-bold flex items-center gap-2 shadow-lg text-sm active:scale-95 disabled:opacity-50 whitespace-nowrap min-w-[180px] justify-center"
+              className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all font-bold flex items-center gap-2 shadow-lg text-sm active:scale-95 disabled:opacity-50 whitespace-nowrap min-w-[180px] justify-center"
             >
               Next Step: Attendance
               <ArrowLeft size={18} className="rotate-180" />
@@ -207,7 +207,7 @@ const MinutesOfMeeting = ({ onSave, onBack, onNext, meeting, onEditMeeting, onDe
               </div>
               <button
                 onClick={() => setShowForm(true)}
-                className="px-5 py-2.5 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-all font-semibold flex items-center gap-2 text-sm shadow-sm active:scale-95"
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all font-semibold flex items-center gap-2 text-sm shadow-sm active:scale-95"
               >
                 <Plus size={18} />
                 New Agenda Point
@@ -322,7 +322,7 @@ const MinutesOfMeeting = ({ onSave, onBack, onNext, meeting, onEditMeeting, onDe
                     <button
                       onClick={handleAddItem}
                       disabled={saving}
-                      className="px-8 py-2.5 bg-indigo-600 text-gray-600 rounded-xl hover:bg-indigo-700 transition-all font-bold flex items-center gap-2 shadow-lg hover:shadow-indigo-200 active:scale-95 disabled:opacity-50"
+                      className="px-8 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all font-bold flex items-center gap-2 shadow-lg hover:shadow-indigo-200 active:scale-95 disabled:opacity-50"
                     >
                       {saving ? (
                         <Loader2 size={18} className="animate-spin" />

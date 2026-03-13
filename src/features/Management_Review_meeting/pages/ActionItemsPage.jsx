@@ -176,7 +176,7 @@ const ActionItemsPage = ({ meeting, onSave, onDelete, onBack, onNext, onEditMeet
             {onNext && (
               <button
                 onClick={onNext}
-                className="px-5 py-2.5 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-all font-semibold flex items-center gap-2 shadow-md text-sm active:scale-95"
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all font-semibold flex items-center gap-2 shadow-md text-sm active:scale-95"
               >
                 Next Step: Minutes →
               </button>
@@ -197,7 +197,7 @@ const ActionItemsPage = ({ meeting, onSave, onDelete, onBack, onNext, onEditMeet
               </div>
               <button
                 onClick={() => setShowForm(true)}
-                className="px-5 py-2.5 bg-indigo-600 text-gray-600 rounded-lg hover:bg-indigo-700 transition-all font-semibold flex items-center gap-2 text-sm shadow-sm active:scale-95"
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all font-semibold flex items-center gap-2 text-sm shadow-sm active:scale-95"
               >
                 <Plus size={18} />
                 New Action Item
@@ -295,10 +295,10 @@ const ActionItemsPage = ({ meeting, onSave, onDelete, onBack, onNext, onEditMeet
                     <button
                       onClick={handleFormSave}
                       disabled={saving}
-                      className="px-8 py-2.5 bg-indigo-600 text-gray-600 rounded-xl hover:bg-indigo-700 transition-all font-bold flex items-center gap-2 shadow-lg hover:shadow-indigo-200 active:scale-95 disabled:opacity-50"
+                      className="px-8 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all font-bold flex items-center gap-2 shadow-lg hover:shadow-indigo-200 active:scale-95 disabled:opacity-50"
                     >
                       {saving ? (
-                        <Loader2 size={18} className="animate-spin text-gray-600" />
+                        <Loader2 size={18} className="animate-spin text-white" />
                       ) : editingItem ? (
                         <Edit2 size={18} />
                       ) : (

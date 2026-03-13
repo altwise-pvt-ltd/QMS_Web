@@ -41,7 +41,7 @@ const QMSDashboard = () => {
             Quality Overview
           </h1>
           <p className="text-slate-500 mt-1 font-medium text-lg">
-            Welcome back, Quality Manager
+            Welcome back ,  Quality Manager
           </p>
         </div>
         <div className="flex gap-3">

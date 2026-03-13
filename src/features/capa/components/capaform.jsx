@@ -85,7 +85,7 @@ const QuestionPopup = ({
       ...prev,
       [index]: { rc: true, ca: true, pa: true },
     }));
-    
+
     // Trigger external fetch mechanism for dynamic API questions
     if (onAnswerSelected) {
       onAnswerSelected(index, value);
@@ -179,21 +179,19 @@ const QuestionPopup = ({
                 <div className="flex gap-3 mb-4">
                   <button
                     onClick={() => handleAnswer(index, "yes")}
-                    className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${
-                      answer === "yes"
-                        ? "bg-emerald-100 text-emerald-700 border-emerald-500"
-                        : "bg-white border-slate-100 text-slate-500 hover:border-emerald-500/30"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${answer === "yes"
+                      ? "bg-emerald-100 text-emerald-700 border-emerald-500"
+                      : "bg-white border-slate-100 text-slate-500 hover:border-emerald-500/30"
+                      }`}
                   >
                     Yes
                   </button>
                   <button
                     onClick={() => handleAnswer(index, "no")}
-                    className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${
-                      answer === "no"
-                        ? "bg-rose-100 text-rose-700 border-rose-500"
-                        : "bg-white border-slate-100 text-slate-500 hover:border-rose-500/30"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${answer === "no"
+                      ? "bg-rose-100 text-rose-700 border-rose-500"
+                      : "bg-white border-slate-100 text-slate-500 hover:border-rose-500/30"
+                      }`}
                   >
                     No
                   </button>
@@ -210,11 +208,10 @@ const QuestionPopup = ({
                 {/* Pre-built Suggestion Section */}
                 {!isCustom && answer && activeSuggestions && (
                   <div
-                    className={`mt-4 p-4 rounded-lg border space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
-                      answer === "yes"
-                        ? "bg-emerald-50 border-emerald-200"
-                        : "bg-rose-50 border-rose-200"
-                    }`}
+                    className={`mt-4 p-4 rounded-lg border space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 ${answer === "yes"
+                      ? "bg-emerald-50 border-emerald-200"
+                      : "bg-rose-50 border-rose-200"
+                      }`}
                   >
                     {activeSuggestions._empty ? (
                       <div className="flex items-center gap-2 text-slate-500 italic text-sm py-2">
@@ -226,61 +223,59 @@ const QuestionPopup = ({
                         <div
                           className={`flex items-center gap-2 mb-1 ${answer === "yes" ? "text-emerald-800" : "text-rose-800"}`}
                         >
-                      <Info className="w-4 h-4" />
-                      <span className="text-xs font-black uppercase tracking-wider">
-                        Suggested CAPA Actions for "{answer.toUpperCase()}"
-                      </span>
-                    </div>
-
-                    {[
-                      {
-                        type: "rc",
-                        label: "Root Cause",
-                        text: activeSuggestions.rootCause,
-                      },
-                      {
-                        type: "ca",
-                        label: "Corrective Action",
-                        text: activeSuggestions.correctiveAction,
-                      },
-                      {
-                        type: "pa",
-                        label: "Preventive Action",
-                        text: activeSuggestions.preventiveAction,
-                      },
-                    ].map((item) => (
-                      <div
-                        key={item.type}
-                        onClick={() => toggleSuggestion(index, item.type)}
-                        className={`p-3 rounded-md border cursor-pointer transition-all ${
-                          suggs?.[item.type]
-                            ? `bg-white shadow-sm ${answer === "yes" ? "border-emerald-300" : "border-rose-300"}`
-                            : "bg-slate-50/50 border-transparent opacity-60"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span
-                            className={`text-[10px] font-black uppercase ${answer === "yes" ? "text-emerald-600" : "text-rose-600"}`}
-                          >
-                            {item.label}
+                          <Info className="w-4 h-4" />
+                          <span className="text-xs font-black uppercase tracking-wider">
+                            Suggested CAPA Actions for "{answer.toUpperCase()}"
                           </span>
-                          <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                              suggs?.[item.type]
-                                ? `${answer === "yes" ? "bg-emerald-500 border-emerald-500" : "bg-rose-500 border-rose-500"} text-gray-600`
-                                : "border-slate-300"
-                            }`}
-                          >
-                            {suggs?.[item.type] && (
-                              <CheckCircle2 className="w-3 h-3" />
-                            )}
-                          </div>
                         </div>
-                        <p className="text-xs text-slate-600 leading-relaxed italic">
-                          "{item.text}"
-                        </p>
-                      </div>
-                    ))}
+
+                        {[
+                          {
+                            type: "rc",
+                            label: "Root Cause",
+                            text: activeSuggestions.rootCause,
+                          },
+                          {
+                            type: "ca",
+                            label: "Corrective Action",
+                            text: activeSuggestions.correctiveAction,
+                          },
+                          {
+                            type: "pa",
+                            label: "Preventive Action",
+                            text: activeSuggestions.preventiveAction,
+                          },
+                        ].map((item) => (
+                          <div
+                            key={item.type}
+                            onClick={() => toggleSuggestion(index, item.type)}
+                            className={`p-3 rounded-md border cursor-pointer transition-all ${suggs?.[item.type]
+                              ? `bg-white shadow-sm ${answer === "yes" ? "border-emerald-300" : "border-rose-300"}`
+                              : "bg-slate-50/50 border-transparent opacity-60"
+                              }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span
+                                className={`text-[10px] font-black uppercase ${answer === "yes" ? "text-emerald-600" : "text-rose-600"}`}
+                              >
+                                {item.label}
+                              </span>
+                              <div
+                                className={`w-4 h-4 rounded-full border flex items-center justify-center ${suggs?.[item.type]
+                                  ? `${answer === "yes" ? "bg-emerald-500 border-emerald-500" : "bg-rose-500 border-rose-500"} text-gray-600`
+                                  : "border-slate-300"
+                                  }`}
+                              >
+                                {suggs?.[item.type] && (
+                                  <CheckCircle2 className="w-3 h-3" />
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-xs text-slate-600 leading-relaxed italic">
+                              "{item.text}"
+                            </p>
+                          </div>
+                        ))}
                       </>
                     )}
                   </div>
@@ -289,11 +284,10 @@ const QuestionPopup = ({
                 {/* Custom Question Entry Section */}
                 {isCustom && answer && (
                   <div
-                    className={`mt-4 p-4 rounded-lg border space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
-                      answer === "yes"
-                        ? "bg-emerald-50 border-emerald-200"
-                        : "bg-rose-50 border-rose-200"
-                    }`}
+                    className={`mt-4 p-4 rounded-lg border space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 ${answer === "yes"
+                      ? "bg-emerald-50 border-emerald-200"
+                      : "bg-rose-50 border-rose-200"
+                      }`}
                   >
                     <div
                       className={`flex items-center gap-2 mb-1 ${answer === "yes" ? "text-emerald-800" : "text-rose-800"}`}
@@ -365,7 +359,7 @@ const QuestionPopup = ({
               />
               <button
                 onClick={handleAddQuestionLocal}
-                className="px-6 py-2 bg-indigo-600 text-gray-600 rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors shadow-sm active:scale-95"
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors shadow-sm active:scale-95"
               >
                 Add
               </button>
@@ -386,13 +380,13 @@ const QuestionPopup = ({
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="px-5 py-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors"
+              className="px-5 py-2 text-sm font-bold text-red-500 hover:text-red-600 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="px-8 py-2 bg-slate-900 text-black rounded-lg text-sm font-black hover:bg-black transition-all shadow-lg active:scale-95"
+              className="px-8 py-2 bg-blue-600 text-white rounded-lg text-sm font-black hover:bg-blue-700 transition-all shadow-lg active:scale-95"
             >
               Apply to Form
             </button>
@@ -415,7 +409,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   const [subCategoryId, setSubCategoryId] = useState("");
   const [subCategoryName, setSubCategoryName] = useState("");
   const [subCategoryCode, setSubCategoryCode] = useState("");
-  
+
   const [customSubCategory, setCustomSubCategory] = useState("");
   const [questions, setQuestions] = useState([]);
   const [questionAnswers, setQuestionAnswers] = useState({});
@@ -488,7 +482,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
       setSubCategoryName(selectedNC.subCategory || "");
       // Derive code if needed from NC data, or fallback string based logic if it's not present
       setSubCategoryCode(selectedNC.subCategoryCode || (selectedNC.categoryCode?.startsWith("QICategory_") ? `QISubCategory_${selectedNC.subCategoryId}` : `RiskSubCategory_${selectedNC.subCategoryId}`));
-      
+
       setDepartment(selectedNC.department || "");
       setResponsibility(selectedNC.reportedBy || "");
       setDetails(selectedNC.name || "");
@@ -575,16 +569,16 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
     // If it's a dynamic question (not custom) and we haven't loaded its suggestions yet
     const q = questions[index];
     console.log(`[handleQuestionAnswered] index:${index}, answer:${answer}, q:`, q);
-    
+
     if (!q || q.isCustom) return;
-    
+
     // We only fetch if it's "yes" or "no". Usually 'yes' means isSelected=true.
     const isSelectedTarget = answer === "yes";
-    
+
     // If we already have the suggestions for this answer loaded, do nothing
     const suggKey = isSelectedTarget ? "suggestionsYes" : "suggestionsNo";
     if (q[suggKey]) return;
-    
+
     try {
       // Mark as loading
       setQuestions(prev => {
@@ -592,33 +586,33 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
         copy[index] = { ...copy[index], isLoadingSuggestions: true };
         return copy;
       });
-      
+
       // Fetch suggestions from API
       console.log(`[handleQuestionAnswered] Fetching suggestions for Id: ${q.capaQuestionListId}, target: ${isSelectedTarget}`);
       const suggestions = await capaService.getSuggestionsByQuestion(q.capaQuestionListId, isSelectedTarget);
       console.log(`[handleQuestionAnswered] API returned suggestions:`, suggestions);
-      
+
       // We expect the API to return an array of suggestions, pick the first one for the structure
       // Also handle cases where it might return a direct object or missing data array
-      const suggestionsArray = Array.isArray(suggestions) 
-        ? suggestions 
+      const suggestionsArray = Array.isArray(suggestions)
+        ? suggestions
         : (suggestions?.data && Array.isArray(suggestions.data) ? suggestions.data : [suggestions].filter(Boolean));
-      
+
       const suggObj = suggestionsArray.length > 0 ? suggestionsArray[0] : { _empty: true };
       console.log(`[handleQuestionAnswered] Mapped suggObj:`, suggObj);
 
       setQuestions(prev => {
         const copy = [...prev];
-        copy[index] = { 
-          ...copy[index], 
+        copy[index] = {
+          ...copy[index],
           isLoadingSuggestions: false,
-          [suggKey]: suggObj 
+          [suggKey]: suggObj
         };
         return copy;
       });
     } catch (error) {
-       console.error("Failed to fetch suggestions:", error);
-       setQuestions(prev => {
+      console.error("Failed to fetch suggestions:", error);
+      setQuestions(prev => {
         const copy = [...prev];
         copy[index] = { ...copy[index], isLoadingSuggestions: false };
         return copy;
@@ -634,7 +628,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
     setQuestionAnswers(ans);
     // If the child component (Popup) updated the questions state with loaded suggestions, sync it back
     if (currentQuestions) {
-        setQuestions(currentQuestions);
+      setQuestions(currentQuestions);
     }
 
     // Detailed Suggestion Flow Logic
@@ -725,7 +719,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
       closureVerification,
       responsibility,
       taggedStaff,
-      uploadedFiles: uploadedFiles.map((file) => 
+      uploadedFiles: uploadedFiles.map((file) =>
         file instanceof File ? file : ({
           ...file,
           fileUrl: file.fileUrl || URL.createObjectURL(file),
@@ -1060,10 +1054,10 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                           .includes(staffSearch.toLowerCase()) &&
                         !taggedStaff.some((ts) => ts.id === s.id),
                     ).length === 0 && (
-                      <div className="px-4 py-8 text-center text-slate-400 text-sm italic">
-                        No matching staff found
-                      </div>
-                    )}
+                        <div className="px-4 py-8 text-center text-slate-400 text-sm italic">
+                          No matching staff found
+                        </div>
+                      )}
                   </div>
                 </>
               )}

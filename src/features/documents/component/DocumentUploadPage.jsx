@@ -109,7 +109,7 @@ export default function DocumentUploadPage() {
 
   return (
     <div className="min-h-screen bg-transparent py-6 px-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <button
@@ -175,9 +175,8 @@ export default function DocumentUploadPage() {
 
             <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
               <div
-                className={`h-full transition-all duration-500 ease-out ${
-                  showSuccess ? "bg-emerald-500" : "bg-indigo-600"
-                }`}
+                className={`h-full transition-all duration-500 ease-out ${showSuccess ? "bg-emerald-500" : "bg-indigo-600"
+                  }`}
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>

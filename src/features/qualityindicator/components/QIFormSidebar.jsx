@@ -13,6 +13,7 @@ const QIFormSidebar = ({
   indicators = [],
   categories = [],
   toggleIndicator,
+  toggleCategory,
   onSelectAll,
   isCollapsed,
   onToggleCollapse,
@@ -75,22 +76,34 @@ const QIFormSidebar = ({
               const catId = categoryObj.qualityIndicatorCategoryId;
               const catKey = categoryObj.qiCategory;
 
+              const categoryIndicators = indicators.filter((i) => {
+                const indicatorCatId = String(
+                  i.qualityIndicatorCategoryId || "",
+                );
+                return (
+                  indicatorCatId === String(catId) ||
+                  indicatorCatId === String(catKey)
+                );
+              });
+
+              const allSelected = categoryIndicators.length > 0 && categoryIndicators.every(i => 
+                selectedIndicators.includes(i.qualityIndicatorSubCategoryId)
+              );
+
               return (
                 <div key={catId || categoryName} className="mb-4">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2">
-                    {categoryName}
-                  </p>
-                  {indicators
-                    .filter((i) => {
-                      const indicatorCatId = String(
-                        i.qualityIndicatorCategoryId || "",
-                      );
-                      return (
-                        indicatorCatId === String(catId) ||
-                        indicatorCatId === String(catKey)
-                      );
-                    })
-                    .map((indicator) => (
+                  <button 
+                    onClick={() => toggleCategory(catId, catKey)}
+                    className="w-full flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2 hover:text-indigo-600 transition-colors"
+                  >
+                    <span>{categoryName}</span>
+                    {allSelected ? (
+                      <CheckSquare size={12} className="text-indigo-500" />
+                    ) : (
+                      <Square size={12} />
+                    )}
+                  </button>
+                  {categoryIndicators.map((indicator) => (
                       <button
                         key={indicator.qualityIndicatorSubCategoryId}
                         onClick={() =>

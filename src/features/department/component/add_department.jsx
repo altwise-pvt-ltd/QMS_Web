@@ -163,14 +163,14 @@ export const AddDepartment = ({ isOpen, onClose, onAdd, editingData }) => {
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="flex-1 py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl transition-all"
+                                className="flex-1 py-4 text-red-600 font-bold hover:bg-slate-50 rounded-2xl transition-all"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="flex-1 py-3 bg-indigo-600 text-black font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-h-[64px]"
+                                className="flex-1 py-3 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-h-[64px]"
                             >
                                 {loading ? (
                                     <CircularLoading loading={true} size={30} />

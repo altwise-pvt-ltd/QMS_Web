@@ -6,14 +6,16 @@ import {
     Square,
     ChevronRight,
 } from "lucide-react";
-import { CATEGORIES } from "../risk_indicator_data";
+
 
 const RIFormSidebar = ({
     selectedMonth,
     setSelectedMonth,
     selectedIndicators,
     indicators = [],
+    categories = [],
     toggleIndicator,
+    toggleCategory,
     onSelectAll,
     isCollapsed,
     onToggleCollapse,
@@ -68,14 +70,28 @@ const RIFormSidebar = ({
                         </button>
                     </div>
                     <div className="space-y-1 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                        {CATEGORIES.map((category) => (
-                            <div key={category} className="mb-4">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2">
-                                    {category}
-                                </p>
-                                {indicators
-                                    .filter((i) => i.category === category)
-                                    .map((indicator) => (
+                        {categories.map((categoryObj) => {
+                            const categoryName = categoryObj.name || categoryObj.riskCategoryName;
+                            const categoryIndicators = indicators.filter((i) => i.category === categoryName);
+                            
+                            const allSelected = categoryIndicators.length > 0 && categoryIndicators.every(i => 
+                                selectedIndicators.includes(i.id)
+                            );
+
+                            return (
+                                <div key={categoryObj.id || categoryName} className="mb-4">
+                                    <button 
+                                        onClick={() => toggleCategory(categoryName)}
+                                        className="w-full flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2 hover:text-indigo-600 transition-colors"
+                                    >
+                                        <span>{categoryName}</span>
+                                        {allSelected ? (
+                                            <CheckSquare size={12} className="text-indigo-500" />
+                                        ) : (
+                                            <Square size={12} />
+                                        )}
+                                    </button>
+                                    {categoryIndicators.map((indicator) => (
                                         <button
                                             key={indicator.id}
                                             onClick={() => toggleIndicator(indicator.id)}
@@ -94,8 +110,9 @@ const RIFormSidebar = ({
                                             </span>
                                         </button>
                                     ))}
-                            </div>
-                        ))}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>

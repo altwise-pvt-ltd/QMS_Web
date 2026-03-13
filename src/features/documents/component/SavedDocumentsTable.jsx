@@ -165,8 +165,8 @@ const SavedDocumentsTable = ({
       </div>
 
       {/* ✅ Vertical and horizontal scroll container */}
-      <div className="overflow-auto flex-1 min-w-0">
-        <table className="min-w-275 w-full text-left border-collapse">
+      <div className="overflow-x-auto flex-1 min-w-0">
+        <table className="min-w-[1000px] w-full text-left border-collapse">
           <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
             <tr className="text-xs font-semibold uppercase text-slate-500">
               <th className="p-4">ID</th>

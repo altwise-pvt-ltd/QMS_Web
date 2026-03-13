@@ -90,7 +90,14 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Strict 10-digit limit for mobile number
+    if (name === "mobileNumber") {
+      const cleaned = value.replace(/\D/g, "");
+      if (cleaned.length > 10) return;
+      setFormData((prev) => ({ ...prev, [name]: cleaned }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
 
     const error = validateField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
@@ -174,6 +181,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
+              placeholder="e.g. Rahul"
               className={`w-full border rounded-lg p-2.5 outline-none transition-all ${errors.firstName ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-500"}`}
             />
             <ErrorMsg name="firstName" />
@@ -189,6 +197,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
+              placeholder="e.g. Kumar"
               className={`w-full border rounded-lg p-2.5 outline-none transition-all ${errors.lastName ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-500"}`}
             />
             <ErrorMsg name="lastName" />
@@ -204,6 +213,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               name="email"
               value={formData.email}
               onChange={handleChange}
+              placeholder="e.g. [EMAIL_ADDRESS]"
               className={`w-full border rounded-lg p-2.5 outline-none transition-all ${errors.email ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-500"}`}
             />
             <ErrorMsg name="email" />
@@ -220,9 +230,9 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               value={formData.mobileNumber}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              placeholder="+91 98765 43210"
-              pattern="[+\-]?[0-9\s\-()]+"
-              title="Please enter a valid phone number"
+              placeholder="e.g. 9876543210"
+              maxLength={10}
+              title="Please enter a 10-digit mobile number"
             />
           </div>
 
@@ -257,6 +267,7 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
               name="jobTitle"
               value={formData.jobTitle}
               onChange={handleChange}
+              placeholder="e.g. Quality Manager"
               className={`w-full border rounded-lg p-2.5 outline-none transition-all ${errors.jobTitle ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-500"}`}
             />
             <ErrorMsg name="jobTitle" />
@@ -292,8 +303,8 @@ const CreateStaffForm = ({ onCancel, onSubmit, initialData }) => {
       flex items-center gap-2
       transition-colors  duration-200
       ${isSubmitting
-                ? "bg-blue-400 text-gray-600 cursor-not-allowed"
-                : "bg-blue-600 text-gray-600 hover:bg-blue-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                ? "bg-blue-400 text-white cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               }
     `}
 

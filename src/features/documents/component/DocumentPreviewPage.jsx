@@ -165,7 +165,7 @@ export default function DocumentPreviewPage() {
       />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <div className="bg-white border-b border-slate-200 px-6 py-4 shrink-0">
+        <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4 shrink-0">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <button
@@ -176,7 +176,7 @@ export default function DocumentPreviewPage() {
                 <ArrowLeft size={20} />
               </button>
               <div>
-                <h1 className="text-xl font-bold text-slate-900 uppercase">
+                <h1 className="text-lg sm:text-xl font-bold text-slate-900 uppercase truncate">
                   {subCategoryName || "Documents"}
                 </h1>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">
@@ -207,7 +207,7 @@ export default function DocumentPreviewPage() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto bg-slate-50 p-6">
+        <div className="flex-1 overflow-auto bg-slate-50 p-4 sm:p-6">
           {error ? (
             <div className="bg-red-50 text-red-600 p-4 rounded-lg border border-red-100 text-center">
               {error}

@@ -16,7 +16,7 @@ const RIReportTable = forwardRef(
             if (categoryIndicators.length === 0) return null;
 
             return categoryIndicators.map((indicator, idx) => (
-                <tr key={indicator.id} className="border-b border-slate-300 h-8">
+                <tr key={indicator.id} className={`border-b border-slate-300 h-8 ${idx === 0 ? "border-t-2 border-slate-800" : ""}`}>
                     {idx === 0 && (
                         <td
                             rowSpan={categoryIndicators.length}
@@ -113,7 +113,7 @@ const RIReportTable = forwardRef(
                                     colSpan={33}
                                     className="px-4 py-3 italic font-medium text-slate-700 text-sm text-left"
                                 >
-                                    No major observations in {selectedMonth}{" "}
+                                    Any major observations in {selectedMonth}{" "}
                                     <span className="float-right font-bold text-slate-900 not-italic mr-20">
                                         Assigned Signature / Date
                                     </span>

@@ -310,7 +310,7 @@ const DocumentLibrary = () => {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
-        <div className="lg:w-1/3 lg:sticky lg:top-6 h-fit space-y-3">
+        <div className="w-full lg:w-[380px] lg:sticky lg:top-6 h-fit space-y-3 shrink-0">
           {isLoading ? (
             <SidebarSkeleton />
           ) : (
@@ -366,7 +366,7 @@ const DocumentLibrary = () => {
           )}
         </div>
 
-        <div className="lg:w-2/3 bg-gray-50 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40 flex flex-col h-[calc(100vh-200px)] lg:h-[calc(100vh-160px)] min-h-125 overflow-hidden">
+        <div className="flex-1 bg-gray-50 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40 flex flex-col h-[600px] lg:h-[calc(100vh-160px)] min-h-[400px] overflow-hidden">
           <div className="p-6 border-b border-slate-100 bg-linear-to-r from-slate-50 to-white">
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <FolderOpen className="w-6 h-6 text-indigo-600" />
@@ -476,7 +476,7 @@ const DocumentRow = ({
     className="group flex items-center justify-between p-3 rounded-xl border border-slate-200/80 bg-white hover:border-indigo-200 hover:bg-indigo-50 transition-all cursor-pointer hover:shadow-sm"
   >
     <div className="flex items-center gap-3">
-      <div className="p-2.5 bg-slate-100 text-slate-600 rounded-lg group-hover:bg-indigo-600 group-hover:text-gray-600 transition-all duration-200 shadow-sm group-hover:shadow-indigo-200">
+      <div className="p-2.5 bg-slate-100 text-slate-600 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-all duration-200 shadow-sm group-hover:shadow-indigo-200">
         <File className="w-4 h-4" />
       </div>
       <div>

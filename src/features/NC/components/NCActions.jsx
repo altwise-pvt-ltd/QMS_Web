@@ -23,7 +23,7 @@ const NCActions = ({ onSubmit, isSubmitting }) => {
         className={`flex items-center gap-2 px-6 py-2 rounded-md shadow-sm hover:shadow-md transition-all ${
           isSubmitting
             ? "bg-gray-400 cursor-not-allowed text-slate-800 "
-            : "bg-blue-600 text-slate-800  hover:bg-blue-700 font-medium"
+            : "bg-blue-600 text-white hover:bg-blue-700 font-bold"
         }`}
         title="Save this form and forward the data to the document repository"
       >

@@ -20,7 +20,7 @@ export function ParameterScreen({
   const now = new Date();
   const monthDates = getDaysInMonth(now.getFullYear(), now.getMonth());
   const paramRecords = records.filter(
-    (r) => r.entryId === entry.id && r.parameter === parameter,
+    (r) => r.entryId === entry.id && r.parameterId === parameter.id,
   );
 
   const rows = monthDates.map((date) => ({
@@ -49,7 +49,7 @@ export function ParameterScreen({
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight leading-tight">
-                {parameter}
+                {parameter.name}
               </h1>
             </div>
             <p className="text-xs text-slate-500 font-medium truncate">

@@ -19,7 +19,6 @@ const QalityIndicatorForm = ({ onBack, indicators = [], categories = [] }) => {
     documentName: "QUALITY INDICATOR CHART FORM",
     issueNo: "01",
     issueDate: "01.07.2022",
-    status: "Controlled",
     page: "1 of 1",
     amendmentNo: "00",
     amendmentDate: "",
@@ -30,6 +29,33 @@ const QalityIndicatorForm = ({ onBack, indicators = [], categories = [] }) => {
     setSelectedIndicators((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
+  };
+ 
+  const toggleCategory = (catId, catKey) => {
+    const categoryIndicators = indicators
+      .filter((i) => {
+        const indicatorCatId = String(i.qualityIndicatorCategoryId || "");
+        return indicatorCatId === String(catId) || indicatorCatId === String(catKey);
+      })
+      .map((i) => i.qualityIndicatorSubCategoryId);
+ 
+    const allSelected = categoryIndicators.every((id) =>
+      selectedIndicators.includes(id),
+    );
+ 
+    if (allSelected) {
+      setSelectedIndicators((prev) =>
+        prev.filter((id) => !categoryIndicators.includes(id)),
+      );
+    } else {
+      setSelectedIndicators((prev) => {
+        const next = [...prev];
+        categoryIndicators.forEach((id) => {
+          if (!next.includes(id)) next.push(id);
+        });
+        return next;
+      });
+    }
   };
 
   const handlePrint = () => {
@@ -72,6 +98,7 @@ const QalityIndicatorForm = ({ onBack, indicators = [], categories = [] }) => {
             indicators={indicators}
             categories={categories}
             toggleIndicator={toggleIndicator}
+            toggleCategory={toggleCategory}
             onSelectAll={() =>
               setSelectedIndicators(
                 indicators.map((i) => i.qualityIndicatorSubCategoryId),

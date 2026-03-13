@@ -4,8 +4,7 @@ import { useDispatch } from "react-redux";
 import { loginUser, getProfile } from "./authService";
 import { useAuth, fetchAndMatchOrg } from "./AuthContext";
 import { setCredentials } from "../store/slices/authSlice";
-import organizationService from "../features/onboarding/services/organizationService";
-import { matchUserOrg } from "../utils/organizationUtils";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import "./login.css";
 
 const Login = () => {
@@ -43,32 +42,17 @@ const Login = () => {
         throw new Error("No access token received");
       }
 
+      localStorage.setItem("accessToken", token);
+      if (refreshToken) {
+        localStorage.setItem("refreshToken", refreshToken);
+      }
+
       // 2. IMPORTANT: Fetch the detailed user profile using the token we just received
       // We pass the token explicitly to avoid any race conditions with Redux/localStorage
       const profileData = await getProfile(token);
 
-      // 3. IMPORTANT: Fetch the organization details if the user has one
-      let orgData = null;
-      if (profileData?.organizationId) {
-        try {
-          const orgResponse = await organizationService.getAllOrganizations();
-          if (Array.isArray(orgResponse)) {
-            orgData = orgResponse.find(
-              (org) =>
-                (org.organizationId || org.OrganizationId) ==
-                profileData.organizationId,
-            );
-          } else if (orgResponse?.isSuccess && orgResponse?.value) {
-            orgData = orgResponse.value.find(
-              (org) =>
-                (org.organizationId || org.OrganizationId) ==
-                profileData.organizationId,
-            );
-          }
-        } catch (orgError) {
-          console.error("Failed to fetch organization during login:", orgError);
-        }
-      }
+      // 3. IMPORTANT: Fetch and match the organization details
+      const orgData = await fetchAndMatchOrg(profileData);
 
       // 4. Update Redux State with tokens, profile, and organization
       dispatch(
@@ -88,7 +72,7 @@ const Login = () => {
       } else {
         setError(
           err.response?.data?.message ||
-            "Login failed. Please try again later.",
+          "Login failed. Please try again later.",
         );
       }
     } finally {
@@ -142,16 +126,19 @@ const Login = () => {
             <form onSubmit={handleSubmit} className="login-form">
               <div className="form-group">
                 <label htmlFor="email">Email</label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                  autoComplete="username"
-                  placeholder="name@example.com"
-                  required
-                />
+                <div className="input-with-icon">
+                  <Mail className="input-field-icon" size={20} />
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
+                    autoComplete="username"
+                    placeholder="name@example.com"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="form-group">
@@ -160,6 +147,7 @@ const Login = () => {
                   <a href="/reset-password">Reset Password</a>
                 </div>
                 <div className="password-input-wrapper">
+                  <Lock className="input-field-icon" size={20} />
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -178,7 +166,7 @@ const Login = () => {
                     }
                     disabled={loading}
                   >
-                    {showPassword ? "Hide" : "Show"}
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
               </div>

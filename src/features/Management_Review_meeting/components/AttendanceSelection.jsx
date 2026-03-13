@@ -96,7 +96,7 @@ const AttendanceSelection = ({
           </div>
           <button
             onClick={handleFinalSave}
-            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-black rounded-xl hover:bg-indigo-700 shadow-lg font-bold transition-all active:scale-95"
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-lg font-bold transition-all active:scale-95"
           >
             <Save size={20} /> Finalize & Save All
           </button>

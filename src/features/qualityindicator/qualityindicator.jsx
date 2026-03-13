@@ -3,7 +3,6 @@ import {
   Activity,
   TrendingUp,
   AlertCircle,
-  CheckCircle2,
   Plus,
   ChevronRight,
   FileSpreadsheet,
@@ -16,9 +15,11 @@ import QalityIndicatorForm from "./qalityindicatorform";
 import qiService from "./services/qiService";
 
 const SEVERITY_LABELS = {
-  0: { label: "Low", color: "bg-emerald-100 text-emerald-700" },
-  1: { label: "Medium", color: "bg-amber-100 text-amber-700" },
-  2: { label: "High", color: "bg-rose-100 text-rose-700" },
+  1: { label: "Very Low (1)", color: "bg-emerald-50 text-emerald-600" },
+  2: { label: "Low (2)", color: "bg-emerald-100 text-emerald-700" },
+  3: { label: "Medium (3)", color: "bg-amber-100 text-amber-700" },
+  4: { label: "High (4)", color: "bg-orange-100 text-orange-700" },
+  5: { label: "Critical (5)", color: "bg-rose-100 text-rose-700" },
 };
 
 const QualityIndicator = () => {
@@ -32,14 +33,12 @@ const QualityIndicator = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingIndicator, setEditingIndicator] = useState(null);
   const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({}); // Tracking field-level errors
 
   // Form state
   const [form, setForm] = useState({
-    qualityIndicatorCategoryId: "",
-    qualitySubCategoryName: "",
     thresholdPercentage: "",
-    severity: "0",
-    status: "Inactive",
+    severity: "1",
   });
 
   // ── Load data on mount ──────────────────────────────────────────────────────
@@ -51,10 +50,18 @@ const QualityIndicator = () => {
     try {
       setLoading(true);
       setError(null);
-      const [subCategoryData, categoryData] = await Promise.all([
+      const [subCategoryRes, categoryRes] = await Promise.all([
         qiService.getAllQualitySubCategories(),
         qiService.getAllCategories(),
       ]);
+
+      const subCategoryData = subCategoryRes.success
+        ? subCategoryRes.data
+        : subCategoryRes;
+      const categoryData = categoryRes.success
+        ? categoryRes.data
+        : categoryRes;
+
       setIndicators(Array.isArray(subCategoryData) ? subCategoryData : []);
       setCategories(Array.isArray(categoryData) ? categoryData : []);
     } catch (err) {
@@ -74,70 +81,91 @@ const QualityIndicator = () => {
         qualitySubCategoryName: editingIndicator.qualitySubCategoryName || "",
         thresholdPercentage:
           editingIndicator.thresholdPercentage?.toString() || "",
-        severity: editingIndicator.severity?.toString() || "0",
-        status: editingIndicator.status || "Inactive",
+        severity: editingIndicator.severity?.toString() || "1",
       });
     } else {
       setForm({
         qualityIndicatorCategoryId: "",
         qualitySubCategoryName: "",
         thresholdPercentage: "",
-        severity: "0",
-        status: "Inactive",
+        severity: "1",
       });
     }
   }, [editingIndicator]);
 
   const handleFieldChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
   };
 
   // ── Save (create or update) ─────────────────────────────────────────────────
   const handleSave = async () => {
-    if (!form.qualitySubCategoryName || !form.qualityIndicatorCategoryId)
-      return;
+    // Comprehensive Validation
+    const newErrors = {};
+    if (!form.qualityIndicatorCategoryId) newErrors.qualityIndicatorCategoryId = true;
+    if (!form.qualitySubCategoryName?.trim()) newErrors.qualitySubCategoryName = true;
+    if (form.thresholdPercentage === "") newErrors.thresholdPercentage = true;
+    if (form.severity === "") newErrors.severity = true;
 
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setError("Please fill in all required fields.");
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    setErrors({});
     setSaving(true);
     setError(null);
 
     try {
       const payload = {
         qualityIndicatorCategoryId: parseInt(form.qualityIndicatorCategoryId),
-        qualitySubCategoryName: form.qualitySubCategoryName,
+        qualitySubCategoryName: form.qualitySubCategoryName.trim(),
         thresholdPercentage: parseFloat(form.thresholdPercentage) || 0,
-        severity: parseInt(form.severity) || 0,
-        status: form.status,
+        severity: parseInt(form.severity) || 1,
       };
 
       if (editingIndicator) {
-        // UPDATE
-        const response = await qiService.updateSubCategory(
-          editingIndicator.qualityIndicatorSubCategoryId,
-          {
-            ...payload,
-            qualityIndicatorSubCategoryId:
-              editingIndicator.qualityIndicatorSubCategoryId,
-          },
-        );
+        const subCategoryId = editingIndicator.qualityIndicatorSubCategoryId;
+        if (!subCategoryId) {
+          throw new Error("Missing SubCategory ID for update.");
+        }
+
+        const response = await qiService.updateSubCategory(subCategoryId, {
+          ...payload,
+          qualityIndicatorSubCategoryId: subCategoryId,
+        });
+
         const updated = response.success ? response.data : response;
+
         setIndicators((prev) =>
           prev.map((i) =>
-            i.qualityIndicatorSubCategoryId ===
-            editingIndicator.qualityIndicatorSubCategoryId
+            i.qualityIndicatorSubCategoryId === subCategoryId
               ? { ...i, ...updated }
               : i,
           ),
         );
       } else {
-        // CREATE
-        const created = await qiService.createSubCategory(payload);
+        const response = await qiService.createSubCategory(payload);
+        const created = response.success ? response.data : response;
         setIndicators((prev) => [created, ...prev]);
       }
 
       closeModal();
     } catch (err) {
       console.error("Error saving quality indicator:", err);
-      setError("Failed to save indicator. Please try again.");
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to save indicator."
+      );
     } finally {
       setSaving(false);
     }
@@ -180,6 +208,7 @@ const QualityIndicator = () => {
     setIsModalOpen(false);
     setEditingIndicator(null);
     setError(null);
+    setErrors({});
   };
 
   // ── Derived data ────────────────────────────────────────────────────────────
@@ -218,11 +247,8 @@ const QualityIndicator = () => {
   });
 
   const totalIndicators = indicators.length;
-  const activeIndicators = indicators.filter(
-    (i) => i.status === "Active",
-  ).length;
   const highSeverity = indicators.filter(
-    (i) => parseInt(i.severity) >= 2,
+    (i) => parseInt(i.severity) >= 4,
   ).length;
 
   // ── Sub-components ──────────────────────────────────────────────────────────
@@ -265,8 +291,7 @@ const QualityIndicator = () => {
 
   const IndicatorCard = ({ indicator }) => {
     const sev =
-      SEVERITY_LABELS[parseInt(indicator.severity)] || SEVERITY_LABELS[0];
-    const isActive = indicator.status === "Active";
+      SEVERITY_LABELS[parseInt(indicator.severity)] || SEVERITY_LABELS[1];
 
     return (
       <div className="bg-white group rounded-2xl border-2 border-slate-100 hover:border-indigo-200 transition-all p-5 flex flex-col justify-between h-full hover:-translate-y-1 shadow-sm hover:shadow-xl">
@@ -311,16 +336,7 @@ const QualityIndicator = () => {
           )}
         </div>
 
-        <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
-          <span
-            className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${
-              isActive
-                ? "bg-emerald-50 text-emerald-600"
-                : "bg-slate-100 text-slate-400"
-            }`}
-          >
-            {isActive ? "Active" : "Inactive"}
-          </span>
+        <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-end">
           <ChevronRight
             size={16}
             className="text-slate-300 group-hover:text-indigo-400 transition-colors"
@@ -377,7 +393,7 @@ const QualityIndicator = () => {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {loading ? (
           [...Array(3)].map((_, i) => (
             <Skeleton key={i} className="h-40 rounded-xl" />
@@ -389,12 +405,6 @@ const QualityIndicator = () => {
               value={totalIndicators}
               color="indigo"
               icon={TrendingUp}
-            />
-            <StatsCard
-              title="Active"
-              value={activeIndicators}
-              color="emerald"
-              icon={CheckCircle2}
             />
             <StatsCard
               title="High / Critical"
@@ -422,11 +432,10 @@ const QualityIndicator = () => {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-5 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${
-                    selectedCategory === cat
-                      ? "bg-indigo-600 text-gray-900 shadow-lg shadow-indigo-200"
-                      : "text-slate-500 hover:text-slate-800"
-                  }`}
+                  className={`px-5 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${selectedCategory === cat
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200"
+                    : "text-slate-500 hover:text-slate-800"
+                    }`}
                 >
                   {cat}
                 </button>
@@ -472,14 +481,14 @@ const QualityIndicator = () => {
 
           {loading
             ? [...Array(4)].map((_, i) => (
-                <Skeleton key={i} className="h-[220px] rounded-2xl" />
-              ))
+              <Skeleton key={i} className="h-[220px] rounded-2xl" />
+            ))
             : filteredIndicators.map((indicator) => (
-                <IndicatorCard
-                  key={indicator.qualityIndicatorSubCategoryId}
-                  indicator={indicator}
-                />
-              ))}
+              <IndicatorCard
+                key={indicator.qualityIndicatorSubCategoryId}
+                indicator={indicator}
+              />
+            ))}
         </div>
       </div>
 
@@ -515,7 +524,7 @@ const QualityIndicator = () => {
                 {/* Category select — from backend */}
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
-                    Select Category
+                    Select Category <span className="text-red-500">*</span>
                   </label>
                   {loading ? (
                     <Skeleton className="h-12 rounded-2xl" />
@@ -528,7 +537,7 @@ const QualityIndicator = () => {
                           e.target.value,
                         )
                       }
-                      className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800 appearance-none cursor-pointer"
+                      className={`w-full px-5 py-4 border-2 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800 appearance-none cursor-pointer ${errors.qualityIndicatorCategoryId ? "border-red-400 bg-red-50" : "bg-slate-50 border-slate-100"}`}
                     >
                       <option value="">Select a category...</option>
                       {categories.map((cat) => (
@@ -548,7 +557,7 @@ const QualityIndicator = () => {
                 {/* Indicator name */}
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
-                    Indicator Name
+                    Indicator Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -560,15 +569,15 @@ const QualityIndicator = () => {
                         e.target.value,
                       )
                     }
-                    className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800"
+                    className={`w-full px-5 py-4 border-2 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800 ${errors.qualitySubCategoryName ? "border-red-400 bg-red-50" : "bg-slate-50 border-slate-100"}`}
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   {/* Threshold */}
                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
-                      Threshold (%)
+                      Threshold (%) <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -577,42 +586,27 @@ const QualityIndicator = () => {
                       onChange={(e) =>
                         handleFieldChange("thresholdPercentage", e.target.value)
                       }
-                      className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800"
+                      className={`w-full px-5 py-4 border-2 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800 ${errors.thresholdPercentage ? "border-red-400 bg-red-50" : "bg-slate-50 border-slate-100"}`}
                     />
                   </div>
 
                   {/* Severity */}
                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
-                      Severity
+                      Severity <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={form.severity}
                       onChange={(e) =>
                         handleFieldChange("severity", e.target.value)
                       }
-                      className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800 appearance-none cursor-pointer"
+                      className={`w-full px-5 py-4 border-2 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800 appearance-none cursor-pointer ${errors.severity ? "border-red-400 bg-red-50" : "bg-slate-50 border-slate-100"}`}
                     >
-                      <option value="0">Low</option>
-                      <option value="1">Medium</option>
-                      <option value="2">High</option>
-                    </select>
-                  </div>
-
-                  {/* Status */}
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
-                      Status
-                    </label>
-                    <select
-                      value={form.status}
-                      onChange={(e) =>
-                        handleFieldChange("status", e.target.value)
-                      }
-                      className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white transition-all outline-none font-bold text-slate-800 appearance-none cursor-pointer"
-                    >
-                      <option value="Inactive">Inactive</option>
-                      <option value="Active">Active</option>
+                      <option value="1">1 (Very Low)</option>
+                      <option value="2">2 (Low)</option>
+                      <option value="3">3 (Medium)</option>
+                      <option value="4">4 (High)</option>
+                      <option value="5">5 (Critical)</option>
                     </select>
                   </div>
                 </div>
@@ -622,18 +616,14 @@ const QualityIndicator = () => {
                 <button
                   onClick={closeModal}
                   disabled={saving}
-                  className="flex-1 py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl transition-all disabled:opacity-50"
+                  className="flex-1 py-4 text-red-500 font-bold hover:bg-red-50 rounded-2xl transition-all disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={
-                    !form.qualitySubCategoryName ||
-                    !form.qualityIndicatorCategoryId ||
-                    saving
-                  }
-                  className="flex-1 py-4 bg-indigo-600 text-gray-900 font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0 flex items-center justify-center gap-2"
+                  disabled={saving}
+                  className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all  disabled:hover:translate-y-0 flex items-center justify-center gap-2"
                 >
                   {saving ? (
                     <>

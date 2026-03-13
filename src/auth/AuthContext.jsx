@@ -21,6 +21,25 @@ const fixAvatarUrl = (url) => {
   return url;
 };
 
+/**
+ * Utility to fetch all organizations and match the current user's org.
+ */
+export const fetchAndMatchOrg = async (profileData) => {
+  try {
+    const orgResponse = await organizationService.getAllOrganizations();
+    const orgList = Array.isArray(orgResponse)
+      ? orgResponse
+      : orgResponse?.isSuccess
+        ? orgResponse.value
+        : [];
+
+    return matchUserOrg(profileData, orgList);
+  } catch (error) {
+    console.error("fetchAndMatchOrg error:", error);
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
@@ -48,16 +67,8 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem("accessToken", token);
           const rf = localStorage.getItem("refreshToken");
 
-          // 2. Fetch and unwrap organization list
-          const orgResponse = await organizationService.getAllOrganizations();
-          const orgList = Array.isArray(orgResponse)
-            ? orgResponse
-            : orgResponse?.isSuccess
-              ? orgResponse.value
-              : [];
-
-          // 3. Match strictly by organizationId
-          const orgData = matchUserOrg(profileData, orgList);
+          // 2. Fetch and match organization
+          const orgData = await fetchAndMatchOrg(profileData);
 
           dispatch(
             setCredentials({

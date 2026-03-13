@@ -128,7 +128,7 @@ const InstrumentDetailModal = ({ item, onClose }) => {
           className={`w-10 h-10 rounded-lg shrink-0 flex items-center justify-center transition-colors ${value && value !== "N/A" ? "bg-emerald-50 text-emerald-600" : "bg-slate-50 text-slate-300"}`}
         >
           {label.toLowerCase().includes("photo") ||
-          label.toLowerCase().includes("photograph") ? (
+            label.toLowerCase().includes("photograph") ? (
             <Camera size={18} />
           ) : (
             <FileText size={18} />
@@ -310,7 +310,7 @@ const InstrumentDetailModal = ({ item, onClose }) => {
         <div className="px-8 py-5 border-t bg-slate-50 flex justify-end">
           <button
             onClick={onClose}
-            className="px-8 py-2.5 bg-slate-900 text-gray-600 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-black transition-all active:scale-95"
+            className="px-8 py-2.5 bg-indigo-600 text-white rounded-lg text-[10px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-black transition-all active:scale-95"
           >
             Close View
           </button>
@@ -384,21 +384,21 @@ const InstrumentList = ({ instruments, onDelete, onEdit }) => {
             <div className="col-span-2 flex items-center justify-end gap-1 w-full md:w-auto">
               <button
                 onClick={() => setSelectedItem(item)}
-                className="p-2 text-gray-600 transition-all hover:drop-shadow-xl hover:-translate-y-0.5 active:scale-90"
+                className="p-2 text-green-600 transition-all hover:drop-shadow-xl hover:-translate-y-0.5 active:scale-90"
                 title="View"
               >
                 <Eye size={22} strokeWidth={2.5} />
               </button>
               <button
                 onClick={() => onEdit(item)}
-                className="p-2text-gray-600 transition-all hover:drop-shadow-xl hover:-translate-y-0.5 active:scale-90"
+                className="p-2 text-indigo-600 transition-all hover:drop-shadow-xl hover:-translate-y-0.5 active:scale-90"
                 title="Edit"
               >
                 <Pencil size={22} strokeWidth={2.5} />
               </button>
               <button
                 onClick={() => onDelete(item.id)}
-                className="p-2 text-gray-600 transition-all hover:drop-shadow-xl hover:-translate-y-0.5 active:scale-90"
+                className="p-2 text-red-600 transition-all hover:drop-shadow-xl hover:-translate-y-0.5 active:scale-90"
                 title="Delete"
               >
                 <Trash2 size={22} strokeWidth={2.5} />

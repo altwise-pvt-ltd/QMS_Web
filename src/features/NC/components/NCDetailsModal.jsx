@@ -333,7 +333,7 @@ const NCDetailsModal = ({ report, onClose, onUpdate }) => {
             onClick={handleSave}
             /* Button is disabled if no fields have been unlocked yet */
             disabled={isSaving || Object.keys(unlockedFields).length === 0}
-            className="px-6 py-2.5 bg-blue-600 text-black rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-200/50 flex items-center gap-2 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transition-all"
+            className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-200/50 flex items-center gap-2 disabled:shadow-none disabled:cursor-not-allowed transition-all"
           >
             {isSaving ? (
               <Loader2 size={16} className="animate-spin" />

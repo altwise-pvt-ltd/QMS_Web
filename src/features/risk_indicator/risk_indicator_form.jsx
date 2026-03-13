@@ -31,6 +31,30 @@ const RiskIndicatorForm = ({ onBack, indicators = [], categories = [] }) => {
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
+ 
+  const toggleCategory = (categoryName) => {
+    const categoryIndicators = indicators
+      .filter((i) => i.category === categoryName)
+      .map((i) => i.id);
+ 
+    const allSelected = categoryIndicators.every((id) =>
+      selectedIndicators.includes(id),
+    );
+ 
+    if (allSelected) {
+      setSelectedIndicators((prev) =>
+        prev.filter((id) => !categoryIndicators.includes(id)),
+      );
+    } else {
+      setSelectedIndicators((prev) => {
+        const next = [...prev];
+        categoryIndicators.forEach((id) => {
+          if (!next.includes(id)) next.push(id);
+        });
+        return next;
+      });
+    }
+  };
 
   const handlePrint = () => {
     window.print();
@@ -70,7 +94,9 @@ const RiskIndicatorForm = ({ onBack, indicators = [], categories = [] }) => {
             setSelectedMonth={setSelectedMonth}
             selectedIndicators={selectedIndicators}
             indicators={indicators}
+            categories={categories}
             toggleIndicator={toggleIndicator}
+            toggleCategory={toggleCategory}
             onSelectAll={() =>
               setSelectedIndicators(indicators.map((i) => i.id))
             }

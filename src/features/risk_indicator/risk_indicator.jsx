@@ -131,7 +131,12 @@ const RiskIndicator = () => {
       });
 
       console.log("Create category API response:", apiResponse);
-
+ 
+      const newCat = {
+        id: apiResponse?.riskIndicatorCategoryId || apiResponse?.id || Date.now(),
+        name: trimmedName,
+      };
+ 
       // Add to local state and DB
       setCategories([...categories, newCat]);
       setNewCategoryName("");
@@ -295,11 +300,11 @@ const RiskIndicator = () => {
 
     const getSeverityStyles = (severity) => {
       const s = parseInt(severity);
-      if (s >= 5) return "bg-rose-500 text-gray-600 shadow-rose-100";
-      if (s >= 4) return "bg-orange-500 text-gray-600 shadow-orange-100";
-      if (s >= 3) return "bg-amber-500 text-black shadow-amber-100";
-      if (s >= 2) return "bg-blue-500 text-gray-600 shadow-blue-100";
-      return "bg-emerald-500 text-gray-600 shadow-emerald-100";
+      if (s >= 5) return "bg-rose-500 text-white shadow-rose-100";
+      if (s >= 4) return "bg-orange-500 text-white shadow-orange-100";
+      if (s >= 3) return "bg-amber-500 text-white shadow-amber-100";
+      if (s >= 2) return "bg-blue-500 text-white shadow-blue-100";
+      return "bg-emerald-500 text-white shadow-emerald-100";
     };
 
     return (
@@ -315,7 +320,7 @@ const RiskIndicator = () => {
         <div>
           <div className="flex justify-between items-start mb-4">
             <span
-              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-50 text-slate-600 border border-slate-100`}
+              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white`}
             >
               {indicator.category}
             </span>
@@ -377,9 +382,6 @@ const RiskIndicator = () => {
               )}
             </div>
           </div>
-          <button className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-gray-600 transition-all shadow-sm">
-            <ChevronRight size={20} />
-          </button>
         </div>
       </div>
     );
@@ -482,7 +484,7 @@ const RiskIndicator = () => {
           <div className="flex flex-wrap items-center bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 gap-1 w-full xl:w-auto">
             <button
               onClick={() => setSelectedCategory("All")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === "All" ? "bg-indigo-600 text-gray-600 shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === "All" ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
             >
               All
             </button>
@@ -497,7 +499,7 @@ const RiskIndicator = () => {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.name)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === cat.name ? "bg-indigo-600 text-gray-600 shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedCategory === cat.name ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
                 >
                   {cat.name}
                 </button>
@@ -534,7 +536,7 @@ const RiskIndicator = () => {
                   />
                   <button
                     onClick={handleAddCategory}
-                    className="px-4 py-2 bg-indigo-600 text-gray-600 text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm"
+                    className="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm"
                   >
                     Add
                   </button>
@@ -701,7 +703,7 @@ const RiskIndicator = () => {
                 <button
                   onClick={handleSaveIndicator}
                   disabled={!newName || !newCategory}
-                  className="flex-1 py-4 bg-indigo-600 text-gray-600 font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                  className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   {editingIndicator
                     ? "Update Risk Metric"
