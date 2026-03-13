@@ -13,6 +13,7 @@ import {
   Info,
   Users,
   UserPlus,
+  Loader2,
 } from "lucide-react";
 import { getDepartments } from "../../department/services/departmentService";
 import staffService from "../../staff/services/staffService";
@@ -180,8 +181,8 @@ const QuestionPopup = ({
                   <button
                     onClick={() => handleAnswer(index, "yes")}
                     className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${answer === "yes"
-                      ? "bg-emerald-100 text-emerald-700 border-emerald-500"
-                      : "bg-white border-slate-100 text-slate-500 hover:border-emerald-500/30"
+                        ? "bg-emerald-100 text-emerald-700 border-emerald-500"
+                        : "bg-white border-slate-100 text-slate-500 hover:border-emerald-500/30"
                       }`}
                   >
                     Yes
@@ -189,8 +190,8 @@ const QuestionPopup = ({
                   <button
                     onClick={() => handleAnswer(index, "no")}
                     className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${answer === "no"
-                      ? "bg-rose-100 text-rose-700 border-rose-500"
-                      : "bg-white border-slate-100 text-slate-500 hover:border-rose-500/30"
+                        ? "bg-rose-100 text-rose-700 border-rose-500"
+                        : "bg-white border-slate-100 text-slate-500 hover:border-rose-500/30"
                       }`}
                   >
                     No
@@ -209,8 +210,8 @@ const QuestionPopup = ({
                 {!isCustom && answer && activeSuggestions && (
                   <div
                     className={`mt-4 p-4 rounded-lg border space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 ${answer === "yes"
-                      ? "bg-emerald-50 border-emerald-200"
-                      : "bg-rose-50 border-rose-200"
+                        ? "bg-emerald-50 border-emerald-200"
+                        : "bg-rose-50 border-rose-200"
                       }`}
                   >
                     {activeSuggestions._empty ? (
@@ -250,8 +251,8 @@ const QuestionPopup = ({
                             key={item.type}
                             onClick={() => toggleSuggestion(index, item.type)}
                             className={`p-3 rounded-md border cursor-pointer transition-all ${suggs?.[item.type]
-                              ? `bg-white shadow-sm ${answer === "yes" ? "border-emerald-300" : "border-rose-300"}`
-                              : "bg-slate-50/50 border-transparent opacity-60"
+                                ? `bg-white shadow-sm ${answer === "yes" ? "border-emerald-300" : "border-rose-300"}`
+                                : "bg-slate-50/50 border-transparent opacity-60"
                               }`}
                           >
                             <div className="flex items-center justify-between mb-1">
@@ -262,8 +263,8 @@ const QuestionPopup = ({
                               </span>
                               <div
                                 className={`w-4 h-4 rounded-full border flex items-center justify-center ${suggs?.[item.type]
-                                  ? `${answer === "yes" ? "bg-emerald-500 border-emerald-500" : "bg-rose-500 border-rose-500"} text-gray-600`
-                                  : "border-slate-300"
+                                    ? `${answer === "yes" ? "bg-emerald-500 border-emerald-500" : "bg-rose-500 border-rose-500"} text-gray-600`
+                                    : "border-slate-300"
                                   }`}
                               >
                                 {suggs?.[item.type] && (
@@ -285,8 +286,8 @@ const QuestionPopup = ({
                 {isCustom && answer && (
                   <div
                     className={`mt-4 p-4 rounded-lg border space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 ${answer === "yes"
-                      ? "bg-emerald-50 border-emerald-200"
-                      : "bg-rose-50 border-rose-200"
+                        ? "bg-emerald-50 border-emerald-200"
+                        : "bg-rose-50 border-rose-200"
                       }`}
                   >
                     <div
@@ -359,7 +360,7 @@ const QuestionPopup = ({
               />
               <button
                 onClick={handleAddQuestionLocal}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors shadow-sm active:scale-95"
+                className="px-6 py-2 bg-indigo-600 text-gray-600 rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors shadow-sm active:scale-95"
               >
                 Add
               </button>
@@ -380,13 +381,13 @@ const QuestionPopup = ({
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="px-5 py-2 text-sm font-bold text-red-500 hover:text-red-600 transition-colors"
+              className="px-5 py-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="px-8 py-2 bg-blue-600 text-white rounded-lg text-sm font-black hover:bg-blue-700 transition-all shadow-lg active:scale-95"
+              className="px-8 py-2 bg-slate-900 text-black rounded-lg text-sm font-black hover:bg-black transition-all shadow-lg active:scale-95"
             >
               Apply to Form
             </button>
@@ -416,7 +417,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   const [showQuestionPopup, setShowQuestionPopup] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [targetDate, setTargetDate] = useState("");
-  const [department, setDepartment] = useState("");
+  const [departmentId, setDepartmentId] = useState("");
   const [details, setDetails] = useState("");
   const [effectiveness, setEffectiveness] = useState("");
   const [rootCause, setRootCause] = useState("");
@@ -430,14 +431,38 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   const [taggedStaff, setTaggedStaff] = useState([]);
   const [showStaffDropdown, setShowStaffDropdown] = useState(false);
   const [staffSearch, setStaffSearch] = useState("");
+  const [apiCategories, setApiCategories] = useState([]);
+  const [availableSubcategories, setAvailableSubcategories] = useState([]);
+  const [categoryId, setCategoryId] = useState("");
+  const [categoryCode, setCategoryCode] = useState("");
+  const [subCategoryId, setSubCategoryId] = useState("");
+  const [subCategoryCode, setSubCategoryCode] = useState("");
+  const [auditMetadata, setAuditMetadata] = useState({
+    suggConfig: {},
+    customSuggs: {},
+    fetchedApiSuggestions: {},
+  });
 
-  // Fetch staff list
+  // Fetch staff list, departments, and categories
   useEffect(() => {
-    const fetchStaff = async () => {
+    const fetchData = async () => {
       try {
-        const response = await staffService.getAllStaff();
-        const data = response.data || [];
-        const mappedStaff = data.map((s) => ({
+        const [staffResponse, deptData, catData] = await Promise.all([
+          staffService.getAllStaff(),
+          getDepartments(),
+          ncService.getAllCategories(),
+        ]);
+
+        setDepartments(deptData);
+
+        if (catData && catData.isSuccess) {
+          setApiCategories(catData.value || []);
+        } else if (Array.isArray(catData)) {
+          setApiCategories(catData);
+        }
+
+        const sData = staffResponse.data || [];
+        const mappedStaff = sData.map((s) => ({
           id: s.staffId || s.id,
           name:
             `${s.firstName || ""} ${s.lastName || ""}`.trim() ||
@@ -446,31 +471,19 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
             "Unnamed Staff",
           role: s.jobTitle || "Staff",
           dept:
-            departments.find((d) => (d.id || d.departmentId) === s.departmentId)
+            deptData.find((d) => (d.id || d.departmentId) === s.departmentId)
               ?.name ||
-            departments.find((d) => (d.id || d.departmentId) === s.departmentId)
+            deptData.find((d) => (d.id || d.departmentId) === s.departmentId)
               ?.departmentName ||
             "General",
         }));
         setStaffList(mappedStaff);
       } catch (error) {
-        console.error("Error fetching staff:", error);
+        console.error("Error fetching startup data:", error);
       }
     };
-    fetchStaff();
-
-    const fetchDepartments = async () => {
-      try {
-        const depts = await getDepartments();
-        setDepartments(depts);
-      } catch (error) {
-        console.error("Error fetching departments:", error);
-      }
-    };
-    if (departments.length === 0) {
-      fetchDepartments();
-    }
-  }, [departments]); // Re-run when departments array changes to fix mapping
+    fetchData();
+  }, []);
 
   // Pre-fill if selectedNC exists
   useEffect(() => {
@@ -488,54 +501,55 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
       setDetails(selectedNC.name || "");
       setEffectiveness(selectedNC.effectiveness || "");
 
-      // Provide linked NC evidence if available
+      // Link evidence file from NC if it exists
       if (selectedNC.evidenceDocumentPath) {
         setUploadedFiles([
           {
-            fileName: selectedNC.evidenceDocumentName || "NC_Evidence",
+            fileName: selectedNC.evidenceDocumentName || "NC Evidence",
             fileUrl: selectedNC.evidenceDocumentPath,
           },
         ]);
-      } else {
-        setUploadedFiles([]);
       }
     }
-  }, [selectedNC]);
+  }, [selectedNC, apiCategories]);
 
-  // Fetch Categories
-  useEffect(() => {
-    const fetchCats = async () => {
-      try {
-        const response = await ncService.getAllCategories();
-        const data = response.data || response.value || (Array.isArray(response) ? response : []);
-        setCategories(data);
-      } catch (err) {
-        console.error("Error fetching categories:", err);
-      }
-    };
-    fetchCats();
-  }, []);
-
-  // Fetch Subcategories
+  // Fetch subcategories when category changes
   useEffect(() => {
     const fetchSubCats = async () => {
-      if (!categoryId || !categoryCode) {
+      // Wait for categoryId and a valid routing code before fetching
+      if (!categoryId || category === "Other" || !categoryCode) {
         setAvailableSubcategories([]);
         return;
       }
       try {
-        const response = await ncService.getSubCategoriesByCategory(categoryId, categoryCode);
-        const raw = response?.data || response?.value || (Array.isArray(response) ? response : []);
-        const isQI = categoryCode?.startsWith("QICategory_");
+        const response = await ncService.getSubCategoriesByCategory(
+          categoryId,
+          categoryCode,
+        );
+        const raw =
+          response?.data ||
+          response?.value ||
+          (Array.isArray(response) ? response : []);
+
+        const isQI = !categoryCode || categoryCode.startsWith("QICategory_");
         const normalized = raw.map((sub) => {
-          const id = isQI ? sub.qualityIndicatorSubCategoryId : (sub.riskIndicatorSubCategoryId ?? sub.id);
+          const id = isQI
+            ? sub.qualityIndicatorSubCategoryId
+            : (sub.riskIndicatorSubCategoryId ?? sub.id);
           return {
             subCategoryId: id,
-            subCategoryName: isQI ? sub.qualitySubCategoryName : (sub.riskSubCategoryName ?? sub.name),
-            subCategoryCode: isQI ? `QISubCategory_${id}` : `RiskSubCategory_${id}`,
+            subCategoryName: isQI
+              ? sub.qualitySubCategoryName
+              : (sub.riskSubCategoryName ?? sub.name),
+            // ── FIX: Build the subCategoryCode the API expects
+            //    e.g. "QISubCategory_6" or "RiskSubCategory_3"
+            subCategoryCode: isQI
+              ? `QISubCategory_${id}`
+              : `RiskSubCategory_${id}`,
             ...sub,
           };
         });
+
         setAvailableSubcategories(normalized);
       } catch (err) {
         console.error("Error fetching subcategories:", err);
@@ -545,20 +559,21 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
     fetchSubCats();
   }, [categoryId, categoryCode]);
 
+  // ── FIX: Fetch questions using subCategoryCode (not subCategory name)
+  //    subCategoryCode is now properly set (e.g. "QISubCategory_6")
+  //    because the normalization above constructs it correctly.
   useEffect(() => {
-    const fetchDynamicQuestions = async () => {
-      if (subCategoryCode && categoryName !== "Other") {
-        try {
-          // Use subCategoryCode (e.g., QISubCategory_6) to fetch correct DB questions mapping
-          const dbQuestions = await capaService.getQuestionsBySubCategory(subCategoryCode);
+    const fetchQuestions = async () => {
+      if (!subCategoryCode || category === "Other") {
+        // No valid code yet — try hardcoded fallback or clear
+        if (category && subCategory) {
+          const dbQuestions = [
+            ...(CAPA_QUESTIONS[category]?.[subCategory] || []),
+          ];
           setQuestions(dbQuestions);
-          setQuestionAnswers({});
-        } catch (error) {
-          console.error("Failed to load questions:", error);
+        } else {
           setQuestions([]);
         }
-      } else {
-        setQuestions([]);
         setQuestionAnswers({});
       }
     };
@@ -624,14 +639,18 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
     setQuestions((prev) => [...prev, questionObj]);
   };
 
-  const handleSaveAudit = (ans, suggConfig, customSuggs = {}, currentQuestions) => {
+  const handleSaveAudit = (
+    ans,
+    suggConfig,
+    customSuggs = {},
+    fetchedApiSuggestions = {},
+  ) => {
     setQuestionAnswers(ans);
     // If the child component (Popup) updated the questions state with loaded suggestions, sync it back
     if (currentQuestions) {
       setQuestions(currentQuestions);
     }
 
-    // Detailed Suggestion Flow Logic
     const finalSuggestions = {
       rc: [],
       ca: [],
@@ -640,18 +659,19 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
 
     questions.forEach((q, idx) => {
       const userAns = ans[idx];
-      const userChoices = suggConfig[idx]; // { rc: bool, ca: bool, pa: bool }
+      const userChoices = suggConfig[idx];
       const isCustom = q.isCustom === true;
 
       if (userAns) {
         if (!isCustom) {
-          // Pre-built question logic
+          const apiSug = fetchedApiSuggestions[idx];
           const activeSuggestions =
             userAns === "yes"
-              ? q.suggestionsYes
+              ? q.suggestionsYes || apiSug
               : userAns === "no"
-                ? q.suggestionsNo
+                ? q.suggestionsNo || apiSug
                 : null;
+
           if (activeSuggestions && userChoices) {
             if (userChoices.rc && activeSuggestions.rootCause)
               finalSuggestions.rc.push(activeSuggestions.rootCause);
@@ -661,7 +681,6 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
               finalSuggestions.pa.push(activeSuggestions.preventiveAction);
           }
         } else {
-          // Custom question manual entry logic
           const customEntry = customSuggs[idx];
           if (customEntry) {
             if (customEntry.rootCause)
@@ -675,7 +694,6 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
       }
     });
 
-    // Smart merge: Append only unique suggestions to current form fields
     const merge = (current, additions) => {
       if (additions.length === 0) return current;
       const existing = current ? current.split("\n") : [];
@@ -690,15 +708,17 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
     setPreventiveAction((prev) => merge(prev, finalSuggestions.pa));
   };
 
-  const handleSubmit = () => {
-    if (
-      !categoryId ||
-      (!subCategoryId && categoryName !== "Other") ||
-      (categoryName === "Other" && !customSubCategory) ||
-      !department ||
-      !responsibility
-    ) {
-      alert("Please fill in all required fields");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    const missingFields = [];
+    if (!category) missingFields.push("Primary Category");
+    if (!subCategory && !customSubCategory) missingFields.push("Sub-Category");
+    if (!departmentId) missingFields.push("Department");
+    if (!responsibility) missingFields.push("Responsibility");
+
+    if (missingFields.length > 0) {
+      alert(`Please fill in the following required fields: ${missingFields.join(", ")}`);
       return;
     }
     const formData = {
@@ -757,35 +777,33 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
         </div>
 
         <div className="p-8 space-y-8">
-          {/* Top Row: Date and Department */}
+          {/* Date and Department */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700 block">
                 Date
               </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all"
-                />
-              </div>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all"
+              />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700 block">
                 Department
               </label>
               <select
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
+                value={departmentId}
+                onChange={(e) => setDepartmentId(e.target.value)}
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all appearance-none bg-white font-medium"
               >
-                <option value="">e.g., Pathology</option>
+                <option value="">Select Department</option>
                 {departments.map((d) => (
                   <option
                     key={d.id || d.departmentId}
-                    value={d.departmentName || d.name}
+                    value={d.id || d.departmentId}
                   >
                     {d.departmentName || d.name}
                   </option>
@@ -794,46 +812,42 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
             </div>
           </div>
 
-          {/* Category & Sub-Category Selection (Professional Integration) */}
+          {/* Category & Sub-Category */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700 block">
                 Primary Category
               </label>
               <select
-                value={categoryId || "Other"}
+                value={categoryId}
                 onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "Other") {
-                    setCategoryId("");
-                    setCategoryName("Other");
-                    setCategoryCode("");
-                    setSubCategoryId("");
-                    setSubCategoryName("");
-                    setSubCategoryCode("");
-                  } else {
-                    const selectedCat = categories.find(
-                      (c) =>
-                        String(c.nonConformanceCategoryId || c.categoryId || c.id) === String(val)
-                    );
-                    const catName = selectedCat?.categoryName || selectedCat?.name || "";
-                    const catCode = selectedCat?.categoryCode || "";
-
-                    setCategoryId(val);
-                    setCategoryName(catName);
-                    setCategoryCode(catCode);
-                    setSubCategoryId("");
-                    setSubCategoryName("");
-                    setSubCategoryCode("");
-                  }
+                  const catId = e.target.value;
+                  const selectedCat = apiCategories.find(
+                    (c) =>
+                      String(
+                        c.nonConformanceCategoryId || c.categoryId || c.id,
+                      ) === String(catId),
+                  );
+                  setCategoryId(catId);
+                  setCategory(
+                    selectedCat?.categoryName || selectedCat?.name || (catId === "Other" ? "Other" : ""),
+                  );
+                  setCategoryCode(selectedCat?.categoryCode || "");
+                  setSubCategoryId("");
+                  setSubCategory("");
+                  setSubCategoryCode("");
                 }}
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all bg-white"
               >
                 <option value="">Select Category</option>
-                {categories.map((cat) => (
+                {apiCategories.map((cat) => (
                   <option
-                    key={cat.nonConformanceCategoryId || cat.categoryId || cat.id}
-                    value={cat.nonConformanceCategoryId || cat.categoryId || cat.id}
+                    key={
+                      cat.nonConformanceCategoryId || cat.categoryId || cat.id
+                    }
+                    value={
+                      cat.nonConformanceCategoryId || cat.categoryId || cat.id
+                    }
                   >
                     {cat.categoryName || cat.name}
                   </option>
@@ -845,14 +859,11 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
               <label className="text-sm font-semibold text-slate-700 block">
                 Sub-Category
               </label>
-              {categoryName === "Other" ? (
+              {category === "Other" ? (
                 <input
                   type="text"
                   value={customSubCategory}
-                  onChange={(e) => {
-                    setCustomSubCategory(e.target.value);
-                    setSubCategoryName(e.target.value);
-                  }}
+                  onChange={(e) => setCustomSubCategory(e.target.value)}
                   placeholder="Specify other category..."
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400"
                 />
@@ -862,16 +873,21 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                   onChange={(e) => {
                     const subId = e.target.value;
                     const selectedSub = availableSubcategories.find(
-                      (s) => String(s.subCategoryId) === String(subId)
+                      (s) => String(s.subCategoryId) === String(subId),
                     );
                     setSubCategoryId(subId);
-                    setSubCategoryName(selectedSub?.subCategoryName || "");
+                    setSubCategory(selectedSub?.subCategoryName || "");
+                    // ── FIX: Use the properly constructed subCategoryCode
                     setSubCategoryCode(selectedSub?.subCategoryCode || "");
                   }}
                   disabled={!categoryId}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 bg-white disabled:bg-slate-50"
                 >
-                  <option value="">{categoryId ? "Select Sub-Category" : "Select Category first"}</option>
+                  <option value="">
+                    {categoryId
+                      ? "Select Sub-Category"
+                      : "Select Category first"}
+                  </option>
                   {availableSubcategories.map((sub) => (
                     <option key={sub.subCategoryId} value={sub.subCategoryId}>
                       {sub.subCategoryName}
@@ -882,27 +898,26 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
             </div>
           </div>
 
-          {/* Checklist Trigger (Simple Link style) */}
-          {categoryName &&
-            (questions.length > 0 || subCategoryName || customSubCategory) && (
-              <div className="flex items-center justify-between p-4 border border-slate-100 rounded-md bg-slate-50/50">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Audit Checklist: {answeredCount} / {questions.length}{" "}
-                    completed
-                  </span>
-                </div>
-                <button
-                  onClick={() => setShowQuestionPopup(true)}
-                  className="text-sm font-bold text-indigo-600 hover:text-indigo-800 underline underline-offset-4"
-                >
-                  Open Audit Evaluation
-                </button>
+          {/* Checklist Trigger */}
+          {category && (subCategory || customSubCategory) && (
+            <div className="flex items-center justify-between p-4 border border-slate-100 rounded-md bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                <span className="text-sm font-medium text-slate-700">
+                  Audit Checklist: {answeredCount} / {questions.length}{" "}
+                  completed
+                </span>
               </div>
-            )}
+              <button
+                onClick={() => setShowQuestionPopup(true)}
+                className="text-sm font-bold text-indigo-600 hover:text-indigo-800 underline underline-offset-4"
+              >
+                Open Audit Evaluation
+              </button>
+            </div>
+          )}
 
-          {/* Details of Daily N.C. */}
+          {/* Details */}
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-slate-700 block">
               Details of incident
@@ -944,7 +959,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
             />
           </div>
 
-          {/* Corrective / Preventive Action Taken */}
+          {/* Corrective / Preventive */}
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-slate-700 block">
               Corrective Action Taken
@@ -957,7 +972,6 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
               className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 resize-none transition-all"
             />
           </div>
-
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-slate-700 block">
               Preventive Action Taken
@@ -973,7 +987,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
 
           {/* Tag Staff */}
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+            <label className="text-sm font-semibold text-slate-700 block flex items-center gap-2">
               <Users className="w-4 h-4" /> Tag Staff involved in incident
             </label>
             <div className="relative">
@@ -1010,7 +1024,6 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                   onFocus={() => setShowStaffDropdown(true)}
                 />
               </div>
-
               {showStaffDropdown && (
                 <>
                   <div
@@ -1082,14 +1095,12 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
               <label className="text-sm font-semibold text-slate-700 block">
                 Target Date
               </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={targetDate}
-                  onChange={(e) => setTargetDate(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all font-medium"
-                />
-              </div>
+              <input
+                type="date"
+                value={targetDate}
+                onChange={(e) => setTargetDate(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all font-medium"
+              />
             </div>
           </div>
 
@@ -1107,7 +1118,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
             />
           </div>
 
-          {/* File Upload Attachment */}
+          {/* File Upload */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
@@ -1125,16 +1136,13 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files[0];
-                      if (file) {
-                        setUploadedFiles((prev) => [...prev, file]);
-                      }
-                      e.target.value = ""; // Reset input
+                      if (file) setUploadedFiles((prev) => [...prev, file]);
+                      e.target.value = "";
                     }}
                   />
                 </label>
               )}
             </div>
-
             <div className="grid grid-cols-1 gap-3">
               {uploadedFiles.map((file, idx) => (
                 <div
@@ -1147,10 +1155,14 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-700 truncate max-w-[200px] md:max-w-md">
-                        {file.name}
+                        {file instanceof File
+                          ? file.name
+                          : file.fileName || "Evidence"}
                       </p>
                       <p className="text-[10px] text-slate-400 font-medium uppercase">
-                        {(file.size / (1024 * 1024)).toFixed(2)} MB
+                        {file instanceof File
+                          ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
+                          : "Linked file"}
                       </p>
                     </div>
                   </div>
@@ -1166,7 +1178,6 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                   </button>
                 </div>
               ))}
-
               {uploadedFiles.length === 0 && (
                 <div className="flex flex-col items-center justify-center p-10 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 text-slate-400">
                   <Upload className="w-8 h-8 mb-2 opacity-20" />
@@ -1179,26 +1190,21 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
             </div>
           </div>
 
-          {/* Submit Button */}
-          <div className="pt-6 mt-4 border-t border-slate-100 flex justify-end">
+          {/* Submit */}
+          <div className="pt-6 flex justify-end">
             <button
               onClick={handleSubmit}
-              className="group px-8 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              disabled={isSubmitting}
+              className="px-10 py-3 bg-indigo-600 text-white rounded-md font-bold text-base hover:bg-indigo-700 transition-all shadow-sm active:scale-95 flex items-center gap-2 disabled:bg-slate-400 disabled:cursor-wait"
             >
-              <span>Submit Form</span>
-              <svg
-                className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M14 5l7 7m0 0l-7 7m7-7H3"
-                />
-              </svg>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Submit Form"
+              )}
             </button>
           </div>
         </div>
@@ -1211,6 +1217,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
         onSave={handleSaveAudit}
         answers={questionAnswers}
         onAddCustomQuestion={handleAddCustomQuestion}
+        subCategoryCode={subCategoryCode}
       />
     </div>
   );

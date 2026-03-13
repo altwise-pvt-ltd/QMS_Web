@@ -188,10 +188,12 @@ export const ncService = {
       } else if (categoryCode && categoryCode.startsWith("RICategory_")) {
         endpoint = `/RiskIndicator/GetSubCategoriesByCategory/${categoryId}`;
       } else {
-        console.warn(
-          `Unknown categoryCode prefix: "${categoryCode}" for categoryId: ${categoryId}. ` +
-          `Expected "QICategory_*" or "RICategory_*". Defaulting to QualityIndicator endpoint.`
-        );
+        if (categoryCode) {
+          console.warn(
+            `Unknown categoryCode prefix: "${categoryCode}" for categoryId: ${categoryId}. ` +
+            `Expected "QICategory_*" or "RICategory_*". Defaulting to QualityIndicator endpoint.`
+          );
+        }
         endpoint = `/QualityIndicator/GetSubCategoriesByCategory/${categoryId}`;
       }
 

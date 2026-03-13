@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginUser, getProfile } from "./authService";
-import { useAuth, fetchAndMatchOrg } from "./AuthContext";
+import { useAuth } from "./AuthContext";
 import { setCredentials } from "../store/slices/authSlice";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import "./login.css";
@@ -42,6 +42,8 @@ const Login = () => {
         throw new Error("No access token received");
       }
 
+      // Ensure tokens are saved to localStorage early so the api interceptor can attach them
+      // to requests like fetching the organizations
       localStorage.setItem("accessToken", token);
       if (refreshToken) {
         localStorage.setItem("refreshToken", refreshToken);

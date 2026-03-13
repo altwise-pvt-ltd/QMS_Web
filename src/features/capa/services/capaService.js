@@ -1,4 +1,5 @@
 import api from "../../../auth/api";
+import { uploadFile } from "../../../services/workerService";
 
 // ─────────────────────────────────────────────────────────────
 // capaService.js
@@ -6,26 +7,28 @@ import api from "../../../auth/api";
 // Service layer for the CAPA (Corrective & Preventive Action) module.
 // Base path: /Capa/*
 //
-// Capabilities covered:
-//   • CAPA CRUD                     (GET|POST|PUT|DELETE /Capa/*)
-//   • Question bank management      (GET|POST /Capa/*Question*)
-//   • Suggestion management         (GET|POST /Capa/*Suggestion*)
-//   • Risk & Quality questionnaire  (GET /Capa/RiskAndQuality*)
+// CAPA Questionnaire Pipeline:
+//   1. Category  → GET /QualityIndicator/GetAllQualityAndRiskCategories
+//   2. SubCategory → fetched by categoryId (via ncService)
+//   3. Questions → GET /Capa/RiskAndQualityQuestionare/{subCategoryCode}
+//   4. User answers Yes/No per question
+//   5. Suggestions → GET /Capa/RiskAndQualitySuggestions/{questionId}?isselected=true|false
+//      → returns { rootCause, correctiveAction, preventiveAction }
+//   6. User selects which suggestions to apply → merged into form fields
+//   7. Submit → POST /Capa/CreateCapa (multipart/form-data)
 //
-// IMPORTANT: CreateCapa and UpdateCapa use multipart/form-data
-// (not JSON) because they support file uploads.
+// CLOUDFLARE INTEGRATION:
+// Before hitting Create/Update, all binary files in `uploadedFiles` are 
+// uploaded to R2 via the Cloudflare Worker. The resulting URLs are then
+// passed to the backend API instead of the raw files.
 // ─────────────────────────────────────────────────────────────
 
 // ──── Helpers ──────────────────────────────────────────────
 
-/**
- * Standardized error handler — same pattern as trainingService.
- */
 const safeCall = async (apiCall) => {
   try {
     const response = await apiCall();
 
-    // DELETE returns empty body
     if (response.status === 200 && !response.data) {
       return { success: true };
     }
@@ -39,30 +42,36 @@ const safeCall = async (apiCall) => {
     if (error?.response?.status === 401) {
       return Promise.reject({
         status: 401,
-        message: error.response?.data?.message || "Unauthorized – token may be expired",
+        message:
+          error.response?.data?.message ||
+          "Unauthorized – token may be expired",
         isAuthError: true,
       });
     }
 
     if (error?.response?.status >= 400 && error?.response?.status < 500) {
+      console.error(`API Client Error [${error.response.status}]:`, error.response.data);
       return Promise.reject({
         status: error.response.status,
-        message: error.response?.data?.message || error.response?.data?.title || `Client error (${error.response.status})`,
+        message:
+          error.response?.data?.message ||
+          error.response?.data?.title ||
+          `Client error (${error.response.status})`,
         data: error.response?.data,
       });
     }
 
     return Promise.reject({
       status: error?.response?.status || 0,
-      message: error?.response?.data?.message || error?.message || "An unexpected error occurred",
+      message:
+        error?.response?.data?.message ||
+        error?.message ||
+        "An unexpected error occurred",
       isNetworkError: !error?.response,
     });
   }
 };
 
-/**
- * Normalizes ISO datetime to yyyy-MM-dd for UI date inputs.
- */
 const normalizeDateForUi = (dateStr) => {
   if (!dateStr) return "";
   if (dateStr.includes("T")) return dateStr.split("T")[0];
@@ -74,24 +83,40 @@ const normalizeDateForUi = (dateStr) => {
 /**
  * Maps an API CAPA record → UI-friendly shape.
  *
- * API shape (from GetCapaById / CreateCapa response):
- *   { capaId, capaIssueId, nonConformanceId, nonConformanceIssueId,
- *     supplier, status, capaStatus, date, capaIssueDate,
- *     detailsOfCapa, departmentId, capaCategoryId, capaSubCategoryId,
- *     linkedEvidenceDocumentPath/Name (x3),
- *     effectiveness, observations, staffIdInvolvedInIncident,
- *     responsibility, closureVerification,
- *     capaAuditQuestions: [{ question, isYesSelected, rootCause, correctiveAction, preventiveAction }] }
+ * KEY INSIGHT: The API does NOT store rootCause, correctiveAction,
+ * and preventiveAction as top-level fields. They are stored INSIDE
+ * each capaAuditQuestion. We aggregate them here for CAPAFormView.
  */
 const mapApiToUi = (item) => {
   if (!item) return null;
 
+  const auditQuestions = item.capaAuditQuestions || [];
+
   // Map audit questions to the shape components expect
-  const questions = (item.capaAuditQuestions || []).map((q) => q.question);
+  const questions = auditQuestions.map((q) => q.question);
   const questionAnswers = {};
-  (item.capaAuditQuestions || []).forEach((q, idx) => {
+  auditQuestions.forEach((q, idx) => {
     questionAnswers[idx] = q.isYesSelected ? "yes" : "no";
   });
+
+  // Aggregate rootCause / correctiveAction / preventiveAction from all audit questions
+  const rootCauseParts = [];
+  const correctiveActionParts = [];
+  const preventiveActionParts = [];
+
+  auditQuestions.forEach((q) => {
+    if (q.rootCause) rootCauseParts.push(q.rootCause);
+    if (q.correctiveAction) correctiveActionParts.push(q.correctiveAction);
+    if (q.preventiveAction) preventiveActionParts.push(q.preventiveAction);
+  });
+
+  const rootCause = [...new Set(rootCauseParts)].filter(Boolean).join("\n");
+  const correctiveAction = [...new Set(correctiveActionParts)]
+    .filter(Boolean)
+    .join("\n");
+  const preventiveAction = [...new Set(preventiveActionParts)]
+    .filter(Boolean)
+    .join("\n");
 
   // Build uploaded files array from the 3 evidence slots
   const uploadedFiles = [];
@@ -115,17 +140,12 @@ const mapApiToUi = (item) => {
   }
 
   return {
-    // IDs
     id: item.capaId,
-    capaId: item.capaId,
+    capaId: 1,
     capaIssueId: item.capaIssueId,
     issueNo: item.nonConformanceIssueId || item.capaIssueId || "N/A",
-
-    // NC linkage
     nonConformanceId: item.nonConformanceId,
     nonConformanceIssueId: item.nonConformanceIssueId,
-
-    // Core fields
     supplier: item.supplier || "",
     status: item.status || "Submitted",
     capaStatus: item.capaStatus || "Open",
@@ -133,37 +153,42 @@ const mapApiToUi = (item) => {
     capaIssueDate: normalizeDateForUi(item.capaIssueDate),
     details: item.detailsOfCapa || "",
     detailsOfCapa: item.detailsOfCapa || "",
-
-    // Category
     departmentId: item.departmentId,
     department: "Dept #" + (item.departmentId || "1"),
-    capaCategoryId: item.capaCategoryId,
-    capaSubCategoryId: item.capaSubCategoryId,
-
-    // CAPA content — the API stores these in audit questions,
-    // but also has top-level observations/effectiveness
+    capaCategoryId: item.capaCategoryId || "",
+    capaSubCategoryId: item.capaSubCategoryId || "",
+    category: item.capaCategoryId || "",
+    subCategory: item.capaSubCategoryId || "",
+    rootCause,
+    correctiveAction,
+    preventiveAction,
     effectiveness: item.effectiveness || "",
     observations: item.observations || "",
     responsibility: item.responsibility || "",
     closureVerification: item.closureVerification || "",
-
-    // Audit questions (mapped for UI)
     questions,
     questionAnswers,
-    capaAuditQuestions: item.capaAuditQuestions || [],
-
-    // Evidence files
+    capaAuditQuestions: auditQuestions,
     uploadedFiles,
-
-    // Staff
     staffIdInvolvedInIncident: item.staffIdInvolvedInIncident,
-
-    // Metadata for FormPreview list display
-    name: item.nonConformanceSubCategoryName || item.detailsOfCapa || "CAPA Record",
+    taggedStaff: item.staffIdInvolvedInIncident
+      ? [
+          {
+            id: item.staffIdInvolvedInIncident,
+            name: "Staff #" + item.staffIdInvolvedInIncident,
+            role: "Staff",
+          },
+        ]
+      : [],
+    name:
+      item.nonConformanceSubCategoryName ||
+      item.detailsOfCapa ||
+      "CAPA Record",
     filedBy: item.responsibility || "Staff",
     filedDate: normalizeDateForUi(item.date || item.createdDate),
+    targetDate: "",
 
-    // Timestamps
+    documentMeta: {},
     createdDate: item.createdDate,
     createdBy: item.createdBy,
     organizationId: item.organizationId,
@@ -172,92 +197,148 @@ const mapApiToUi = (item) => {
 
 /**
  * Builds a FormData object from the UI form shape for create/update.
- *
- * The API expects multipart/form-data with:
- *   - Flat fields (CapaIssueId, NonConformanceId, etc.)
- *   - Indexed audit questions (CapaAuditQuestions[0].Question, etc.)
- *   - File fields (LinkedEvidenceDocument, etc.) — if File objects are provided
- *
- * @param {Object} uiData - Form data from CapaForm component
- * @param {Object} [options] - { capaId, ncData }
- * @returns {FormData}
  */
 const buildFormData = (uiData, options = {}) => {
   const fd = new FormData();
 
-  // If updating, include the CAPA ID
   if (options.capaId) {
     fd.append("CapaId", String(options.capaId));
   }
 
-  // NC linkage
   if (uiData.nonConformanceId) {
     fd.append("NonConformanceId", String(uiData.nonConformanceId));
   }
   if (uiData.nonConformanceIssueId) {
     fd.append("NonConformanceIssueId", uiData.nonConformanceIssueId);
   }
+  if (uiData.capaIssueId) {
+    fd.append("CapaIssueId", String(uiData.capaIssueId));
+  }
 
-  // Core fields
   fd.append("Supplier", uiData.supplier || "");
   fd.append("Status", uiData.status || "Submitted");
   fd.append("CapaStatus", uiData.capaStatus || "Open");
   fd.append("Date", uiData.date || new Date().toISOString().split("T")[0]);
-  fd.append("CapaIssueDate", uiData.capaIssueDate || uiData.date || new Date().toISOString().split("T")[0]);
+  fd.append(
+    "CapaIssueDate",
+    uiData.capaIssueDate ||
+      uiData.date ||
+      new Date().toISOString().split("T")[0],
+  );
   fd.append("DetailsOfCapa", uiData.details || uiData.detailsOfCapa || "");
-  fd.append("DepartmentId", String(uiData.departmentId || uiData.department || "1"));
-  fd.append("CapaCategoryId", String(uiData.capaCategoryId || uiData.category || "1"));
-  fd.append("CapaSubCategoryId", String(uiData.capaSubCategoryId || uiData.subCategory || "1"));
+
+  // Ensure IDs are integers or safe defaults
+  const dId = parseInt(uiData.departmentId || "0", 10) || 1;
+  const cId = parseInt(uiData.capaCategoryId || "0", 10) || 1;
+  const sId = parseInt(uiData.capaSubCategoryId || "0", 10) || 1;
+
+  fd.append("DepartmentId", String(dId));
+  fd.append("CapaCategoryId", String(cId));
+  fd.append("CapaSubCategoryId", String(sId));
   fd.append("Effectiveness", uiData.effectiveness || "Pending");
   fd.append("Observations", uiData.observations || uiData.details || "");
-  fd.append("StaffIdInvolvedInIncident", String(uiData.staffIdInvolvedInIncident || uiData.taggedStaff?.[0]?.id || "0"));
+  fd.append(
+    "StaffIdInvolvedInIncident",
+    String(
+      parseInt(uiData.staffIdInvolvedInIncident || uiData.taggedStaff?.[0]?.id || "0", 10)
+    ),
+  );
   fd.append("Responsibility", uiData.responsibility || "");
-  fd.append("ClosureVerification", uiData.closureVerification || "Not Verified");
+  fd.append(
+    "ClosureVerification",
+    uiData.closureVerification || "Not Verified",
+  );
 
-  // Audit questions — indexed format
+  // Audit questions
   const auditQuestions = uiData.capaAuditQuestions || [];
+
   if (auditQuestions.length > 0) {
     auditQuestions.forEach((q, idx) => {
-      fd.append(`CapaAuditQuestions[${idx}].Question`, q.question || q.Question || "");
-      fd.append(`CapaAuditQuestions[${idx}].IsYesSelected`, String(q.isYesSelected ?? q.IsYesSelected ?? false));
-      fd.append(`CapaAuditQuestions[${idx}].RootCause`, q.rootCause || q.RootCause || "");
-      fd.append(`CapaAuditQuestions[${idx}].CorrectiveAction`, q.correctiveAction || q.CorrectiveAction || "");
-      fd.append(`CapaAuditQuestions[${idx}].PreventiveAction`, q.preventiveAction || q.PreventiveAction || "");
+      fd.append(
+        `CapaAuditQuestions[${idx}].Question`,
+        q.question || q.Question || "",
+      );
+      fd.append(
+        `CapaAuditQuestions[${idx}].IsYesSelected`,
+        String(q.isYesSelected ?? q.IsYesSelected ?? false),
+      );
+      fd.append(
+        `CapaAuditQuestions[${idx}].RootCause`,
+        q.rootCause || q.RootCause || "",
+      );
+      fd.append(
+        `CapaAuditQuestions[${idx}].CorrectiveAction`,
+        q.correctiveAction || q.CorrectiveAction || "",
+      );
+      fd.append(
+        `CapaAuditQuestions[${idx}].PreventiveAction`,
+        q.preventiveAction || q.PreventiveAction || "",
+      );
     });
   } else if (uiData.questions && uiData.questionAnswers) {
-    // Build from the UI's questions[] + questionAnswers{} shape
     uiData.questions.forEach((qText, idx) => {
       const answer = uiData.questionAnswers[idx];
-      fd.append(`CapaAuditQuestions[${idx}].Question`, typeof qText === "string" ? qText : qText.question || "");
-      fd.append(`CapaAuditQuestions[${idx}].IsYesSelected`, String(answer === "yes"));
-      fd.append(`CapaAuditQuestions[${idx}].RootCause`, uiData.rootCause || "");
-      fd.append(`CapaAuditQuestions[${idx}].CorrectiveAction`, uiData.correctiveAction || "");
-      fd.append(`CapaAuditQuestions[${idx}].PreventiveAction`, uiData.preventiveAction || "");
+      if (!answer) return;
+
+      fd.append(
+        `CapaAuditQuestions[${idx}].Question`,
+        typeof qText === "string"
+          ? qText
+          : qText.question || qText.capaQuestion || "",
+      );
+      fd.append(
+        `CapaAuditQuestions[${idx}].IsYesSelected`,
+        String(answer === "yes"),
+      );
+      fd.append(
+        `CapaAuditQuestions[${idx}].RootCause`,
+        idx === 0 ? uiData.rootCause || "" : "",
+      );
+      fd.append(
+        `CapaAuditQuestions[${idx}].CorrectiveAction`,
+        idx === 0 ? uiData.correctiveAction || "" : "",
+      );
+      fd.append(
+        `CapaAuditQuestions[${idx}].PreventiveAction`,
+        idx === 0 ? uiData.preventiveAction || "" : "",
+      );
     });
   }
 
   // File uploads — up to 3 evidence document slots
-  // If uiData.uploadedFiles contains File objects, attach them
-  // If they contain URLs (existing files), pass the paths as strings
   const files = uiData.uploadedFiles || [];
   const fileSlots = [
-    { pathKey: "LinkedEvidenceDocumentPath", nameKey: "LinkedEvidenceDocumentName", fileKey: "LinkedEvidenceDocument" },
-    { pathKey: "EvidenceDocumentPathTwo", nameKey: "EvidenceDocumentNameTwo", fileKey: "EvidenceDocumentTwo" },
-    { pathKey: "EvidenceDocumentPathThree", nameKey: "EvidenceDocumentNameThree", fileKey: "EvidenceDocumentThree" },
+    {
+      pathKey: "LinkedEvidenceDocumentPath",
+      nameKey: "LinkedEvidenceDocumentName",
+      fileKey: "LinkedEvidenceDocument",
+    },
+    {
+      pathKey: "EvidenceDocumentPathTwo",
+      nameKey: "EvidenceDocumentNameTwo",
+      fileKey: "EvidenceDocumentTwo",
+    },
+    {
+      pathKey: "EvidenceDocumentPathThree",
+      nameKey: "EvidenceDocumentNameThree",
+      fileKey: "EvidenceDocumentThree",
+    },
   ];
 
   files.forEach((file, idx) => {
-    if (idx >= 3) return; // Max 3 slots
+    if (idx >= 3) return;
     const slot = fileSlots[idx];
 
     if (file instanceof File) {
-      // New file upload
+      // NOTE: In the new flow, binary Files are uploaded to R2 BEFORE buildFormData is called.
+      // So if a File object somehow reaches here, we still use its name but expect a path elsewhere.
+      // In practice, createCAPA/updateCAPA will have replaced Files with URL objects.
       fd.append(slot.fileKey, file);
       fd.append(slot.nameKey, file.name);
-    } else if (file.fileUrl) {
-      // Existing file URL (from API response)
-      fd.append(slot.pathKey, file.fileUrl);
-      fd.append(slot.nameKey, file.fileName || `Evidence ${idx + 1}`);
+    } else if (file.fileUrl || typeof file === "string") {
+      const url = typeof file === "string" ? file : file.fileUrl;
+      fd.append(slot.pathKey, url);
+      fd.append(slot.nameKey, file.fileName || file.name || `Evidence ${idx + 1}`);
     }
   });
 
@@ -269,23 +350,12 @@ const buildFormData = (uiData, options = {}) => {
 export const capaService = {
   // ── CAPA CRUD ──────────────────────────────────────────
 
-  /**
-   * Fetch all CAPA entries.
-   *
-   * @returns {Promise<Array>} – Array of CAPA records (UI shape)
-   */
   getCAPAs: async () => {
     const data = await safeCall(() => api.get("/Capa/GetAllCapas"));
-    const records = Array.isArray(data) ? data : (data?.value || []);
+    const records = Array.isArray(data) ? data : data?.value || [];
     return records.map(mapApiToUi).filter(Boolean);
   },
 
-  /**
-   * Fetch a single CAPA by ID.
-   *
-   * @param {number|string} id – capaId
-   * @returns {Promise<Object>} – CAPA record (UI shape)
-   */
   getCapaById: async (id) => {
     if (!id && id !== 0) {
       return Promise.reject({ message: "CAPA ID is required." });
@@ -294,63 +364,102 @@ export const capaService = {
     return mapApiToUi(data);
   },
 
-  /**
-   * Create a new CAPA entry.
-   *
-   * Uses multipart/form-data because the API supports file uploads.
-   *
-   * @param {Object} capaData – UI form data
-   * @returns {Promise<Object>} – { success, message, data: { capaId, ... } }
-   */
-  createCAPA: async (capaData) => {
-    const formData = buildFormData(capaData);
+  createCAPA: async (capaData, onProgress = null) => {
+    // Stage 1: Upload files to Cloudflare R2 if they are binary Files
+    const files = capaData.uploadedFiles || [];
+    const processedFiles = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file instanceof File) {
+        try {
+          // Provide sub-progress if needed, or just let it run
+          const r2Result = await uploadFile(file, {
+            module: "capa",
+            capaId: capaData.capaId,
+            subType: "evidence",
+          });
+          processedFiles.push({
+            fileName: file.name,
+            fileUrl: r2Result.fileUrl,
+          });
+          console.log(`File ${i + 1} uploaded to R2:`, r2Result.fileUrl);
+        } catch (err) {
+          console.error(`Failed to upload file ${file.name} to Cloudflare:`, err);
+          throw new Error(`Upload failed for ${file.name}: ${err.message}`);
+        }
+      } else {
+        // Keep existing URL objects
+        processedFiles.push(file);
+      }
+      
+      if (onProgress) {
+        onProgress(Math.round(((i + 1) / files.length) * 50)); // First 50% for uploads
+      }
+    }
+
+    // Stage 2: Create Record with R2 URLs
+    const payload = { ...capaData, uploadedFiles: processedFiles };
+    const formData = buildFormData(payload);
+    
     const response = await safeCall(() =>
       api.post("/Capa/CreateCapa", formData, {
         headers: { "Content-Type": "multipart/form-data" },
-      })
+      }),
     );
 
-    // Response shape: { success, message, data: { capaId, ... } }
+    if (onProgress) onProgress(100);
+
     if (response?.data) {
-      return {
-        ...response,
-        data: mapApiToUi(response.data),
-      };
+      return { ...response, data: mapApiToUi(response.data) };
     }
     return response;
   },
 
-  /**
-   * Update an existing CAPA.
-   *
-   * NOTE: This endpoint currently returns 404 (backend not deployed).
-   * Wired up and ready for when backend team fixes it.
-   * Uses multipart/form-data — same as create.
-   *
-   * @param {number|string} id – capaId
-   * @param {Object} capaData – Full or partial CAPA data
-   * @returns {Promise<Object>}
-   */
-  updateCAPA: async (id, capaData) => {
+  updateCAPA: async (id, capaData, onProgress = null) => {
     if (!id && id !== 0) {
       return Promise.reject({ message: "CAPA ID is required." });
     }
-    const formData = buildFormData(capaData, { capaId: id });
+
+    // Stage 1: Upload new binary files to Cloudflare R2
+    const files = capaData.uploadedFiles || [];
+    const processedFiles = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file instanceof File) {
+        try {
+          const r2Result = await uploadFile(file, {
+            module: "capa",
+            capaId: id || capaData.capaId,
+            subType: "evidence",
+          });
+          processedFiles.push({
+            fileName: file.name,
+            fileUrl: r2Result.fileUrl,
+          });
+          console.log(`New file ${i + 1} uploaded to R2:`, r2Result.fileUrl);
+        } catch (err) {
+          console.error(`Failed to upload file ${file.name} to Cloudflare:`, err);
+          throw new Error(`Upload failed for ${file.name}: ${err.message}`);
+        }
+      } else {
+        // Carry forward existing URLs
+        processedFiles.push(file);
+      }
+    }
+
+    // Stage 2: Update Record
+    const payload = { ...capaData, uploadedFiles: processedFiles };
+    const formData = buildFormData(payload, { capaId: id });
+    
     return safeCall(() =>
       api.put("/Capa/UpdateCapa", formData, {
         headers: { "Content-Type": "multipart/form-data" },
-      })
+      }),
     );
   },
 
-  /**
-   * Delete a CAPA by ID.
-   *
-   * Returns empty 200 on success.
-   *
-   * @param {number|string} id – capaId
-   * @returns {Promise<Object>} – { success: true }
-   */
   deleteCAPA: async (id) => {
     if (!id && id !== 0) {
       return Promise.reject({ message: "CAPA ID is required." });
@@ -360,65 +469,26 @@ export const capaService = {
 
   // ── Question Bank ──────────────────────────────────────
 
-  /**
-   * Fetch all CAPA questions in the question bank.
-   *
-   * Response: { success, data: [{ capaQuestionListId, qiSubCategory, capaQuestion, ... }] }
-   *
-   * @returns {Promise<Array>}
-   */
   getAllQuestions: async () => {
     const response = await safeCall(() => api.get("/Capa/GetAllQuestions"));
     return response?.data || [];
   },
 
-  /**
-   * Create a new question in the question bank.
-   *
-   * @param {Object} questionData – { qiSubCategory, capaQuestion }
-   * @returns {Promise<Object>} – { success, message, data: { capaQuestionListId, ... } }
-   */
   createQuestion: async (questionData) => {
     if (!questionData?.capaQuestion) {
       return Promise.reject({ message: "Question text is required." });
     }
-    return safeCall(() =>
-      api.post("/Capa/CreateCapaQuestion", questionData)
-    );
+    return safeCall(() => api.post("/Capa/CreateCapaQuestion", questionData));
   },
 
-  // ── Suggestions ────────────────────────────────────────
+  // ── Questionnaire Pipeline ─────────────────────────────
 
-  /**
-   * Create a suggestion for a specific category.
-   *
-   * The categoryId in the URL is the QI category ID (e.g., 1002 for Pre-Analytical).
-   *
-   * @param {number|string} categoryId – Quality indicator category ID
-   * @param {Object} suggestionData – { capaQuestionListId, rootCause, correctiveAction, preventiveAction }
-   * @returns {Promise<Object>}
-   */
-  createSuggestion: async (categoryId, suggestionData) => {
-    if (!categoryId) {
-      return Promise.reject({ message: "Category ID is required." });
-    }
-    return safeCall(() =>
-      api.post(`/Capa/CreateSuggestion/${categoryId}`, suggestionData)
-    );
-  },
-
-  /**
-   * Fetch questions for a specific QI sub-category.
-   *
-   * @param {string} subCategory – e.g., "QISubCategory_6"
-   * @returns {Promise<Array>} – [{ capaQuestionListId, capaQuestion, ... }]
-   */
-  getQuestionsBySubCategory: async (subCategory) => {
-    if (!subCategory) {
-      return Promise.reject({ message: "Sub-category is required." });
+  getQuestionsBySubCategory: async (subCategoryCode) => {
+    if (!subCategoryCode) {
+      return Promise.reject({ message: "Sub-category code is required." });
     }
     const response = await safeCall(() =>
-      api.get(`/Capa/RiskAndQualityQuestionare/${subCategory}`)
+      api.get(`/Capa/RiskAndQualityQuestionare/${subCategoryCode}`),
     );
     return response?.data || [];
   },
@@ -427,41 +497,42 @@ export const capaService = {
    * Fetch suggestions for a specific question.
    *
    * @param {number|string} questionId – capaQuestionListId
-   * @param {boolean} [isSelected] - Filter by isSelectedQuestion (e.g. true for "Yes", false for "No")
-   * @returns {Promise<Array>} – [{ capaQuestionSuggestionId, rootCause, correctiveAction, preventiveAction, ... }]
+   * @param {boolean} [isSelected=true] – true for Yes answer, false for No
+   * @returns {Promise<Array>}
    */
-  getSuggestionsByQuestion: async (questionId, isSelected = null) => {
+  getSuggestionsByQuestion: async (questionId, isSelected = true) => {
     if (!questionId) {
       return Promise.reject({ message: "Question ID is required." });
     }
-    
-    let url = `/Capa/RiskAndQualitySuggestions/${questionId}`;
-    if (isSelected !== null) {
-      url += `?isselected=${isSelected}`;
-    }
-
-    const response = await safeCall(() => api.get(url));
+    const response = await safeCall(() =>
+      api.get(`/Capa/RiskAndQualitySuggestions/${questionId}`, {
+        params: { isselected: isSelected },
+      }),
+    );
     return response?.data || [];
   },
 
-  /**
-   * Fetch all suggestions filtered by status.
-   *
-   * @param {number|string} statusId
-   * @returns {Promise<Array>}
-   */
+  // ── Suggestion Management ──────────────────────────────
+
+  createSuggestion: async (categoryId, suggestionData) => {
+    if (!categoryId) {
+      return Promise.reject({ message: "Category ID is required." });
+    }
+    return safeCall(() =>
+      api.post(`/Capa/CreateSuggestion/${categoryId}`, suggestionData),
+    );
+  },
+
   getSuggestionsByStatus: async (statusId) => {
     if (!statusId && statusId !== 0) {
       return Promise.reject({ message: "Status ID is required." });
     }
     const response = await safeCall(() =>
-      api.get(`/Capa/GetAllSuggestionsByStatus/${statusId}`)
+      api.get(`/Capa/GetAllSuggestionsByStatus/${statusId}`),
     );
     return response?.data || [];
   },
 };
-
-// ──── Utility Exports ──────────────────────────────────────
 
 export { mapApiToUi, buildFormData, normalizeDateForUi };
 
