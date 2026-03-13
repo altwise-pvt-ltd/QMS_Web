@@ -3,14 +3,14 @@ import {
   Calendar,
   List,
   LayoutDashboard,
-  FileText,
   CalendarDays,
 } from "lucide-react";
+
 
 import ComplianceDashboard from "./components/ComplianceDashboard";
 import EventList from "./components/EventList";
 import EventCalendar from "./components/EventCalendar";
-import DocumentList from "./components/DocumentList";
+
 
 const ComplianceCalendarPage = () => {
   const [activeView, setActiveView] = useState("dashboard");
@@ -19,8 +19,8 @@ const ComplianceCalendarPage = () => {
     { id: "dashboard", label: "Overview", icon: LayoutDashboard },
     { id: "calendar", label: "Compliance Calendar", icon: CalendarDays },
     { id: "events", label: "Events & Obligations", icon: List },
-    { id: "documents", label: "Controlled Documents", icon: FileText },
   ];
+
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -82,8 +82,8 @@ const ComplianceCalendarPage = () => {
             {activeView === "dashboard" && <ComplianceDashboard />}
             {activeView === "calendar" && <EventCalendar />}
             {activeView === "events" && <EventList />}
-            {activeView === "documents" && <DocumentList />}
           </div>
+
         </div>
       </main>
     </div>

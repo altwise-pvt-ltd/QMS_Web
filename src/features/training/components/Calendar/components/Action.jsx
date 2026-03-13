@@ -33,47 +33,53 @@ const Actions = ({
   return (
     <div className="flex flex-col items-center w-full mt-4 space-y-3">
       {/* Date Display Area */}
-      <div className="bg-slate-50 border border-slate-200 text-slate-600 px-4 py-2 rounded-xl w-full text-center shadow-sm relative group">
-        <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
-          <CalendarDays size={12} />
-          {selectRange ? "Selected Range" : "Selected Date"}
+      <div className="bg-slate-50/50 border border-slate-100/80 text-slate-600 px-5 py-4 rounded-3xl w-full text-center relative group overflow-hidden">
+        <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
+        <div className="flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5">
+          <CalendarDays size={12} className="text-indigo-400" />
+          {selectRange ? "Selected Window" : "Snapshot"}
         </div>
-        <p className="text-base font-bold text-slate-800">
+        <p className="text-lg font-extrabold text-slate-900 tracking-tight">
           {date ? (
             Array.isArray(date) && selectRange ? (
-              <>
-                {date[0]?.toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                }) || "..."}
-                <span className="mx-2 text-indigo-400">→</span>
-                {date[1]?.toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                }) || "..."}
-              </>
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-slate-900">
+                  {date[0]?.toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                  }) || "..."}
+                </span>
+                <span className="w-4 h-px bg-slate-200" />
+                <span className="text-slate-900">
+                  {date[1]?.toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                  }) || "..."}
+                </span>
+              </div>
             ) : Array.isArray(date) ? (
               date[0]?.toLocaleDateString("en-GB", {
                 day: "numeric",
-                month: "short",
+                month: "long",
+                year: "numeric",
               }) || "..."
             ) : (
               date.toLocaleDateString("en-GB", {
                 day: "numeric",
-                month: "short",
+                month: "long",
+                year: "numeric",
               }) || "..."
             )
           ) : (
-            "No date selected"
+            "No selection"
           )}
         </p>
 
         {!selectRange && trainingCount > 0 && (
-          <div className="mt-1 flex items-center justify-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">
+          <div className="mt-2.5 flex items-center justify-center gap-2">
+            <span className="px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-wider border border-indigo-100/50">
               {trainingCount} {trainingCount === 1 ? "Training" : "Trainings"}{" "}
-              Scheduled
+              Expected
             </span>
           </div>
         )}
@@ -83,20 +89,20 @@ const Actions = ({
       <button
         onClick={handleToggle}
         className={`
-          relative w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all
+          relative w-full py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-[0.98]
           ${
             selectRange
-              ? "bg-indigo-600 text-gray-600 border-2 border-indigo-700 shadow-md shadow-indigo-100"
-              : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+              ? "bg-slate-900 text-white shadow-xl shadow-slate-200 border-transparent"
+              : "bg-white text-slate-400 border border-slate-100 hover:border-slate-200 hover:text-slate-600"
           }
         `}
       >
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-3">
           <ArrowRightLeft
             size={14}
-            className={selectRange ? "text-gray-600" : "text-slate-400"}
+            className={selectRange ? "text-indigo-400" : "text-slate-300"}
           />
-          {selectRange ? "Single Date Mode" : "Select Range Mode"}
+          {selectRange ? "Switch to Individual" : "Toggle Range Analysis"}
         </div>
       </button>
     </div>
@@ -112,4 +118,3 @@ Actions.propTypes = {
 };
 
 export default Actions;
-

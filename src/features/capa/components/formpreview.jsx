@@ -9,6 +9,7 @@ import {
   Filter,
   Calendar,
   Download,
+  Trash2,
 } from "lucide-react";
 import CustomPagination from "../../../components/ui/CustomPagination";
 
@@ -18,6 +19,7 @@ const FormPreview = ({
   onFileCapa,
   onCreateNew,
   onView,
+  onDelete,
 }) => {
   const [activeTab, setActiveTab] = useState("ncs");
   const [searchTerm, setSearchTerm] = useState("");
@@ -255,6 +257,15 @@ const FormPreview = ({
                                 </a>
                               )}
                           </div>
+                          {onDelete && (
+                            <button
+                              onClick={() => onDelete(item)}
+                              className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all ml-1"
+                              title="Delete CAPA"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          )}
                         </div>
                       )}
                     </td>

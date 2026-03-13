@@ -8,7 +8,7 @@ import api from "../../../auth/api";
 //
 // Capabilities covered:
 //   • Event‑type management      (GET  /Training/getEvent-types)
-//   • Training CRUD              (GET|POST|PUT /Training/*)
+//   • Training CRUD              (GET|POST|PUT|DELETE /Training/*)
 //   • Attendance tracking        (GET|POST|PUT /Training/*Attendance*)
 //   • Stats & reporting          (GET  /Training/GetStats)
 //   • Training matrix            (GET  /Training/matrix)
@@ -50,7 +50,7 @@ const safeCall = async (apiCall, signal) => {
     const config = signal ? { signal } : {};
     const response = await apiCall(config);
 
-    // PUT /updateTraining returns empty body — normalise to { success: true }
+    // Some PUT endpoints may return empty body — normalise to { success: true }
     if (response.status === 200 && !response.data) {
       return { success: true };
     }
@@ -235,18 +235,22 @@ const trainingService = {
    * Fetch every training event for the current organisation.
    *
    * Response shape (array):
-   *   [{ eventId, title, eventType, dueDate, status, assignedTo }]
+   *   [{ eventId, title, eventType, dueDate, status, assignedTo, createdBy, organizationId }]
    *
    * @param {AbortSignal} [signal]
    * @returns {Promise<Array>}
    */
   getAllTrainings: (signal) =>
-    safeCall((cfg) => api.get("/Training/getAllTrainings", cfg), signal),
+    safeCall((cfg) => api.get("/Training/GetAllTrainings", cfg), signal),
 
   /**
    * Fetch a single training event by its ID.
    *
-   * Response includes nested `eventType` and `attendance[]`.
+   * Response shape:
+   *   { complianceEventId, title, dueDate, status, assignedTo, givenBy,
+   *     recurrence, notes, createdDate, createdBy, organizationId,
+   *     eventType: { complianceEventTypeId, name, category },
+   *     attendance: [] }
    *
    * @param {number|string} id – complianceEventId
    * @param {AbortSignal} [signal]
@@ -283,13 +287,15 @@ const trainingService = {
   /**
    * Update an existing training event.
    *
-   * NOTE: The API returns an empty response body on success (HTTP 200
-   * with no content-type). `safeCall` normalises this to { success: true }.
+   * Response shape:
+   *   { complianceEventId, eventTypeId, eventTypeName, title, dueDate,
+   *     status, assignedTo, givenBy, recurrence, notes, updatedDate,
+   *     updatedBy, organizationId }
    *
    * @param {number|string} id – complianceEventId
    * @param {Object} data      – Partial or full training fields
    * @param {AbortSignal} [signal]
-   * @returns {Promise<{ success: true } | Object>}
+   * @returns {Promise<Object>}
    */
   updateTraining: (id, data, signal) => {
     if (!id && id !== 0) {
@@ -297,7 +303,24 @@ const trainingService = {
     }
     validateTrainingPayload(data, true);
     return safeCall(
-      (cfg) => api.put(`/Training/updateTraining/${id}`, data, cfg),
+      (cfg) => api.put(`/Training/UpdateTraining/${id}`, data, cfg),
+      signal
+    );
+  },
+
+  /**
+   * Delete a training event by its ID.
+   *
+   * @param {number|string} id – complianceEventId
+   * @param {AbortSignal} [signal]
+   * @returns {Promise<Object>} – { message: "Training deleted successfully." }
+   */
+  deleteTraining: (id, signal) => {
+    if (!id && id !== 0) {
+      return Promise.reject({ message: "Training ID is required." });
+    }
+    return safeCall(
+      (cfg) => api.delete(`/Training/DeleteTrainingById/${id}`, cfg),
       signal
     );
   },
@@ -379,7 +402,7 @@ const trainingService = {
     }
     return safeCall(
       (cfg) =>
-        api.get("/Training/status", {
+        api.get("/Training/GetTrainingsByStatus", {
           ...cfg,
           params: { status },
         }),
@@ -389,9 +412,6 @@ const trainingService = {
 
   /**
    * Search training events by keyword.
-   *
-   * Uses Axios `params` for proper URL encoding (handles spaces,
-   * ampersands, and other special characters safely).
    *
    * @param {string} keyword
    * @param {AbortSignal} [signal]
@@ -403,7 +423,7 @@ const trainingService = {
     }
     return safeCall(
       (cfg) =>
-        api.get("/Training/search", {
+        api.get("/Training/Search", {
           ...cfg,
           params: { keyword: keyword.trim() },
         }),
@@ -413,8 +433,6 @@ const trainingService = {
 
   /**
    * Get a paginated list of training events.
-   *
-   * Defaults: page = 1, pageSize = 10 (max 100).
    *
    * Response shape:
    *   { totalRecords, page, pageSize, data: [...] }
@@ -428,7 +446,7 @@ const trainingService = {
     const safe = sanitizePagination(page, pageSize);
     return safeCall(
       (cfg) =>
-        api.get("/Training/page", {
+        api.get("/Training/GetTrainingsPage", {
           ...cfg,
           params: safe,
         }),
@@ -453,13 +471,11 @@ const trainingService = {
   /**
    * Fetch the training competency matrix.
    *
-   * Returns an array (may be empty if no matrix data exists yet).
-   *
    * @param {AbortSignal} [signal]
    * @returns {Promise<Array>}
    */
   getTrainingMatrix: (signal) =>
-    safeCall((cfg) => api.get("/Training/matrix", cfg), signal),
+    safeCall((cfg) => api.get("/Training/GetTrainingMatrix", cfg), signal),
 
   /**
    * Fetch yearly training overview.
@@ -471,7 +487,7 @@ const trainingService = {
    * @returns {Promise<Array>}
    */
   getYearlyTrainings: (signal) =>
-    safeCall((cfg) => api.get("/Training/yearly", cfg), signal),
+    safeCall((cfg) => api.get("/Training/GetYearlyTrainings", cfg), signal),
 
   // ── Staff ──────────────────────────────────────────────
 
@@ -489,22 +505,6 @@ const trainingService = {
 };
 
 // ──── React Hook Helper ────────────────────────────────────
-/**
- * Creates an AbortController that auto-cancels on component unmount.
- * Use inside useEffect:
- *
- * ```jsx
- * useEffect(() => {
- *   const controller = trainingService.createAbortController();
- *   trainingService.getAllTrainings(controller.signal)
- *     .then(setTrainings)
- *     .catch((err) => {
- *       if (!err.cancelled) setError(err.message);
- *     });
- *   return () => controller.abort();
- * }, []);
- * ```
- */
 trainingService.createAbortController = () => new AbortController();
 
 export default trainingService;

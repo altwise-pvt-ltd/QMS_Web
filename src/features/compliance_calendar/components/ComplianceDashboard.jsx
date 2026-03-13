@@ -11,8 +11,6 @@ import {
   getAllEvents,
   getUpcomingEvents,
   getOverdueEvents,
-  getAllLegalDocuments,
-  getExpiringDocuments,
 } from "../services/complianceService";
 
 import { formatDueDate, sortByPriority } from "../utils/reminderUtils";
@@ -56,7 +54,7 @@ const ComplianceDashboard = () => {
   const [stats, setStats] = useState({});
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [overdueEvents, setOverdueEvents] = useState([]);
-  const [expiringDocs, setExpiringDocs] = useState([]);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,12 +64,10 @@ const ComplianceDashboard = () => {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const [allEvents, upcoming, overdue, , expiring] = await Promise.all([
+      const [allEvents, upcoming, overdue] = await Promise.all([
         getAllEvents(),
         getUpcomingEvents(30),
         getOverdueEvents(),
-        getAllLegalDocuments(),
-        getExpiringDocuments(30),
       ]);
 
       setStats({
@@ -83,7 +79,6 @@ const ComplianceDashboard = () => {
 
       setUpcomingEvents(sortByPriority(upcoming).slice(0, 5));
       setOverdueEvents(sortByPriority(overdue).slice(0, 5));
-      setExpiringDocs(expiring.slice(0, 5));
     } finally {
       setLoading(false);
     }
@@ -129,8 +124,7 @@ const ComplianceDashboard = () => {
         </div>
       </section>
 
-      {/* Alerts */}
-      {(overdueEvents.length > 0 || expiringDocs.length > 0) && (
+      {overdueEvents.length > 0 && (
         <section className="bg-red-50/50 border border-red-100 rounded-2xl p-4 md:p-6 animate-in fade-in slide-in-from-top-2 duration-500">
           <div className="flex items-center gap-3 text-red-700 font-bold">
             <div className="p-1.5 bg-red-100 rounded-lg">
@@ -142,11 +136,7 @@ const ComplianceDashboard = () => {
             <span className="font-bold text-red-700">
               {overdueEvents.length}
             </span>{" "}
-            overdue events and{" "}
-            <span className="font-bold text-red-700">
-              {expiringDocs.length}
-            </span>{" "}
-            documents nearing expiry.
+            overdue events.
           </p>
         </section>
       )}
@@ -219,36 +209,6 @@ const ComplianceDashboard = () => {
           </div>
         </div>
       </section>
-
-      {/* Expiring Documents */}
-      {expiringDocs.length > 0 && (
-        <section className="space-y-6">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
-            Documents Nearing Expiry
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {expiringDocs.map((doc) => (
-              <div
-                key={doc.id}
-                className="group flex justify-between items-center p-3 md:p-4 bg-slate-50/50 rounded-2xl border border-transparent hover:border-orange-100 hover:bg-orange-50/30 transition-all duration-300"
-              >
-                <div>
-                  <p className="text-sm font-bold text-slate-800 group-hover:text-orange-700 transition-colors">
-                    {doc.documentName}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-1 font-medium">
-                    {doc.documentType} ·{" "}
-                    <span className="text-orange-500 font-bold">
-                      Expires {doc.expiryDate}
-                    </span>
-                  </p>
-                </div>
-                <StatusBadge type="expiring" label="Expiring" />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 };

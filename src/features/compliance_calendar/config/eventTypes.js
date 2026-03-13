@@ -112,16 +112,8 @@ export const STATUS_OPTIONS = [
   { value: "cancelled", label: "Cancelled", color: "gray" },
 ];
 
-// Document types for legal documents
-export const DOCUMENT_TYPES = [
-  { value: "license", label: "License", icon: "FileText" },
-  { value: "certificate", label: "Certificate", icon: "Award" },
-  { value: "accreditation", label: "Accreditation", icon: "Shield" },
-  { value: "permit", label: "Permit", icon: "FileCheck" },
-  { value: "registration", label: "Registration", icon: "FileSignature" },
-];
-
 // Helper function to get event type by ID
+
 export const getEventTypeById = (id) => {
   return Object.values(EVENT_TYPES).find((type) => type.id === id);
 };

@@ -26,11 +26,14 @@ const DocumentLibrary = () => {
   const [error, setError] = useState(null);
   const [loadingSub, setLoadingSub] = useState(false);
 
+  // ✅ Track which category IDs have had their subcategories loaded
+  const [loadedCategoryIds, setLoadedCategoryIds] = useState(new Set());
+
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const activeLevelRef = useRef(null);
-  const levelsRef = useRef([]); // ✅ declared here at top level with other refs
+  const levelsRef = useRef([]);
 
   // Fetch Categories on Mount
   useEffect(() => {
@@ -49,7 +52,7 @@ const DocumentLibrary = () => {
 
         transformedLevels.sort((a, b) => a.level - b.level);
 
-        // ✅ Fetch first level's subcategories RIGHT HERE, in the same flow
+        // Fetch first level's subcategories immediately
         if (transformedLevels.length > 0) {
           const firstLevel = transformedLevels[0];
           try {
@@ -59,14 +62,16 @@ const DocumentLibrary = () => {
             firstLevel.items = subData.map(transformSubCategory);
           } catch (subErr) {
             console.error("Failed to load initial subcategories", subErr);
-            firstLevel.items = undefined;
+            firstLevel.items = [];
           }
 
           setActiveLevelId(firstLevel.id);
           activeLevelRef.current = firstLevel.id;
+
+          // ✅ Mark the first level as loaded
+          setLoadedCategoryIds(new Set([firstLevel.id]));
         }
 
-        // Set levels AFTER subcategories are already embedded
         setLevels(transformedLevels);
         levelsRef.current = transformedLevels;
       } catch (err) {
@@ -80,7 +85,7 @@ const DocumentLibrary = () => {
     fetchCategories();
   }, []);
 
-  // Fetch Subcategories when active level changes (only for non-first levels)
+  // Fetch Subcategories when active level changes
   useEffect(() => {
     if (!activeLevelId) return;
 
@@ -92,8 +97,8 @@ const DocumentLibrary = () => {
       );
       if (!currentLevel) return;
 
-      // ✅ Already has items (including first level pre-fetched above) — skip
-      if (currentLevel.items !== undefined) return;
+      // ✅ Use the dedicated Set to check if already loaded — not items field
+      if (loadedCategoryIds.has(activeLevelId)) return;
 
       try {
         setLoadingSub(true);
@@ -112,11 +117,14 @@ const DocumentLibrary = () => {
           levelsRef.current = updated;
           return updated;
         });
+
+        // ✅ Mark this category as loaded
+        setLoadedCategoryIds((prev) => new Set([...prev, activeLevelId]));
       } catch (err) {
         console.error(err);
         setLevels((prevLevels) => {
           const updated = prevLevels.map((level) =>
-            level.id === activeLevelId ? { ...level, items: undefined } : level,
+            level.id === activeLevelId ? { ...level, items: [] } : level,
           );
           levelsRef.current = updated;
           return updated;
@@ -129,7 +137,7 @@ const DocumentLibrary = () => {
     };
 
     fetchSubItems();
-  }, [activeLevelId]);
+  }, [activeLevelId, loadedCategoryIds]);
 
   const activeData = levels.find((l) => l.id === activeLevelId) || {};
 
@@ -165,7 +173,7 @@ const DocumentLibrary = () => {
             ? { ...level, items: [...(level.items || []), transformedItem] }
             : level,
         );
-        levelsRef.current = updated; // ✅ keep ref in sync
+        levelsRef.current = updated;
         return updated;
       });
     } catch (err) {
@@ -202,7 +210,7 @@ const DocumentLibrary = () => {
               }
             : level,
         );
-        levelsRef.current = updated; // ✅ keep ref in sync
+        levelsRef.current = updated;
         return updated;
       });
     } catch (err) {
@@ -228,7 +236,7 @@ const DocumentLibrary = () => {
             ? { ...level, items: level.items.filter((_, idx) => idx !== index) }
             : level,
         );
-        levelsRef.current = updated; // ✅ keep ref in sync
+        levelsRef.current = updated;
         return updated;
       });
     } catch (err) {

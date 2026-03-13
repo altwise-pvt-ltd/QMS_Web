@@ -2,7 +2,6 @@ import React, { useState, useMemo } from "react";
 import PropTypes from "prop-types";
 import CalendarComponent from "./Calendar/components/calendar";
 import Actions from "./Calendar/components/Action";
-import Title from "./Calendar/components/title";
 
 const CustomCalendar = ({
   setDate,
@@ -27,24 +26,35 @@ const CustomCalendar = ({
   ];
 
   return (
-    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xl shadow-slate-100/50 w-full max-w-lg mx-auto">
-      <Title title="Training Schedule" />
+    <div className="bg-white p-5 rounded-4xl border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] w-full max-w-lg mx-auto overflow-hidden">
+      {/* Risk Matrix Style Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4 px-1">
+        <h3 className="text-xs font-black text-slate-800 flex items-center gap-2.5 uppercase tracking-widest">
+          <span className="w-1.5 h-4 bg-indigo-600 rounded-full" />
+          Module Timeline
+        </h3>
 
-      {/* Filter Bar */}
-      <div className="flex flex-wrap justify-center gap-2 mb-6">
-        {filterOptions.map((opt) => (
-          <button
-            key={opt.id}
-            onClick={() => setActiveFilter(opt.id)}
-            className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all border ${
-              activeFilter === opt.id
-                ? `${opt.color} text-gray-800 border-transparent shadow-sm`
-                : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
+        {/* Integrated Legend Filters */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {filterOptions.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => setActiveFilter(opt.id)}
+              className="group flex items-center gap-1.5 focus:outline-none"
+            >
+              <div
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${opt.color} 
+                  ${activeFilter === opt.id ? "scale-125 ring-2 ring-offset-2 ring-slate-100" : "opacity-30 group-hover:opacity-60"}`}
+              />
+              <span
+                className={`text-[10px] font-black uppercase tracking-wider transition-colors
+                ${activeFilter === opt.id ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"}`}
+              >
+                {opt.label}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="mb-6">

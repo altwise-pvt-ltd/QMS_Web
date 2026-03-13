@@ -1,56 +1,72 @@
 import React from "react";
+import { UserCheck, AlertTriangle, CheckSquare, ClipboardList } from "lucide-react";
 
 const AssessmentValidation = ({ formData, handleInputChange }) => {
   return (
-    <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <h2 className="text-lg font-semibold text-gray-700 mb-4 border-l-4 border-red-500 pl-3">
-        4. Assessment & Validation
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <section className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden relative">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-1.5 h-8 bg-rose-500 rounded-full" />
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Overall Competence Status
-          </label>
-          <select
-            name="overallStatus"
-            value={formData.overallStatus}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border bg-white"
-          >
-            <option value="">Select Status</option>
-            <option value="Fully Competent">Fully Competent</option>
-            <option value="Competent with Supervision">
-              Competent with Supervision
-            </option>
-            <option value="Training Required">
-              Not Competent / Training Required
-            </option>
-          </select>
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">
+            4. Assessment & Validation
+          </h2>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 ml-0.5">Final Verification & Sign-off</p>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Assessor Name
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-2 group">
+          <label className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 group-focus-within:text-rose-600 transition-colors">
+            <CheckSquare size={14} /> Overall Competence Status
           </label>
-          <input
-            type="text"
-            name="assessorName"
-            readOnly
-            value={formData.assessorName}
-            className="mt-1 block w-full rounded-md bg-gray-100 border-gray-300 cursor-not-allowed p-2 border text-gray-500"
-          />
+          <div className="relative">
+            <select
+              name="overallStatus"
+              value={formData.overallStatus}
+              onChange={handleInputChange}
+              className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 transition-all outline-hidden appearance-none cursor-pointer"
+            >
+              <option value="">Select Status</option>
+              <option value="Fully Competent">Fully Competent</option>
+              <option value="Competent with Supervision">Competent with Supervision</option>
+              <option value="Training Required">Not Competent / Training Required</option>
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
         </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Gap Analysis & Recommendations
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+            <UserCheck size={14} /> Responsible Assessor
           </label>
-          <textarea
-            name="skillGaps"
-            rows="3"
-            placeholder="Identify specific gaps and recommended training actions (ISO 7.2c)"
-            value={formData.skillGaps}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              name="assessorName"
+              readOnly
+              value={formData.assessorName}
+              className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-500 cursor-not-allowed italic"
+            />
+          </div>
+        </div>
+
+        <div className="md:col-span-2 space-y-2 group">
+          <label className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 group-focus-within:text-rose-600 transition-colors">
+            <ClipboardList size={14} /> Gap Analysis & Recommendations (ISO 7.2c)
+          </label>
+          <div className="relative">
+            <AlertTriangle className="absolute left-4 top-4 text-amber-300 group-focus-within:text-amber-500 transition-colors" size={18} />
+            <textarea
+              name="skillGaps"
+              rows="4"
+              placeholder="Identify specific gaps and recommended training actions to ensure competence..."
+              value={formData.skillGaps}
+              onChange={handleInputChange}
+              className="w-full pl-12 pr-5 py-4 bg-white border border-slate-200 rounded-[2rem] text-sm font-medium text-slate-700 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 transition-all outline-hidden min-h-[120px]"
+            />
+          </div>
         </div>
       </div>
     </section>

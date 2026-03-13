@@ -17,9 +17,8 @@ import {
 import { db } from "../../../db";
 import { getDepartments } from "../../department/services/departmentService";
 import staffService from "../../staff/services/staffService";
-
-// Import questions from quedata.js
-import { CAPA_QUESTIONS } from "../quedata.js";
+import { ncService } from "../../NC/services/ncService";
+import { capaService } from "../services/capaService";
 
 const SUBCATEGORY_MAP = {
   "Pre-Analytical": [
@@ -44,7 +43,7 @@ const SUBCATEGORY_MAP = {
     "Improper report dispatch",
   ],
   others: [],
-};
+}; // Preserved for backwards compatibility with any remaining imports, though we fetch live now.
 
 const QuestionPopup = ({
   isOpen,
@@ -53,6 +52,7 @@ const QuestionPopup = ({
   onSave,
   answers,
   onAddCustomQuestion,
+  onAnswerSelected,
 }) => {
   const [localAnswers, setLocalAnswers] = useState({});
   const [selectedSuggestions, setSelectedSuggestions] = useState({});
@@ -61,16 +61,18 @@ const QuestionPopup = ({
   const [customSuggestions, setCustomSuggestions] = useState({});
 
   useEffect(() => {
-    setLocalAnswers(answers || {});
-    // Initialize suggestions selection: if an answer is present, enable its suggestions by default
-    const initialSugg = {};
-    if (answers) {
-      Object.keys(answers).forEach((idx) => {
-        initialSugg[idx] = { rc: true, ca: true, pa: true };
-      });
+    if (isOpen) {
+      setLocalAnswers(answers || {});
+      // Initialize suggestions selection: if an answer is present, enable its suggestions by default
+      const initialSugg = {};
+      if (answers) {
+        Object.keys(answers).forEach((idx) => {
+          initialSugg[idx] = { rc: true, ca: true, pa: true };
+        });
+      }
+      setSelectedSuggestions(initialSugg);
     }
-    setSelectedSuggestions(initialSugg);
-  }, [answers, isOpen, questions]);
+  }, [isOpen]);
 
   const handleAnswer = (index, value) => {
     setLocalAnswers((prev) => ({
@@ -84,6 +86,11 @@ const QuestionPopup = ({
       ...prev,
       [index]: { rc: true, ca: true, pa: true },
     }));
+    
+    // Trigger external fetch mechanism for dynamic API questions
+    if (onAnswerSelected) {
+      onAnswerSelected(index, value);
+    }
   };
 
   const toggleSuggestion = (index, type) => {
@@ -109,7 +116,7 @@ const QuestionPopup = ({
   };
 
   const handleSave = () => {
-    onSave(localAnswers, selectedSuggestions, customSuggestions);
+    onSave(localAnswers, selectedSuggestions, customSuggestions, questions);
     onClose();
   };
 
@@ -153,6 +160,8 @@ const QuestionPopup = ({
                   ? question.suggestionsNo
                   : null;
 
+            console.log(`[QuestionPopup Render] Index: ${index}, answer: ${answer}, suggestionsYes:`, question.suggestionsYes, `activeSuggestions:`, activeSuggestions);
+
             return (
               <div
                 key={index}
@@ -160,7 +169,7 @@ const QuestionPopup = ({
               >
                 <div className="flex items-center gap-2 mb-4">
                   <p className="text-slate-800 font-bold">
-                    {index + 1}. {question.question || question}
+                    {index + 1}. {question.question || question.capaQuestion || question}
                   </p>
                   {isCustom && (
                     <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-indigo-50 text-indigo-500 rounded-full border border-indigo-100">
@@ -191,6 +200,14 @@ const QuestionPopup = ({
                   </button>
                 </div>
 
+                {/* Loading state for suggestions */}
+                {question.isLoadingSuggestions && (
+                  <div className="flex items-center gap-2 text-indigo-500 my-2 text-sm italic">
+                    <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                    Fetching suggestions...
+                  </div>
+                )}
+
                 {/* Pre-built Suggestion Section */}
                 {!isCustom && answer && activeSuggestions && (
                   <div
@@ -200,9 +217,16 @@ const QuestionPopup = ({
                         : "bg-rose-50 border-rose-200"
                     }`}
                   >
-                    <div
-                      className={`flex items-center gap-2 mb-1 ${answer === "yes" ? "text-emerald-800" : "text-rose-800"}`}
-                    >
+                    {activeSuggestions._empty ? (
+                      <div className="flex items-center gap-2 text-slate-500 italic text-sm py-2">
+                        <AlertCircle className="w-4 h-4" />
+                        No pre-built suggestions available for this answer.
+                      </div>
+                    ) : (
+                      <>
+                        <div
+                          className={`flex items-center gap-2 mb-1 ${answer === "yes" ? "text-emerald-800" : "text-rose-800"}`}
+                        >
                       <Info className="w-4 h-4" />
                       <span className="text-xs font-black uppercase tracking-wider">
                         Suggested CAPA Actions for "{answer.toUpperCase()}"
@@ -258,6 +282,8 @@ const QuestionPopup = ({
                         </p>
                       </div>
                     ))}
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -379,8 +405,18 @@ const QuestionPopup = ({
 };
 
 const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
-  const [category, setCategory] = useState("");
-  const [subCategory, setSubCategory] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [availableSubcategories, setAvailableSubcategories] = useState([]);
+
+  // Replace simple string category with ID/Name/Code layout typical for NC
+  const [categoryId, setCategoryId] = useState("");
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryCode, setCategoryCode] = useState("");
+
+  const [subCategoryId, setSubCategoryId] = useState("");
+  const [subCategoryName, setSubCategoryName] = useState("");
+  const [subCategoryCode, setSubCategoryCode] = useState("");
+  
   const [customSubCategory, setCustomSubCategory] = useState("");
   const [questions, setQuestions] = useState([]);
   const [questionAnswers, setQuestionAnswers] = useState({});
@@ -446,32 +482,161 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   // Pre-fill if selectedNC exists
   useEffect(() => {
     if (selectedNC) {
-      setCategory(selectedNC.category || "");
-      setSubCategory(selectedNC.subCategory || "");
+      setCategoryId(selectedNC.categoryId || "");
+      setCategoryName(selectedNC.category || "");
+      setCategoryCode(selectedNC.categoryCode || "");
+      setSubCategoryId(selectedNC.subCategoryId || "");
+      setSubCategoryName(selectedNC.subCategory || "");
+      // Derive code if needed from NC data, or fallback string based logic if it's not present
+      setSubCategoryCode(selectedNC.subCategoryCode || (selectedNC.categoryCode?.startsWith("QICategory_") ? `QISubCategory_${selectedNC.subCategoryId}` : `RiskSubCategory_${selectedNC.subCategoryId}`));
+      
       setDepartment(selectedNC.department || "");
       setResponsibility(selectedNC.reportedBy || "");
       setDetails(selectedNC.name || "");
       setEffectiveness(selectedNC.effectiveness || "");
+
+      // Provide linked NC evidence if available
+      if (selectedNC.evidenceDocumentPath) {
+        setUploadedFiles([
+          {
+            fileName: selectedNC.evidenceDocumentName || "NC_Evidence",
+            fileUrl: selectedNC.evidenceDocumentPath,
+          },
+        ]);
+      } else {
+        setUploadedFiles([]);
+      }
     }
   }, [selectedNC]);
 
+  // Fetch Categories
   useEffect(() => {
-    if (category && subCategory && category !== "Other") {
-      const dbQuestions = [...(CAPA_QUESTIONS[category]?.[subCategory] || [])];
-      setQuestions(dbQuestions);
-      setQuestionAnswers({});
-    } else {
-      setQuestions([]);
-      setQuestionAnswers({});
+    const fetchCats = async () => {
+      try {
+        const response = await ncService.getAllCategories();
+        const data = response.data || response.value || (Array.isArray(response) ? response : []);
+        setCategories(data);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+    fetchCats();
+  }, []);
+
+  // Fetch Subcategories
+  useEffect(() => {
+    const fetchSubCats = async () => {
+      if (!categoryId || !categoryCode) {
+        setAvailableSubcategories([]);
+        return;
+      }
+      try {
+        const response = await ncService.getSubCategoriesByCategory(categoryId, categoryCode);
+        const raw = response?.data || response?.value || (Array.isArray(response) ? response : []);
+        const isQI = categoryCode?.startsWith("QICategory_");
+        const normalized = raw.map((sub) => {
+          const id = isQI ? sub.qualityIndicatorSubCategoryId : (sub.riskIndicatorSubCategoryId ?? sub.id);
+          return {
+            subCategoryId: id,
+            subCategoryName: isQI ? sub.qualitySubCategoryName : (sub.riskSubCategoryName ?? sub.name),
+            subCategoryCode: isQI ? `QISubCategory_${id}` : `RiskSubCategory_${id}`,
+            ...sub,
+          };
+        });
+        setAvailableSubcategories(normalized);
+      } catch (err) {
+        console.error("Error fetching subcategories:", err);
+        setAvailableSubcategories([]);
+      }
+    };
+    fetchSubCats();
+  }, [categoryId, categoryCode]);
+
+  useEffect(() => {
+    const fetchDynamicQuestions = async () => {
+      if (subCategoryCode && categoryName !== "Other") {
+        try {
+          // Use subCategoryCode (e.g., QISubCategory_6) to fetch correct DB questions mapping
+          const dbQuestions = await capaService.getQuestionsBySubCategory(subCategoryCode);
+          setQuestions(dbQuestions);
+          setQuestionAnswers({});
+        } catch (error) {
+          console.error("Failed to load questions:", error);
+          setQuestions([]);
+        }
+      } else {
+        setQuestions([]);
+        setQuestionAnswers({});
+      }
+    };
+    fetchDynamicQuestions();
+  }, [subCategoryCode, categoryName]);
+
+  const handleQuestionAnswered = async (index, answer) => {
+    // If it's a dynamic question (not custom) and we haven't loaded its suggestions yet
+    const q = questions[index];
+    console.log(`[handleQuestionAnswered] index:${index}, answer:${answer}, q:`, q);
+    
+    if (!q || q.isCustom) return;
+    
+    // We only fetch if it's "yes" or "no". Usually 'yes' means isSelected=true.
+    const isSelectedTarget = answer === "yes";
+    
+    // If we already have the suggestions for this answer loaded, do nothing
+    const suggKey = isSelectedTarget ? "suggestionsYes" : "suggestionsNo";
+    if (q[suggKey]) return;
+    
+    try {
+      // Mark as loading
+      setQuestions(prev => {
+        const copy = [...prev];
+        copy[index] = { ...copy[index], isLoadingSuggestions: true };
+        return copy;
+      });
+      
+      // Fetch suggestions from API
+      console.log(`[handleQuestionAnswered] Fetching suggestions for Id: ${q.capaQuestionListId}, target: ${isSelectedTarget}`);
+      const suggestions = await capaService.getSuggestionsByQuestion(q.capaQuestionListId, isSelectedTarget);
+      console.log(`[handleQuestionAnswered] API returned suggestions:`, suggestions);
+      
+      // We expect the API to return an array of suggestions, pick the first one for the structure
+      // Also handle cases where it might return a direct object or missing data array
+      const suggestionsArray = Array.isArray(suggestions) 
+        ? suggestions 
+        : (suggestions?.data && Array.isArray(suggestions.data) ? suggestions.data : [suggestions].filter(Boolean));
+      
+      const suggObj = suggestionsArray.length > 0 ? suggestionsArray[0] : { _empty: true };
+      console.log(`[handleQuestionAnswered] Mapped suggObj:`, suggObj);
+
+      setQuestions(prev => {
+        const copy = [...prev];
+        copy[index] = { 
+          ...copy[index], 
+          isLoadingSuggestions: false,
+          [suggKey]: suggObj 
+        };
+        return copy;
+      });
+    } catch (error) {
+       console.error("Failed to fetch suggestions:", error);
+       setQuestions(prev => {
+        const copy = [...prev];
+        copy[index] = { ...copy[index], isLoadingSuggestions: false };
+        return copy;
+      });
     }
-  }, [category, subCategory]);
+  };
 
   const handleAddCustomQuestion = (questionObj) => {
     setQuestions((prev) => [...prev, questionObj]);
   };
 
-  const handleSaveAudit = (ans, suggConfig, customSuggs = {}) => {
+  const handleSaveAudit = (ans, suggConfig, customSuggs = {}, currentQuestions) => {
     setQuestionAnswers(ans);
+    // If the child component (Popup) updated the questions state with loaded suggestions, sync it back
+    if (currentQuestions) {
+        setQuestions(currentQuestions);
+    }
 
     // Detailed Suggestion Flow Logic
     const finalSuggestions = {
@@ -534,8 +699,9 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
 
   const handleSubmit = () => {
     if (
-      !category ||
-      (!subCategory && !customSubCategory) ||
+      !categoryId ||
+      (!subCategoryId && categoryName !== "Other") ||
+      (categoryName === "Other" && !customSubCategory) ||
       !department ||
       !responsibility
     ) {
@@ -543,8 +709,10 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
       return;
     }
     const formData = {
-      category,
-      subCategory: category === "Other" ? customSubCategory : subCategory,
+      capaCategoryId: categoryId,
+      category: categoryName,
+      capaSubCategoryId: categoryName === "Other" ? "" : subCategoryId,
+      subCategory: categoryName === "Other" ? customSubCategory : subCategoryName,
       questions: questions.map((q) => q.question || q), // Keep backward compatibility for storage
       questionAnswers,
       date,
@@ -558,17 +726,17 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
       closureVerification,
       responsibility,
       taggedStaff,
-      uploadedFiles: uploadedFiles.map((file) => ({
-        fileName: file.name,
-        fileUrl: URL.createObjectURL(file),
-        fileSizeMB: (file.size / (1024 * 1024)).toFixed(2),
-      })),
+      uploadedFiles: uploadedFiles.map((file) => 
+        file instanceof File ? file : ({
+          ...file,
+          fileUrl: file.fileUrl || URL.createObjectURL(file),
+        })
+      ),
       submittedAt: new Date().toISOString(),
     };
     if (onSubmit) onSubmit(formData);
   };
 
-  const subCategories = SUBCATEGORY_MAP[category] || [];
   const answeredCount = Object.keys(questionAnswers).length;
 
   return (
@@ -640,14 +808,43 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
                 Primary Category
               </label>
               <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                value={categoryId || "Other"}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "Other") {
+                    setCategoryId("");
+                    setCategoryName("Other");
+                    setCategoryCode("");
+                    setSubCategoryId("");
+                    setSubCategoryName("");
+                    setSubCategoryCode("");
+                  } else {
+                    const selectedCat = categories.find(
+                      (c) =>
+                        String(c.nonConformanceCategoryId || c.categoryId || c.id) === String(val)
+                    );
+                    const catName = selectedCat?.categoryName || selectedCat?.name || "";
+                    const catCode = selectedCat?.categoryCode || "";
+
+                    setCategoryId(val);
+                    setCategoryName(catName);
+                    setCategoryCode(catCode);
+                    setSubCategoryId("");
+                    setSubCategoryName("");
+                    setSubCategoryCode("");
+                  }
+                }}
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all bg-white"
               >
                 <option value="">Select Category</option>
-                <option value="Pre-Analytical">Pre-Analytical</option>
-                <option value="Analytical">Analytical</option>
-                <option value="Post-Analytical">Post-Analytical</option>
+                {categories.map((cat) => (
+                  <option
+                    key={cat.nonConformanceCategoryId || cat.categoryId || cat.id}
+                    value={cat.nonConformanceCategoryId || cat.categoryId || cat.id}
+                  >
+                    {cat.categoryName || cat.name}
+                  </option>
+                ))}
                 <option value="Other">Other</option>
               </select>
             </div>
@@ -655,25 +852,36 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
               <label className="text-sm font-semibold text-slate-700 block">
                 Sub-Category
               </label>
-              {category === "Other" ? (
+              {categoryName === "Other" ? (
                 <input
                   type="text"
                   value={customSubCategory}
-                  onChange={(e) => setCustomSubCategory(e.target.value)}
+                  onChange={(e) => {
+                    setCustomSubCategory(e.target.value);
+                    setSubCategoryName(e.target.value);
+                  }}
                   placeholder="Specify other category..."
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400"
                 />
               ) : (
                 <select
-                  value={subCategory}
-                  onChange={(e) => setSubCategory(e.target.value)}
-                  disabled={!category}
+                  value={subCategoryId}
+                  onChange={(e) => {
+                    const subId = e.target.value;
+                    const selectedSub = availableSubcategories.find(
+                      (s) => String(s.subCategoryId) === String(subId)
+                    );
+                    setSubCategoryId(subId);
+                    setSubCategoryName(selectedSub?.subCategoryName || "");
+                    setSubCategoryCode(selectedSub?.subCategoryCode || "");
+                  }}
+                  disabled={!categoryId}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 bg-white disabled:bg-slate-50"
                 >
-                  <option value="">Select Sub-Category</option>
-                  {subCategories.map((sub) => (
-                    <option key={sub} value={sub}>
-                      {sub}
+                  <option value="">{categoryId ? "Select Sub-Category" : "Select Category first"}</option>
+                  {availableSubcategories.map((sub) => (
+                    <option key={sub.subCategoryId} value={sub.subCategoryId}>
+                      {sub.subCategoryName}
                     </option>
                   ))}
                 </select>
@@ -682,8 +890,8 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
           </div>
 
           {/* Checklist Trigger (Simple Link style) */}
-          {category &&
-            (questions.length > 0 || subCategory || customSubCategory) && (
+          {categoryName &&
+            (questions.length > 0 || subCategoryName || customSubCategory) && (
               <div className="flex items-center justify-between p-4 border border-slate-100 rounded-md bg-slate-50/50">
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600" />

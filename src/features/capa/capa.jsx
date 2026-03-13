@@ -5,6 +5,8 @@ import CAPAFormView from "./CAPAFormView";
 import { ncService } from "../NC/services/ncService";
 import { capaService } from "./services/capaService";
 import { Loader2 } from "lucide-react";
+import AlertManager from "../../services/alert/alertService";
+import { uploadFile } from "../../services/workerService";
 
 const Capa = () => {
   const [view, setView] = useState("history");
@@ -79,27 +81,61 @@ const Capa = () => {
     setView("preview-original");
   };
 
-  const handleSubmitCapa = (formData) => {
-    const newCapa = {
-      ...formData,
-      id: `CAPA-2026-${String(filedCapas.length + 1).padStart(3, "0")}`,
-      ncId: selectedNC?.id || "Direct Entry",
-      issueNo: selectedNC?.issueNo || "N/A",
-      name: selectedNC?.name || formData.subCategory,
-      filedBy: formData.responsibility, // Mapping responsibility to filedBy for the list view
-      filedDate: formData.date || new Date().toISOString().split("T")[0],
-      status: "Submitted",
-    };
+  const handleSubmitCapa = async (formData) => {
+    try {
+      setIsLoading(true);
 
-    setFiledCapas([newCapa, ...filedCapas]);
+      // 1. Upload new files to R2
+      const uploadedFileUrls = [];
+      for (const fileObj of formData.uploadedFiles || []) {
+        if (fileObj instanceof File) {
+          const r2Result = await uploadFile(fileObj, {
+            module: "capa",
+            subType: "evidence",
+          });
+          uploadedFileUrls.push({ fileUrl: r2Result.fileUrl, fileName: fileObj.name });
+        } else if (fileObj.fileUrl) {
+          // Keep existing uploaded files
+          uploadedFileUrls.push(fileObj);
+        }
+      }
 
-    // If it was linked to an NC, we might want to remove it from the list or mark it as filed
-    if (selectedNC) {
-      setNcs(ncs.filter((nc) => nc.id !== selectedNC.id));
+      // 2. Prepare payload
+      const payload = {
+        ...formData,
+        uploadedFiles: uploadedFileUrls,
+        nonConformanceId: selectedNC?.id || null,
+        nonConformanceIssueId: selectedNC?.issueNo || null,
+      };
+
+      // 3. Submit
+      await capaService.createCAPA(payload);
+      AlertManager.success("CAPA filed successfully", "Success");
+
+      setSelectedNC(null);
+      setView("history");
+      fetchData(); // Refresh data from backend
+    } catch (error) {
+      console.error("Failed to file CAPA:", error);
+      AlertManager.error(error.message || "Failed to file CAPA", "Error");
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    setSelectedNC(null);
-    setView("history");
+  const handleDeleteCapa = async (capa) => {
+    if (window.confirm("Are you sure you want to delete this CAPA?")) {
+      try {
+        setIsLoading(true);
+        await capaService.deleteCAPA(capa.id || capa.capaId);
+        AlertManager.success("CAPA deleted successfully", "Deleted");
+        fetchData();
+      } catch (error) {
+        console.error("Failed to delete CAPA:", error);
+        AlertManager.error(error.message || "Failed to delete CAPA", "Error");
+        setIsLoading(false);
+      }
+    }
   };
 
   return (
@@ -127,6 +163,7 @@ const Capa = () => {
             onFileCapa={handleFileCapa}
             onCreateNew={handleCreateNew}
             onView={handleViewOriginal}
+            onDelete={handleDeleteCapa}
           />
         </div>
       )}
