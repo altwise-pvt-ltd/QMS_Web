@@ -13,6 +13,7 @@ export function ParameterScreen({
   entry,
   parameter,
   records,
+  loading,
   onBack,
   onFill,
   onEdit,
@@ -20,7 +21,7 @@ export function ParameterScreen({
   const now = new Date();
   const monthDates = getDaysInMonth(now.getFullYear(), now.getMonth());
   const paramRecords = records.filter(
-    (r) => r.entryId === entry.id && r.parameterId === parameter.id,
+    (r) => r.parameterId === parameter.id,
   );
 
   const rows = monthDates.map((date) => ({
@@ -34,6 +35,15 @@ export function ParameterScreen({
   const missed = rows.filter((r) => r.isMissed).length;
   const pct = Math.round((filled / monthDates.length) * 100);
   const c = CYCLE_COLOR[entry.recordingCycle] || CYCLE_COLOR.daily;
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <div className="w-12 h-12 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
+        <p className="text-slate-400 font-medium animate-pulse">Fetching records...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -89,7 +99,7 @@ export function ParameterScreen({
         <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
           <Icon d={Icons.list} size={16} color="#6366F1" />
           <h3 className="font-bold text-slate-700 text-sm">
-            {new Date().toLocaleDateString("en-GB", {
+            {new Date(now.getFullYear(), now.getMonth()).toLocaleDateString("en-GB", {
               month: "long",
               year: "numeric",
             })}{" "}
