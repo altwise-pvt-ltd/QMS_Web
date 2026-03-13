@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginUser, getProfile } from "./authService";
-import { useAuth, fetchAndMatchOrg } from "./AuthContext";
+import { useAuth } from "./AuthContext";
 import { setCredentials } from "../store/slices/authSlice";
 import organizationService from "../features/onboarding/services/organizationService";
 import { matchUserOrg } from "../utils/organizationUtils";
@@ -41,6 +41,13 @@ const Login = () => {
 
       if (!token) {
         throw new Error("No access token received");
+      }
+
+      // Ensure tokens are saved to localStorage early so the api interceptor can attach them
+      // to requests like fetching the organizations
+      localStorage.setItem("accessToken", token);
+      if (refreshToken) {
+        localStorage.setItem("refreshToken", refreshToken);
       }
 
       // 2. IMPORTANT: Fetch the detailed user profile using the token we just received

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CapaForm from "./components/capaform";
 import FormPreview from "./components/formpreview";
 import CAPAFormView from "./CAPAFormView";
@@ -6,17 +6,16 @@ import { ncService } from "../NC/services/ncService";
 import { capaService } from "./services/capaService";
 import { Loader2 } from "lucide-react";
 import AlertManager from "../../services/alert/alertService";
-import { uploadFile } from "../../services/workerService";
 
 const Capa = () => {
-  const [view, setView] = useState("history");
+  const [view, setView] = useState("history"); // Start with history/dashboard
   const [ncs, setNcs] = useState([]);
   const [filedCapas, setFiledCapas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedNC, setSelectedNC] = useState(null);
   const [selectedFiledCapa, setSelectedFiledCapa] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -37,30 +36,18 @@ const Capa = () => {
         name: nc.nonConformanceSubCategoryName || nc.detailsOfNonConformance,
         reportedBy: nc.responsibility || "Unknown",
         date: nc.date?.split("T")[0] || "",
-        department: "Dept #" + nc.departmentId, // Could be enriched with dept name if available
+        department: "Dept #" + nc.departmentId,
         category: nc.nonConformanceCategoryName || "Quality",
         subCategory: nc.nonConformanceSubCategoryName,
-        ...nc, // Preserve original for form usage
+        ...nc,
       }));
 
-      // Map CAPAs
-      const apiCAPAs =
-        capaResponse?.value ||
-        (Array.isArray(capaResponse) ? capaResponse : []);
-      const mappedCAPAs = apiCAPAs.map((capa) => ({
-        ...capa,
-        id: capa.capaId || capa.id,
-        issueNo: capa.nonConformanceIssueId || "N/A",
-        name: capa.nonConformanceSubCategoryName || "CAPA Record",
-        filedBy: capa.responsibility || "Staff",
-        filedDate: (capa.date || capa.createdDate)?.split("T")[0] || "",
-        department: "Dept #" + (capa.departmentId || "1"),
-      }));
-
+      // CAPAs are already mapped by capaService.getCAPAs()
       setNcs(mappedNCs);
-      setFiledCapas(mappedCAPAs);
+      setFiledCapas(Array.isArray(capaResponse) ? capaResponse : []);
     } catch (error) {
       console.error("Failed to fetch CAPA dashboard data:", error);
+      AlertManager.error("Failed to load CAPA data", "Error");
     } finally {
       setIsLoading(false);
     }
@@ -83,58 +70,41 @@ const Capa = () => {
 
   const handleSubmitCapa = async (formData) => {
     try {
-      setIsLoading(true);
-
-      // 1. Upload new files to R2
-      const uploadedFileUrls = [];
-      for (const fileObj of formData.uploadedFiles || []) {
-        if (fileObj instanceof File) {
-          const r2Result = await uploadFile(fileObj, {
-            module: "capa",
-            subType: "evidence",
-          });
-          uploadedFileUrls.push({ fileUrl: r2Result.fileUrl, fileName: fileObj.name });
-        } else if (fileObj.fileUrl) {
-          // Keep existing uploaded files
-          uploadedFileUrls.push(fileObj);
-        }
-      }
-
-      // 2. Prepare payload
-      const payload = {
+      const enrichedData = {
         ...formData,
-        uploadedFiles: uploadedFileUrls,
-        nonConformanceId: selectedNC?.id || null,
-        nonConformanceIssueId: selectedNC?.issueNo || null,
+        nonConformanceId:
+          selectedNC?.nonConformanceId || selectedNC?.id || null,
+        nonConformanceIssueId:
+          selectedNC?.nonConformanceIssueId || selectedNC?.issueNo || null,
+        supplier: selectedNC?.supplier || formData.supplier || "",
       };
 
-      // 3. Submit
-      await capaService.createCAPA(payload);
-      AlertManager.success("CAPA filed successfully", "Success");
+      await capaService.createCAPA(enrichedData);
+      AlertManager.success("CAPA created successfully", "Created");
+
+      await fetchData();
 
       setSelectedNC(null);
       setView("history");
-      fetchData(); // Refresh data from backend
     } catch (error) {
-      console.error("Failed to file CAPA:", error);
-      AlertManager.error(error.message || "Failed to file CAPA", "Error");
-    } finally {
-      setIsLoading(false);
+      console.error("Error creating CAPA:", error);
+      AlertManager.error(
+        error?.message || "Failed to create CAPA. Please try again.",
+        "Error",
+      );
     }
   };
 
-  const handleDeleteCapa = async (capa) => {
-    if (window.confirm("Are you sure you want to delete this CAPA?")) {
-      try {
-        setIsLoading(true);
-        await capaService.deleteCAPA(capa.id || capa.capaId);
-        AlertManager.success("CAPA deleted successfully", "Deleted");
-        fetchData();
-      } catch (error) {
-        console.error("Failed to delete CAPA:", error);
-        AlertManager.error(error.message || "Failed to delete CAPA", "Error");
-        setIsLoading(false);
-      }
+  const handleDeleteCapa = async (capaId) => {
+    if (!window.confirm("Are you sure you want to delete this CAPA?")) return;
+
+    try {
+      await capaService.deleteCAPA(capaId);
+      AlertManager.success("CAPA deleted successfully", "Deleted");
+      await fetchData();
+    } catch (error) {
+      console.error("Error deleting CAPA:", error);
+      AlertManager.error("Failed to delete CAPA", "Error");
     }
   };
 

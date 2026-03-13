@@ -4,19 +4,6 @@ const WORKER_URL   = import.meta.env.VITE_WORKER_URL;
 const WORKER_TOKEN = import.meta.env.VITE_WORKER_TOKEN;
 
 // ─── Upload to R2 via Worker ──────────────────────────────────────────────────
-/**
- * Step 1 of every document upload.
- * Sends file to Worker, gets back { filePath, fileUrl } which is
- * then embedded into the JSON payload sent to the backend.
- *
- * @param {File}     file
- * @param {Object}   opts
- * @param {string}   opts.category       - e.g. "Quality Manual"
- * @param {string}   opts.subCategory    - e.g. "Organizational Structure / Organogram"
- * @param {string}   opts.docId          - pre-generated UUID (generate on form init)
- * @param {Function} [onProgress]        - (0-100) progress callback
- * @returns {Promise<{ filePath, fileUrl, originalName, mimeType, size }>}
- */
 async function uploadToWorker(file, { category, subCategory, docId }, onProgress) {
   return new Promise((resolve, reject) => {
     const formData = new FormData();
@@ -110,9 +97,19 @@ export const documentService = {
     }
   },
 
+  /**
+   * Update an existing subcategory.
+   * API: PUT /DocumentLibrary/UpdateSubCategory
+   */
   updateSubCategory: async (payload) => {
     try {
-      const response = await api.post("/DocumentLibrary/UpdateSubCategory", payload);
+      const response = await api.put("/DocumentLibrary/UpdateSubCategory", {
+        documentCategoryId:      payload.documentCategoryId,
+        documentSubCategoryName: payload.documentSubCategoryName,
+        createdBy:               payload.createdBy,
+        documentSubCategoryId:   payload.documentSubCategoryId,
+        updatedBy:               payload.updatedBy,
+      });
       return response.data;
     } catch (error) {
       console.error("Error updating subcategory:", error);
@@ -120,10 +117,14 @@ export const documentService = {
     }
   },
 
-  deleteSubCategory: async (subCategoryId, categoryId) => {
+  /**
+   * Delete a subcategory.
+   * API: DELETE /DocumentLibrary/DeleteSubCategory/{subCategoryId}
+   */
+  deleteSubCategory: async (subCategoryId) => {
     try {
       const response = await api.delete(
-        `/DocumentLibrary/DeleteSubCategory?subCategoryId=${subCategoryId}&categoryId=${categoryId}`
+        `/DocumentLibrary/DeleteSubCategory/${subCategoryId}`
       );
       return response.data;
     } catch (error) {
@@ -159,26 +160,8 @@ export const documentService = {
    * Upload document:
    * 1. File → Worker → R2  (get filePath back)
    * 2. filePath + metadata → Backend as JSON
-   *
-   * @param {Object}   data
-   * @param {File}     data.file
-   * @param {string}   data.categoryName      - "Quality Manual"
-   * @param {number}   data.categoryId        - DB ID
-   * @param {string}   data.subCategoryName   - "Organizational Structure / Organogram"
-   * @param {number}   data.subCategoryId     - DB ID
-   * @param {string}   data.docId             - pre-generated UUID on form init
-   * @param {string}   data.departmentId
-   * @param {string}   data.author
-   * @param {string}   data.version
-   * @param {string}   data.description
-   * @param {string}   data.createdBy
-   * @param {string}   data.updatedBy
-   * @param {string}   data.effectiveDate
-   * @param {string}   data.expiryDate
-   * @param {Function} [onProgress]
    */
   uploadDocument: async (data, onProgress) => {
-    // ── Step 1: Upload file to R2 via Worker ──
     let r2Result;
     try {
       r2Result = await uploadToWorker(
@@ -195,7 +178,6 @@ export const documentService = {
       throw new Error(`File upload failed: ${error.message}`);
     }
 
-    // ── Step 2: Construct FormData and send to backend ──
     try {
       const payload = new FormData();
       payload.append("DocumentCategoryId", data.categoryId);
@@ -217,7 +199,6 @@ export const documentService = {
       return response.data;
 
     } catch (error) {
-      // Backend failed — rollback the R2 file
       console.error("Backend save failed, rolling back R2:", error);
       await deleteFromWorker(r2Result.filePath).catch((e) =>
         console.warn("R2 rollback failed:", r2Result.filePath, e)
@@ -226,9 +207,6 @@ export const documentService = {
     }
   },
 
-  /**
-   * Delete — DB flag only as per request.
-   */
   deleteDocument: async (documentId) => {
     try {
       const response = await api.delete(`/DocumentLibrary/DeleteDocument/${documentId}`);
@@ -239,10 +217,6 @@ export const documentService = {
     }
   },
 
-  /**
-   * Hard delete — removes from DB and R2.
-   * Use only for admin purge / GDPR requests.
-   */
   hardDeleteDocument: async (documentId, filePath) => {
     try {
       const response = await api.delete(
