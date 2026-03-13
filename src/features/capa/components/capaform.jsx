@@ -18,399 +18,18 @@ import {
 import { getDepartments } from "../../department/services/departmentService";
 import staffService from "../../staff/services/staffService";
 import { ncService } from "../../NC/services/ncService";
-import { capaService } from "../services/capaService";
+import capaService from "../services/capaService";
+import QuestionPopup from "./QuestionPopup";
 
-const SUBCATEGORY_MAP = {
-  "Pre-Analytical": [
-    "Vein puncture failure",
-    "Typographic error",
-    "Wrong sample identification",
-    "Incomplete form",
-    "Sample labeling error",
-  ],
-  Analytical: [
-    "Wrong sample processed",
-    "Random error",
-    "Systematic error",
-    "IQC failure",
-    "EQAS failure",
-  ],
-  "Post-Analytical": [
-    "Printing error",
-    "Urgent sample report",
-    "Critical value reporting",
-    "Turnaround time (TAT)",
-    "Improper report dispatch",
-  ],
-  others: [],
-}; // Preserved for backwards compatibility with any remaining imports, though we fetch live now.
-
-const QuestionPopup = ({
-  isOpen,
-  onClose,
-  questions,
-  onSave,
-  answers,
-  onAddCustomQuestion,
-  onAnswerSelected,
-}) => {
-  const [localAnswers, setLocalAnswers] = useState({});
-  const [selectedSuggestions, setSelectedSuggestions] = useState({});
-  const [newQuestionText, setNewQuestionText] = useState("");
-  // Stores manual entry for custom questions: { index: { rootCause, correctiveAction, preventiveAction } }
-  const [customSuggestions, setCustomSuggestions] = useState({});
-
-  useEffect(() => {
-    if (isOpen) {
-      setLocalAnswers(answers || {});
-      // Initialize suggestions selection: if an answer is present, enable its suggestions by default
-      const initialSugg = {};
-      if (answers) {
-        Object.keys(answers).forEach((idx) => {
-          initialSugg[idx] = { rc: true, ca: true, pa: true };
-        });
-      }
-      setSelectedSuggestions(initialSugg);
-    }
-  }, [isOpen]);
-
-  const handleAnswer = (index, value) => {
-    setLocalAnswers((prev) => ({
-      ...prev,
-      [index]: value,
-    }));
-
-    // For pre-built questions, enable selection by default
-    // For custom questions, we'll use the customSuggestions state
-    setSelectedSuggestions((prev) => ({
-      ...prev,
-      [index]: { rc: true, ca: true, pa: true },
-    }));
-
-    // Trigger external fetch mechanism for dynamic API questions
-    if (onAnswerSelected) {
-      onAnswerSelected(index, value);
-    }
-  };
-
-  const toggleSuggestion = (index, type) => {
-    setSelectedSuggestions((prev) => ({
-      ...prev,
-      [index]: {
-        ...prev[index],
-        [type]: !prev[index]?.[type],
-      },
-    }));
-  };
-
-  const handleAddQuestionLocal = () => {
-    if (newQuestionText.trim()) {
-      onAddCustomQuestion({
-        question: newQuestionText.trim(),
-        isCustom: true,
-        suggestionsYes: null,
-        suggestionsNo: null,
-      });
-      setNewQuestionText("");
-    }
-  };
-
-  const handleSave = () => {
-    onSave(localAnswers, selectedSuggestions, customSuggestions, questions);
-    onClose();
-  };
-
-  if (!isOpen) return null;
-
-  const answeredCount = Object.keys(localAnswers).length;
-  const totalQuestions = questions.length;
-
-  return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-100 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <div>
-            <h2 className="text-xl font-bold text-slate-800">
-              Audit Questionnaire
-            </h2>
-            <p className="text-sm text-slate-500 mt-0.5">
-              Progress: {answeredCount} / {totalQuestions} answered
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 hover:bg-slate-100 rounded-md transition-colors text-slate-400"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Questions List */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {questions.map((question, index) => {
-            const answer = localAnswers[index];
-            const suggs = selectedSuggestions[index];
-            const isCustom = question.isCustom === true;
-            const activeSuggestions = isCustom
-              ? null
-              : answer === "yes"
-                ? question.suggestionsYes
-                : answer === "no"
-                  ? question.suggestionsNo
-                  : null;
-
-            console.log(`[QuestionPopup Render] Index: ${index}, answer: ${answer}, suggestionsYes:`, question.suggestionsYes, `activeSuggestions:`, activeSuggestions);
-
-            return (
-              <div
-                key={index}
-                className="p-4 border rounded-xl bg-white shadow-sm border-slate-200"
-              >
-                <div className="flex items-center gap-2 mb-4">
-                  <p className="text-slate-800 font-bold">
-                    {index + 1}. {question.question || question.capaQuestion || question}
-                  </p>
-                  {isCustom && (
-                    <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-indigo-50 text-indigo-500 rounded-full border border-indigo-100">
-                      Custom
-                    </span>
-                  )}
-                </div>
-                <div className="flex gap-3 mb-4">
-                  <button
-                    onClick={() => handleAnswer(index, "yes")}
-                    className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${answer === "yes"
-                        ? "bg-emerald-100 text-emerald-700 border-emerald-500"
-                        : "bg-white border-slate-100 text-slate-500 hover:border-emerald-500/30"
-                      }`}
-                  >
-                    Yes
-                  </button>
-                  <button
-                    onClick={() => handleAnswer(index, "no")}
-                    className={`flex-1 py-2.5 rounded-lg text-sm font-black transition-all border-2 ${answer === "no"
-                        ? "bg-rose-100 text-rose-700 border-rose-500"
-                        : "bg-white border-slate-100 text-slate-500 hover:border-rose-500/30"
-                      }`}
-                  >
-                    No
-                  </button>
-                </div>
-
-                {/* Loading state for suggestions */}
-                {question.isLoadingSuggestions && (
-                  <div className="flex items-center gap-2 text-indigo-500 my-2 text-sm italic">
-                    <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                    Fetching suggestions...
-                  </div>
-                )}
-
-                {/* Pre-built Suggestion Section */}
-                {!isCustom && answer && activeSuggestions && (
-                  <div
-                    className={`mt-4 p-4 rounded-lg border space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 ${answer === "yes"
-                        ? "bg-emerald-50 border-emerald-200"
-                        : "bg-rose-50 border-rose-200"
-                      }`}
-                  >
-                    {activeSuggestions._empty ? (
-                      <div className="flex items-center gap-2 text-slate-500 italic text-sm py-2">
-                        <AlertCircle className="w-4 h-4" />
-                        No pre-built suggestions available for this answer.
-                      </div>
-                    ) : (
-                      <>
-                        <div
-                          className={`flex items-center gap-2 mb-1 ${answer === "yes" ? "text-emerald-800" : "text-rose-800"}`}
-                        >
-                          <Info className="w-4 h-4" />
-                          <span className="text-xs font-black uppercase tracking-wider">
-                            Suggested CAPA Actions for "{answer.toUpperCase()}"
-                          </span>
-                        </div>
-
-                        {[
-                          {
-                            type: "rc",
-                            label: "Root Cause",
-                            text: activeSuggestions.rootCause,
-                          },
-                          {
-                            type: "ca",
-                            label: "Corrective Action",
-                            text: activeSuggestions.correctiveAction,
-                          },
-                          {
-                            type: "pa",
-                            label: "Preventive Action",
-                            text: activeSuggestions.preventiveAction,
-                          },
-                        ].map((item) => (
-                          <div
-                            key={item.type}
-                            onClick={() => toggleSuggestion(index, item.type)}
-                            className={`p-3 rounded-md border cursor-pointer transition-all ${suggs?.[item.type]
-                                ? `bg-white shadow-sm ${answer === "yes" ? "border-emerald-300" : "border-rose-300"}`
-                                : "bg-slate-50/50 border-transparent opacity-60"
-                              }`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <span
-                                className={`text-[10px] font-black uppercase ${answer === "yes" ? "text-emerald-600" : "text-rose-600"}`}
-                              >
-                                {item.label}
-                              </span>
-                              <div
-                                className={`w-4 h-4 rounded-full border flex items-center justify-center ${suggs?.[item.type]
-                                    ? `${answer === "yes" ? "bg-emerald-500 border-emerald-500" : "bg-rose-500 border-rose-500"} text-gray-600`
-                                    : "border-slate-300"
-                                  }`}
-                              >
-                                {suggs?.[item.type] && (
-                                  <CheckCircle2 className="w-3 h-3" />
-                                )}
-                              </div>
-                            </div>
-                            <p className="text-xs text-slate-600 leading-relaxed italic">
-                              "{item.text}"
-                            </p>
-                          </div>
-                        ))}
-                      </>
-                    )}
-                  </div>
-                )}
-
-                {/* Custom Question Entry Section */}
-                {isCustom && answer && (
-                  <div
-                    className={`mt-4 p-4 rounded-lg border space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 ${answer === "yes"
-                        ? "bg-emerald-50 border-emerald-200"
-                        : "bg-rose-50 border-rose-200"
-                      }`}
-                  >
-                    <div
-                      className={`flex items-center gap-2 mb-1 ${answer === "yes" ? "text-emerald-800" : "text-rose-800"}`}
-                    >
-                      <Info className="w-4 h-4" />
-                      <span className="text-xs font-black uppercase tracking-wider">
-                        Enter your CAPA notes for "{answer.toUpperCase()}"
-                      </span>
-                    </div>
-
-                    {[
-                      {
-                        key: "rootCause",
-                        label: "Root Cause",
-                        placeholder: "e.g., Training gap...",
-                      },
-                      {
-                        key: "correctiveAction",
-                        label: "Corrective Action",
-                        placeholder: "e.g., Immediate retraining...",
-                      },
-                      {
-                        key: "preventiveAction",
-                        label: "Preventive Action",
-                        placeholder: "e.g., Update SOP...",
-                      },
-                    ].map((item) => (
-                      <div key={item.key} className="space-y-1">
-                        <span
-                          className={`text-[10px] font-black uppercase ${answer === "yes" ? "text-emerald-600" : "text-rose-600"}`}
-                        >
-                          {item.label}
-                        </span>
-                        <textarea
-                          value={customSuggestions[index]?.[item.key] || ""}
-                          onChange={(e) =>
-                            setCustomSuggestions((prev) => ({
-                              ...prev,
-                              [index]: {
-                                ...prev[index],
-                                [item.key]: e.target.value,
-                              },
-                            }))
-                          }
-                          placeholder={item.placeholder}
-                          rows={2}
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-indigo-400 font-medium resize-none text-slate-800"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          <div className="border border-dashed border-slate-300 rounded-xl p-6 bg-slate-50/30">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-3">
-              Add supplementary audit query
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newQuestionText}
-                onChange={(e) => setNewQuestionText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddQuestionLocal()}
-                placeholder="Type additional question here..."
-                className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 font-medium"
-              />
-              <button
-                onClick={handleAddQuestionLocal}
-                className="px-6 py-2 bg-indigo-600 text-gray-600 rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors shadow-sm active:scale-95"
-              >
-                Add
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-400 mt-2 italic">
-              After adding, answer Yes / No above — you'll then be prompted to
-              enter Root Cause, Corrective & Preventive Actions.
-            </p>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 border-t bg-slate-50 flex justify-between items-center">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight italic">
-            Suggestions will automatically be applied to the CAPA form upon
-            saving.
-          </p>
-          <div className="flex gap-3">
-            <button
-              onClick={onClose}
-              className="px-5 py-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              className="px-8 py-2 bg-slate-900 text-black rounded-lg text-sm font-black hover:bg-black transition-all shadow-lg active:scale-95"
-            >
-              Apply to Form
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+// Import questions from quedata.js
+import { CAPA_QUESTIONS } from "../quedata.js";
 
 const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
-  const [categories, setCategories] = useState([]);
-  const [availableSubcategories, setAvailableSubcategories] = useState([]);
+  // Stable client-side ID for Cloudflare uploads
+  const capaIdRef = React.useRef(crypto.randomUUID());
 
-  // Replace simple string category with ID/Name/Code layout typical for NC
-  const [categoryId, setCategoryId] = useState("");
-  const [categoryName, setCategoryName] = useState("");
-  const [categoryCode, setCategoryCode] = useState("");
-
-  const [subCategoryId, setSubCategoryId] = useState("");
-  const [subCategoryName, setSubCategoryName] = useState("");
-  const [subCategoryCode, setSubCategoryCode] = useState("");
-
+  const [category, setCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
   const [customSubCategory, setCustomSubCategory] = useState("");
   const [questions, setQuestions] = useState([]);
   const [questionAnswers, setQuestionAnswers] = useState({});
@@ -488,15 +107,29 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
   // Pre-fill if selectedNC exists
   useEffect(() => {
     if (selectedNC) {
-      setCategoryId(selectedNC.categoryId || "");
-      setCategoryName(selectedNC.category || "");
-      setCategoryCode(selectedNC.categoryCode || "");
-      setSubCategoryId(selectedNC.subCategoryId || "");
-      setSubCategoryName(selectedNC.subCategory || "");
-      // Derive code if needed from NC data, or fallback string based logic if it's not present
-      setSubCategoryCode(selectedNC.subCategoryCode || (selectedNC.categoryCode?.startsWith("QICategory_") ? `QISubCategory_${selectedNC.subCategoryId}` : `RiskSubCategory_${selectedNC.subCategoryId}`));
+      setCategoryId(selectedNC.nonConformanceCategoryId || "");
+      setCategory(
+        selectedNC.nonConformanceCategoryName || selectedNC.category || "",
+      );
 
-      setDepartment(selectedNC.department || "");
+      let code = selectedNC.categoryCode;
+      if (!code && apiCategories.length > 0) {
+        const found = apiCategories.find(
+          (c) =>
+            String(c.nonConformanceCategoryId || c.categoryId || c.id) ===
+            String(selectedNC.nonConformanceCategoryId),
+        );
+        if (found) code = found.categoryCode;
+      }
+      setCategoryCode(code || "");
+
+      setSubCategoryId(selectedNC.nonConformanceSubCategoryId || "");
+      setSubCategory(
+        selectedNC.nonConformanceSubCategoryName ||
+        selectedNC.subCategory ||
+        "",
+      );
+      setDepartmentId(selectedNC.departmentId || "");
       setResponsibility(selectedNC.reportedBy || "");
       setDetails(selectedNC.name || "");
       setEffectiveness(selectedNC.effectiveness || "");
@@ -575,65 +208,42 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
           setQuestions([]);
         }
         setQuestionAnswers({});
+        return;
+      }
+
+      try {
+        const apiQuestions =
+          await capaService.getQuestionsBySubCategory(subCategoryCode);
+
+        if (apiQuestions && apiQuestions.length > 0) {
+          const mapped = apiQuestions.map((q) => ({
+            id: q.capaQuestionListId,
+            question: q.capaQuestion,
+            capaQuestionListId: q.capaQuestionListId,
+            suggestionsYes: null,
+            suggestionsNo: null,
+            ...q,
+          }));
+          setQuestions(mapped);
+        } else {
+          // Fallback to local hardcoded questions
+          const dbQuestions = [
+            ...(CAPA_QUESTIONS[category]?.[subCategory] || []),
+          ];
+          setQuestions(dbQuestions);
+        }
+        setQuestionAnswers({});
+      } catch (err) {
+        console.error("Error fetching questions from API:", err);
+        const dbQuestions = [
+          ...(CAPA_QUESTIONS[category]?.[subCategory] || []),
+        ];
+        setQuestions(dbQuestions);
+        setQuestionAnswers({});
       }
     };
-    fetchDynamicQuestions();
-  }, [subCategoryCode, categoryName]);
-
-  const handleQuestionAnswered = async (index, answer) => {
-    // If it's a dynamic question (not custom) and we haven't loaded its suggestions yet
-    const q = questions[index];
-    console.log(`[handleQuestionAnswered] index:${index}, answer:${answer}, q:`, q);
-
-    if (!q || q.isCustom) return;
-
-    // We only fetch if it's "yes" or "no". Usually 'yes' means isSelected=true.
-    const isSelectedTarget = answer === "yes";
-
-    // If we already have the suggestions for this answer loaded, do nothing
-    const suggKey = isSelectedTarget ? "suggestionsYes" : "suggestionsNo";
-    if (q[suggKey]) return;
-
-    try {
-      // Mark as loading
-      setQuestions(prev => {
-        const copy = [...prev];
-        copy[index] = { ...copy[index], isLoadingSuggestions: true };
-        return copy;
-      });
-
-      // Fetch suggestions from API
-      console.log(`[handleQuestionAnswered] Fetching suggestions for Id: ${q.capaQuestionListId}, target: ${isSelectedTarget}`);
-      const suggestions = await capaService.getSuggestionsByQuestion(q.capaQuestionListId, isSelectedTarget);
-      console.log(`[handleQuestionAnswered] API returned suggestions:`, suggestions);
-
-      // We expect the API to return an array of suggestions, pick the first one for the structure
-      // Also handle cases where it might return a direct object or missing data array
-      const suggestionsArray = Array.isArray(suggestions)
-        ? suggestions
-        : (suggestions?.data && Array.isArray(suggestions.data) ? suggestions.data : [suggestions].filter(Boolean));
-
-      const suggObj = suggestionsArray.length > 0 ? suggestionsArray[0] : { _empty: true };
-      console.log(`[handleQuestionAnswered] Mapped suggObj:`, suggObj);
-
-      setQuestions(prev => {
-        const copy = [...prev];
-        copy[index] = {
-          ...copy[index],
-          isLoadingSuggestions: false,
-          [suggKey]: suggObj
-        };
-        return copy;
-      });
-    } catch (error) {
-      console.error("Failed to fetch suggestions:", error);
-      setQuestions(prev => {
-        const copy = [...prev];
-        copy[index] = { ...copy[index], isLoadingSuggestions: false };
-        return copy;
-      });
-    }
-  };
+    fetchQuestions();
+  }, [subCategoryCode, category, subCategory]);
 
   const handleAddCustomQuestion = (questionObj) => {
     setQuestions((prev) => [...prev, questionObj]);
@@ -646,10 +256,7 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
     fetchedApiSuggestions = {},
   ) => {
     setQuestionAnswers(ans);
-    // If the child component (Popup) updated the questions state with loaded suggestions, sync it back
-    if (currentQuestions) {
-      setQuestions(currentQuestions);
-    }
+    setAuditMetadata({ suggConfig, customSuggs, fetchedApiSuggestions });
 
     const finalSuggestions = {
       rc: [],
@@ -721,33 +328,89 @@ const CapaForm = ({ selectedNC, onViewHistory, onSubmit }) => {
       alert(`Please fill in the following required fields: ${missingFields.join(", ")}`);
       return;
     }
-    const formData = {
-      capaCategoryId: categoryId,
-      category: categoryName,
-      capaSubCategoryId: categoryName === "Other" ? "" : subCategoryId,
-      subCategory: categoryName === "Other" ? customSubCategory : subCategoryName,
-      questions: questions.map((q) => q.question || q), // Keep backward compatibility for storage
-      questionAnswers,
-      date,
-      targetDate,
-      department,
-      details,
-      effectiveness,
-      rootCause,
-      correctiveAction,
-      preventiveAction,
-      closureVerification,
-      responsibility,
-      taggedStaff,
-      uploadedFiles: uploadedFiles.map((file) =>
-        file instanceof File ? file : ({
-          ...file,
-          fileUrl: file.fileUrl || URL.createObjectURL(file),
-        })
-      ),
-      submittedAt: new Date().toISOString(),
-    };
-    if (onSubmit) onSubmit(formData);
+
+    setIsSubmitting(true);
+    try {
+      // Build structured CapaAuditQuestions, filtering only answered ones
+      const capaAuditQuestions = [];
+
+      questions.forEach((q, idx) => {
+        const answer = questionAnswers[idx];
+        if (!answer) return; // Skip unanswered questions
+
+        const userChoices = auditMetadata.suggConfig[idx] || {};
+        const isCustom = q.isCustom === true;
+
+        let qRC = "",
+          qCA = "",
+          qPA = "";
+
+        if (!isCustom) {
+          const apiSug = auditMetadata.fetchedApiSuggestions[idx];
+          const activeSuggestions =
+            answer === "yes"
+              ? q.suggestionsYes || apiSug
+              : answer === "no"
+                ? q.suggestionsNo || apiSug
+                : null;
+          if (activeSuggestions && userChoices) {
+            if (userChoices.rc) qRC = activeSuggestions.rootCause || "";
+            if (userChoices.ca) qCA = activeSuggestions.correctiveAction || "";
+            if (userChoices.pa) qPA = activeSuggestions.preventiveAction || "";
+          }
+        } else {
+          const customEntry = auditMetadata.customSuggs[idx];
+          if (customEntry) {
+            qRC = customEntry.rootCause || "";
+            qCA = customEntry.correctiveAction || "";
+            qPA = customEntry.preventiveAction || "";
+          }
+        }
+
+        capaAuditQuestions.push({
+          Question: q.question || q,
+          IsYesSelected: answer === "yes",
+          RootCause: qRC,
+          CorrectiveAction: qCA,
+          PreventiveAction: qPA,
+        });
+      });
+
+      const formData = {
+        category,
+        subCategory: category === "Other" ? customSubCategory : subCategory,
+        questions: questions.map((q) => q.question || q),
+        questionAnswers,
+        capaAuditQuestions,
+        date,
+        targetDate,
+        departmentId,
+        details,
+        effectiveness,
+        rootCause,
+        correctiveAction,
+        preventiveAction,
+        closureVerification,
+        responsibility,
+        taggedStaff,
+        capaId: capaIdRef.current,
+        capaIssueId: capaIdRef.current,
+        capaCategoryId: categoryId,
+        capaSubCategoryId: subCategoryId,
+        uploadedFiles, // Raw File objects or existing URLs
+        submittedAt: new Date().toISOString(),
+      };
+
+      console.log("CAPA Form Submission Started:", formData);
+      if (onSubmit) {
+        await onSubmit(formData);
+      }
+    } catch (error) {
+      console.error("Submission failed:", error);
+      alert(error.message || "Failed to submit form. Please check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const answeredCount = Object.keys(questionAnswers).length;
