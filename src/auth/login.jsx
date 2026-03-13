@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginUser, getProfile } from "./authService";
+import { useAuth, fetchAndMatchOrg } from "./AuthContext";
 import { setCredentials } from "../store/slices/authSlice";
 import organizationService from "../features/onboarding/services/organizationService";
 import { matchUserOrg } from "../utils/organizationUtils";
@@ -38,32 +39,42 @@ const Login = () => {
         loginData.accessToken || loginData.token || loginData.access_token;
       const refreshToken = loginData.refreshToken || loginData.refresh_token;
 
-      if (!token) throw new Error("No access token received");
+      if (!token) {
+        throw new Error("No access token received");
+      }
 
-      // Set tokens immediately so subsequent API calls (via api instance) are authenticated
-      localStorage.setItem("accessToken", token);
-      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+      // 2. IMPORTANT: Fetch the detailed user profile using the token we just received
+      // We pass the token explicitly to avoid any race conditions with Redux/localStorage
+      const profileData = await getProfile(token);
 
-      // 2. Fetch User Profile and unwrap
-      const rawProfile = await getProfile(token);
-      const profileData = rawProfile?.isSuccess ? rawProfile.value : rawProfile;
+      // 3. IMPORTANT: Fetch the organization details if the user has one
+      let orgData = null;
+      if (profileData?.organizationId) {
+        try {
+          const orgResponse = await organizationService.getAllOrganizations();
+          if (Array.isArray(orgResponse)) {
+            orgData = orgResponse.find(
+              (org) =>
+                (org.organizationId || org.OrganizationId) ==
+                profileData.organizationId,
+            );
+          } else if (orgResponse?.isSuccess && orgResponse?.value) {
+            orgData = orgResponse.value.find(
+              (org) =>
+                (org.organizationId || org.OrganizationId) ==
+                profileData.organizationId,
+            );
+          }
+        } catch (orgError) {
+          console.error("Failed to fetch organization during login:", orgError);
+        }
+      }
 
-      // 3. Fetch Organization List and unwrap
-      const orgResponse = await organizationService.getAllOrganizations();
-      const orgList = Array.isArray(orgResponse)
-        ? orgResponse
-        : orgResponse?.isSuccess
-          ? orgResponse.value
-          : [];
-
-      // 4. Match strictly by organizationId as requested
-      const orgData = matchUserOrg(profileData, orgList);
-
-      // 5. Update Redux State
+      // 4. Update Redux State with tokens, profile, and organization
       dispatch(
         setCredentials({
           user: profileData,
-          organization: orgData,
+          organization: orgData, // Already normalized by fetchAndMatchOrg
           accessToken: token,
           refreshToken,
         }),

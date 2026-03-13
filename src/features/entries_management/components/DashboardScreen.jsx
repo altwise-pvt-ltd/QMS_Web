@@ -3,7 +3,8 @@ import { Icons, Icon, css, CYCLE_COLOR, CycleBadge } from "./Common";
 import { SummaryCards } from "./SummaryCards";
 
 export function DashboardScreen({
-  entries,
+  entries = [],
+  loading,
   onSelect,
   onCreateNew,
   onEditEntry,
@@ -13,19 +14,24 @@ export function DashboardScreen({
 
   const filtered = entries.filter((e) => {
     const matchCycle = filter === "all" || e.recordingCycle === filter;
-    const matchSearch = e.name.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = (e.name || "")
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
     return matchCycle && matchSearch;
   });
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 shrink-0">
-            <Icon d={Icons.entry} size={28} color="currentColor" />
+            <Icon d={Icons.entry} size={28} color="#fff" />
           </div>
+
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Entries Management
             </h1>
             <p className="text-sm text-slate-500 font-medium">
@@ -33,6 +39,7 @@ export function DashboardScreen({
             </p>
           </div>
         </div>
+
         <button
           onClick={onCreateNew}
           className={css.btnPri + " w-full sm:w-auto"}
@@ -42,18 +49,22 @@ export function DashboardScreen({
         </button>
       </div>
 
+      {/* Summary Cards */}
       <SummaryCards
         entries={entries}
         activeFilter={filter}
         onFilter={setFilter}
       />
 
+      {/* Card Container */}
       <div className={css.card + " overflow-hidden"}>
+        {/* Search */}
         <div className="p-4 border-b border-slate-100">
           <div className="relative">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
               <Icon d={Icons.search} size={16} />
             </span>
+
             <input
               className={css.input + " pl-10"}
               placeholder="Search entries by name..."
@@ -63,7 +74,27 @@ export function DashboardScreen({
           </div>
         </div>
 
-        {filtered.length === 0 ? (
+        {/* Loading Skeleton */}
+        {loading ? (
+          <div className="divide-y divide-slate-100">
+            {[1, 2, 3].map((n) => (
+              <div
+                key={n}
+                className="flex items-center justify-between px-5 py-5 gap-4 animate-pulse"
+              >
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-slate-100 rounded w-1/4" />
+                    <div className="h-3 bg-slate-100 rounded w-1/6" />
+                  </div>
+                </div>
+                <div className="w-24 h-9 bg-slate-100 rounded-xl" />
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          /* Empty State */
           <div className="py-16 text-center text-slate-400">
             <Icon d={Icons.search} size={32} color="#CBD5E1" />
             <p className="mt-3 text-sm font-medium text-slate-400">
@@ -71,6 +102,7 @@ export function DashboardScreen({
             </p>
           </div>
         ) : (
+          /* Entry List */
           <div className="divide-y divide-slate-100">
             {filtered.map((entry) => (
               <div
@@ -93,10 +125,12 @@ export function DashboardScreen({
                       }
                     />
                   </div>
+
                   <div className="min-w-0">
-                    <p className="font-bold text-slate-800 text-sm group-hover:text-indigo-600 transition-colors whitespace-normal sm:truncate">
+                    <p className="font-bold text-slate-800 text-sm group-hover:text-indigo-600 transition-colors sm:truncate">
                       {entry.name}
                     </p>
+
                     <div className="flex items-center gap-2 mt-1">
                       <CycleBadge cycle={entry.recordingCycle} />
                       <span className="text-[11px] text-slate-400 font-medium">
@@ -105,6 +139,7 @@ export function DashboardScreen({
                     </div>
                   </div>
                 </div>
+
                 <div className="flex items-center justify-end sm:justify-start gap-2 shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-50">
                   <button
                     onClick={() => onEditEntry(entry)}
@@ -113,6 +148,7 @@ export function DashboardScreen({
                   >
                     <Icon d={Icons.edit} size={16} />
                   </button>
+
                   <button
                     onClick={() => onSelect(entry)}
                     className={

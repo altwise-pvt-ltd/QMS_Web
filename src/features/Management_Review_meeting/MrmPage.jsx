@@ -8,19 +8,40 @@ import MinutesOfMeeting from "./components/MinutesOfMeeting";
 import AttendanceSelection from "./components/AttendanceSelection";
 import MrmPdfView from "./components/MrmPdfView";
 import MinutesOfMeetingPreview from "./components/MinutesOfMeetingPreview";
-import { seedMrmData } from "./utils/seedData";
+
+
+import { Skeleton } from "../../components/ui/Skeleton";
+
+const MrmSkeleton = () => (
+  <div className="p-8 space-y-4">
+    <div className="flex justify-between items-center mb-8">
+      <Skeleton className="h-10 w-48" />
+      <Skeleton className="h-10 w-32" />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <Skeleton key={i} className="h-48 rounded-2xl" />
+      ))}
+    </div>
+  </div>
+);
 
 const MrmPage = () => {
   const {
     meetings,
+    loading,
+    staffList,
     createMeeting,
     updateMeeting,
     saveActionItems,
     getActionItems,
+    deleteActionItem,
     saveMinutes,
     getMinutes,
+    deleteMinutes,
     saveAttendance,
     getAttendance,
+    updateAttendeeStatus,
   } = useMrm();
 
   const [view, setView] = useState("LIST"); // 'LIST', 'CREATE', 'ACTIONS', 'MINUTES', 'ATTENDANCE', 'PDF_VIEW', 'MINUTES_PREVIEW'
@@ -80,8 +101,8 @@ const MrmPage = () => {
     setView("LIST");
   };
 
-  // Seed sample data on first mount
-  useEffect(() => {
+  // Seed sample data on first mount - REMOVED TO ENSURE BACKEND ONLY DATA
+  /* useEffect(() => {
     const initData = async () => {
       try {
         await seedMrmData();
@@ -90,7 +111,7 @@ const MrmPage = () => {
       }
     };
     initData();
-  }, []);
+  }, []); */
 
   const handleCreateNew = () => {
     setSelectedMeeting(null);
@@ -145,22 +166,31 @@ const MrmPage = () => {
 
   const handleSaveMeeting = async (data) => {
     if (selectedMeeting) {
-      await updateMeeting(selectedMeeting.id, data);
-      clearFlowState();
+      // Update existing meeting
+      const updated = await updateMeeting(selectedMeeting.id, data);
+      setSelectedMeeting(updated);
+      setView("ACTIONS"); // Go back to actions after updating details
+      console.log("Meeting details updated successfully");
     } else {
+      // Create new meeting
       const newMeeting = await createMeeting(data);
       setSelectedMeeting(newMeeting);
       setView("ACTIONS"); // After creating, go to action items
     }
   };
 
+  const handleEditMeeting = () => {
+    setView("CREATE");
+  };
+
   const handleSaveActions = async (actionItems) => {
     try {
       // Save action items to IndexedDB
-      const result = await saveActionItems(selectedMeeting.id, actionItems);
+      const result = await saveActionItems(selectedMeeting, actionItems);
 
       // Update meeting status if needed
       await updateMeeting(selectedMeeting.id, {
+        ...selectedMeeting,
         status: "In Progress",
       });
 
@@ -169,6 +199,16 @@ const MrmPage = () => {
     } catch (error) {
       console.error("Error saving action items:", error);
       return null;
+    }
+  };
+
+  const handleDeleteActionItem = async (id) => {
+    try {
+      await deleteActionItem(id);
+      console.log("Action item deleted successfully");
+    } catch (error) {
+      console.error("Error deleting action item:", error);
+      throw error; // 🚀 RE-THROW so UI knows it failed
     }
   };
 
@@ -212,16 +252,44 @@ const MrmPage = () => {
     }
   };
 
+  const handleNextToAttendance = async () => {
+    const mId = selectedMeeting.backendId || selectedMeeting.id;
+    const existingAttendance = await getAttendance(mId);
+
+    setSelectedMeeting({
+      ...selectedMeeting,
+      attendance: existingAttendance,
+    });
+
+    setView("ATTENDANCE");
+  };
+
+  const handleDeleteMinutes = async (id) => {
+    try {
+      await deleteMinutes(id);
+      console.log("Minutes deleted successfully");
+      return true;
+    } catch (error) {
+      console.error("Error deleting minutes:", error);
+      return false;
+    }
+  };
+
   const handleFinalizeMeeting = async (attendanceData) => {
     try {
-      // 1. Save Minutes
-      await saveMinutes(selectedMeeting.id, tempMinutes);
+      const mId = selectedMeeting.backendId || selectedMeeting.id;
 
-      // 2. Save Attendance
-      await saveAttendance(selectedMeeting.id, attendanceData);
+      // 1. Save Minutes (if there are any temp minutes)
+      if (tempMinutes) {
+        await saveMinutes(mId, tempMinutes);
+      }
+
+      // 2. Save Attendance via API
+      await updateAttendeeStatus(mId, attendanceData);
 
       // 3. Complete Meeting
       await updateMeeting(selectedMeeting.id, {
+        ...selectedMeeting,
         status: "Completed",
       });
 
@@ -229,75 +297,88 @@ const MrmPage = () => {
       clearFlowState();
     } catch (error) {
       console.error("Error finalizing meeting:", error);
+      alert("Failed to finalize meeting. Please try again.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {view === "LIST" && (
-        <MrmList
-          meetings={meetings}
-          onCreate={handleCreateNew}
-          onSelect={handleSelectMeeting}
-          onViewPdf={handleViewPdf}
-          onViewMinutesPreview={handleViewMinutesPreview}
-        />
-      )}
+      <div className="min-h-screen bg-gray-50">
+      {loading ? (
+        <MrmSkeleton />
+      ) : (
+        <>
+          {view === "LIST" && (
+            <MrmList
+              meetings={meetings}
+              onCreate={handleCreateNew}
+              onSelect={handleSelectMeeting}
+              onViewPdf={handleViewPdf}
+              onViewMinutesPreview={handleViewMinutesPreview}
+            />
+          )}
 
-      {view === "CREATE" && (
-        <CreateMeetingPage
-          initialData={selectedMeeting}
-          onSave={handleSaveMeeting}
-          onCancel={handleCancelCreate}
-        />
-      )}
+          {view === "CREATE" && (
+            <CreateMeetingPage
+              initialData={selectedMeeting}
+              onSave={handleSaveMeeting}
+              onCancel={handleCancelCreate}
+            />
+          )}
 
-      {view === "ACTIONS" && selectedMeeting && (
-        <ActionItemsPage
-          meeting={selectedMeeting}
-          onSave={handleSaveActions}
-          onBack={handleCancelCreate}
-          onNext={handleNextToMinutes}
-        />
-      )}
+          {view === "ACTIONS" && selectedMeeting && (
+            <ActionItemsPage
+              meeting={selectedMeeting}
+              onSave={handleSaveActions}
+              onDelete={handleDeleteActionItem}
+              onBack={handleCancelCreate}
+              onNext={handleNextToMinutes}
+              onEditMeeting={handleEditMeeting}
+            />
+          )}
 
-      {view === "MINUTES" && selectedMeeting && (
-        <MinutesOfMeeting
-          meeting={selectedMeeting}
-          onSave={handleSaveMinutes}
-          onBack={() => setView("ACTIONS")}
-        />
-      )}
+          {view === "MINUTES" && selectedMeeting && (
+            <MinutesOfMeeting
+              meeting={selectedMeeting}
+              onSave={handleSaveMinutes}
+              onDelete={handleDeleteMinutes}
+              onBack={() => setView("ACTIONS")}
+              onNext={handleNextToAttendance}
+              onEditMeeting={handleEditMeeting}
+            />
+          )}
 
-      {view === "ATTENDANCE" && selectedMeeting && (
-        <AttendanceSelection
-          meeting={selectedMeeting}
-          initialAttendance={selectedMeeting.attendance}
-          onSave={handleFinalizeMeeting}
-          onBack={() => setView("MINUTES")}
-        />
-      )}
+          {view === "ATTENDANCE" && selectedMeeting && (
+            <AttendanceSelection
+              meeting={selectedMeeting}
+              initialAttendance={selectedMeeting.attendance}
+              staffList={staffList}
+              onSave={handleFinalizeMeeting}
+              onBack={() => setView("MINUTES")}
+            />
+          )}
 
-      {view === "PDF_VIEW" && (
-        <MrmPdfView
-          meeting={pdfData.meeting}
-          actionItems={pdfData.actionItems}
-          minutes={pdfData.minutes}
-          attendance={pdfData.attendance}
-          onBack={() => setView("LIST")}
-        />
-      )}
+          {view === "PDF_VIEW" && (
+            <MrmPdfView
+              meeting={pdfData.meeting}
+              actionItems={pdfData.actionItems}
+              minutes={pdfData.minutes}
+              attendance={pdfData.attendance}
+              onBack={() => setView("LIST")}
+            />
+          )}
 
-      {view === "MINUTES_PREVIEW" && (
-        <MinutesOfMeetingPreview
-          meeting={previewData.meeting}
-          actionItems={previewData.actionItems}
-          minutes={previewData.minutes}
-          attendance={previewData.attendance}
-          onBack={() => setView("LIST")}
-        />
+          {view === "MINUTES_PREVIEW" && (
+            <MinutesOfMeetingPreview
+              meeting={previewData.meeting}
+              actionItems={previewData.actionItems}
+              minutes={previewData.minutes}
+              attendance={previewData.attendance}
+              onBack={() => setView("LIST")}
+            />
+          )}
+        </>
       )}
-    </div>
+      </div>
   );
 };
 

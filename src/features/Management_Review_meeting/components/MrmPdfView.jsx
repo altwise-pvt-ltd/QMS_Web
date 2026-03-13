@@ -123,142 +123,29 @@ const MrmPdfView = ({
             <tr>
               <td className="p-0">
                 <div className="pdf-body px-10 py-6">
-                  {/* MEETING DETAILS */}
-                  <table className="w-full border border-black text-sm mb-6 table-fixed border-collapse">
-                    <tbody>
-                      <tr>
-                        <td className="border border-black p-2 font-bold w-[25%] bg-slate-50">
-                          Meeting Title
-                        </td>
-                        <td
-                          className="border border-black p-2 w-[75%]"
-                          colSpan={3}
-                        >
-                          {show(meeting.title)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border border-black p-2 font-bold bg-slate-50">
-                          Date
-                        </td>
-                        <td className="border border-black p-2">
-                          {show(meeting.date)}
-                        </td>
-                        <td className="border border-black p-2 font-bold bg-slate-50">
-                          Time
-                        </td>
-                        <td className="border border-black p-2">
-                          {show(meeting.time)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border border-black p-2 font-bold bg-slate-50">
-                          Location
-                        </td>
-                        <td className="border border-black p-2">
-                          {show(meeting.location)}
-                        </td>
-                        <td className="border border-black p-2 font-bold bg-slate-50">
-                          Status
-                        </td>
-                        <td className="border border-black p-2">
-                          {show(meeting.status)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border border-black p-2 font-bold bg-slate-50">
-                          Agenda
-                        </td>
-                        <td className="border border-black p-2" colSpan={3}>
-                          {show(meeting.agenda)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-
-                  {/* ATTENDEES */}
-                  {(() => {
-                    const hasConfirmedAttendance =
-                      attendance && attendance.length > 0;
-
-                    const rawAttendees = hasConfirmedAttendance
-                      ? attendance
-                      : meeting.invitedAttendees || meeting.invites || [];
-
-                    const attendeesList = Array.isArray(rawAttendees)
-                      ? rawAttendees
-                        .map((att) =>
-                          typeof att === "string"
-                            ? { username: att, role: "", status: "Present" }
-                            : {
-                              username:
-                                att.username || att.name || "Unknown",
-                              role:
-                                att.role || att.department || "Attendee",
-                              status: att.status || "Present",
-                            },
-                        )
-                        .filter((att) => att.status === "Present")
-                      : [];
-
-                    if (attendeesList.length === 0) return null;
-
-                    return (
-                      <div className="mb-6 break-inside-avoid">
-                        <h4 className="font-bold uppercase border-b border-black text-sm mb-2">
-                          Attendees
-                        </h4>
-                        <table className="w-full border border-black text-xs border-collapse">
-                          <thead>
-                            <tr className="bg-slate-50">
-                              <th className="border border-black p-2 w-10 text-center">
-                                Sr
-                              </th>
-                              <th className="border border-black p-2 text-left">
-                                Name
-                              </th>
-                              <th className="border border-black p-2 text-left">
-                                Role
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {attendeesList.map((attendee, i) => (
-                              <tr key={i}>
-                                <td className="border border-black p-2 text-center text-[10px]">
-                                  {i + 1}
-                                </td>
-                                <td className="border border-black p-2 font-bold">
-                                  {attendee.username}
-                                </td>
-                                <td className="border border-black p-2">
-                                  {attendee.role}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })()}
+                  {/* NARRATIVE MEETING DETAILS */}
+                  <div className="mb-6 text-sm leading-6">
+                    <p>Management review meeting is scheduled on <b>{meeting.date}</b> at <b>{meeting.time}</b>.</p>
+                    <p><b>Venue:</b> {show(meeting.location)}</p>
+                    <p className="mt-2">Following points were discussed in the meeting. The meeting started at {meeting.time}, Chaired by Lab Director</p>
+                    <p>As per the requirements of ISO Quality Standard, the following points were included in the agenda.</p>
+                    <p>The quality manager has prepared the report on various relevant review parameters</p>
+                  </div>
 
                   {/* AGENDA ITEMS / MINUTES */}
                   {minutes?.agendaItems && minutes.agendaItems.length > 0 && (
-                    <div className="mb-6 break-inside-avoid">
-                      <h4 className="font-bold uppercase border-b border-black text-sm mb-2">
-                        Agenda Items & Discussion
-                      </h4>
+                    <div className="mb-8">
                       <table className="w-full border border-black text-xs border-collapse">
                         <thead>
                           <tr className="bg-slate-50">
                             <th className="border border-black p-2 w-10 text-center">
-                              Sr
+                              Sr no
                             </th>
                             <th className="border border-black p-2 text-left">
-                              Agenda / Topic
+                              MRM Agenda
                             </th>
                             <th className="border border-black p-2 text-left">
-                              Discussion / Activities
+                              Review Input
                             </th>
                             <th className="border border-black p-2 text-left w-24">
                               Responsibility
@@ -272,19 +159,19 @@ const MrmPdfView = ({
                           {minutes.agendaItems.map((item, i) => (
                             <tr key={i}>
                               <td className="border border-black p-2 text-center">
-                                {i + 1}
+                                {String.fromCharCode(97 + i)})
                               </td>
                               <td className="border border-black p-2">
-                                {show(item.input || item.topic)}
+                                {show(item.topic || item.agenda)}
                               </td>
                               <td className="border border-black p-2">
-                                {show(item.activity || item.discussion)}
+                                {show(item.input)}
                               </td>
                               <td className="border border-black p-2">
-                                {show(item.responsibility)}
+                                {show(item.responsibility || "admin")}
                               </td>
                               <td className="border border-black p-2 text-center font-bold">
-                                {show(item.status)}
+                                {show(item.status || "Approved")}
                               </td>
                             </tr>
                           ))}
@@ -293,50 +180,61 @@ const MrmPdfView = ({
                     </div>
                   )}
 
-                  {/* ACTION ITEMS */}
+                  {/* ATTENDEES LIST */}
+                  <div className="mb-10">
+                    <h4 className="font-bold text-sm mb-3">Following members attended the MRM</h4>
+                    <div className="space-y-2 ml-2">
+                      {(() => {
+                        const hasConfirmedAttendance = attendance && attendance.length > 0;
+                        const rawAttendees = hasConfirmedAttendance ? attendance : (meeting.invitedAttendees || meeting.invites || []);
+                        const attendeesList = Array.isArray(rawAttendees) ? rawAttendees : [];
+
+                        return attendeesList.map((att, i) => (
+                          <div key={i} className="text-sm">
+                            {i + 1}. {att.username || att.name || "Unknown Staff"} ({att.role || att.department || "Attendee"})
+                            {att.status ? <span className="font-bold ml-1">{att.status === "Present" ? "— Present" : "— Absent"}</span> : " — Present"}
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* ACTION ITEMS IF ANY */}
                   {actionItems && actionItems.length > 0 && (
-                    <div className="mb-6 break-inside-avoid">
-                      <h4 className="font-bold uppercase border-b border-black text-sm mb-2">
-                        Action Items
-                      </h4>
-                      <table className="w-full border border-black text-xs border-collapse">
+                    <div className="mb-8 break-inside-avoid">
+                      <h4 className="font-bold uppercase border-b border-black text-xs mb-2">Action Items</h4>
+                      <table className="w-full border border-black text-[10px] border-collapse">
                         <thead>
                           <tr className="bg-slate-50">
-                            <th className="border border-black p-2 w-10 text-center">
-                              Sr
-                            </th>
-                            <th className="border border-black p-2 text-left">
-                              Task
-                            </th>
-                            <th className="border border-black p-2 text-left">
-                              Description
-                            </th>
-                            <th className="border border-black p-2 text-center w-24">
-                              Due Date
-                            </th>
+                            <th className="border border-black p-1 w-8 text-center">Sr</th>
+                            <th className="border border-black p-1 text-left">Task</th>
+                            <th className="border border-black p-1 text-left">Description</th>
+                            <th className="border border-black p-1 text-center w-20">Due Date</th>
                           </tr>
                         </thead>
                         <tbody>
                           {actionItems.map((item, i) => (
                             <tr key={i}>
-                              <td className="border border-black p-2 text-center">
-                                {i + 1}
-                              </td>
-                              <td className="border border-black p-2">
-                                {show(item.task)}
-                              </td>
-                              <td className="border border-black p-2">
-                                {show(item.description)}
-                              </td>
-                              <td className="border border-black p-2 text-center">
-                                {show(item.dueDate)}
-                              </td>
+                              <td className="border border-black p-1 text-center">{i + 1}</td>
+                              <td className="border border-black p-1">{show(item.task)}</td>
+                              <td className="border border-black p-1">{show(item.description)}</td>
+                              <td className="border border-black p-1 text-center">{show(item.dueDate)}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                   )}
+
+                  {/* SIGNATURE SECTION */}
+                  <div className="mt-16 flex justify-between px-2 no-break">
+                    <div className="text-center w-64 border-t border-black pt-2">
+                      <p className="text-base font-medium">Signature Lab Director</p>
+                    </div>
+                    <div className="text-center w-64 border-t border-black pt-2">
+                      <p className="text-base font-medium">Signature of Quality Manager</p>
+                    </div>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -353,92 +251,51 @@ const MrmPdfView = ({
                         <td className="border border-black p-2">
                           <b>Document No</b>
                           <br />
-                          MRM-{meeting.id}
+                          {meeting.documentMeta?.documentNo || "ADC/QM/VM/04"}
+                        </td>
+                        <td className="border border-black p-2">
+                          <b>Issue No</b>
+                          <br />
+                          {meeting.documentMeta?.issueNo || "02"}
                         </td>
                         <td className="border border-black p-2">
                           <b>Issue Date</b>
                           <br />
-                          {show(meeting.date)}
+                          {meeting.documentMeta?.issueDate || "15/05/2024"}
                         </td>
                         <td className="border border-black p-2">
                           <b>Status</b>
                           <br />
-                          {show(meeting.status)}
-                        </td>
-                        <td className="border border-black p-2">
-                          <b>Version</b>
-                          <br />
-                          1.0
+                          {meeting.documentMeta?.status || "Active"}
                         </td>
                       </tr>
                       <tr>
                         <td className="border border-black p-2">
-                          <b>Prepared By</b>
+                          <b>Amendment No</b>
                           <br />
-                          {(() => {
-                            const raw =
-                              meeting.invitedAttendees || meeting.invites || [];
-                            const list = Array.isArray(raw)
-                              ? raw.map(
-                                (a) =>
-                                  `${a.username || a.name} (${a.role || a.department
-                                  })`,
-                              )
-                              : [];
-                            return (
-                              list.find((a) =>
-                                a.toLowerCase().includes("quality manager"),
-                              ) || "Quality Manager"
-                            );
-                          })()}
+                          {meeting.documentMeta?.amendmentNo || "01"}
+                        </td>
+                        <td className="border border-black p-2">
+                          <b>Amendment Date</b>
+                          <br />
+                          {meeting.documentMeta?.amendmentDate || "10/06/2024"}
+                        </td>
+                        <td className="border border-black p-2">
+                          <b>Issued By</b>
+                          <br />
+                          {meeting.documentMeta?.issuedBy || "Quality Manager"}
                         </td>
                         <td className="border border-black p-2">
                           <b>Reviewed By</b>
                           <br />
-                          {(() => {
-                            const raw =
-                              meeting.invitedAttendees || meeting.invites || [];
-                            const list = Array.isArray(raw)
-                              ? raw.map(
-                                (a) =>
-                                  `${a.username || a.name} (${a.role || a.department
-                                  })`,
-                              )
-                              : [];
-                            return (
-                              list.find((a) =>
-                                a
-                                  .toLowerCase()
-                                  .includes("management representative"),
-                              ) || "Management Representative"
-                            );
-                          })()}
-                        </td>
-                        <td className="border border-black p-2" colSpan={2}>
-                          <b>Approved By</b>
-                          <br />
-                          {(() => {
-                            const raw =
-                              meeting.invitedAttendees || meeting.invites || [];
-                            const list = Array.isArray(raw)
-                              ? raw.map(
-                                (a) =>
-                                  `${a.username || a.name} (${a.role || a.department
-                                  })`,
-                              )
-                              : [];
-                            return (
-                              list.find(
-                                (a) =>
-                                  a.toLowerCase().includes("ceo") ||
-                                  a.toLowerCase().includes("director"),
-                              ) || "CEO"
-                            );
-                          })()}
+                          {meeting.documentMeta?.reviewedBy || "Lab Director"}
                         </td>
                       </tr>
                     </tbody>
                   </table>
+                  <div className="mt-2 text-[8px] text-right text-slate-400">
+                    Proprietary Information — {organization?.name || "ALPINE DIAGNOSTIC CENTRE"} © {new Date().getFullYear()}
+                  </div>
                 </div>
               </td>
             </tr>

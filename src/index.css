@@ -144,6 +144,13 @@ button.selected {
     visibility: hidden !important;
   }
 
+  /* 🔴 RESET MAIN LAYOUT MARGINS & DISPLAY */
+  .ml-72, .ml-20, .md\:ml-64, .md\:ml-72, .flex-1, .App, #root {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
   /* 🔴 FORCE BODY TO SINGLE COLUMN */
   body {
     margin: 0 !important;

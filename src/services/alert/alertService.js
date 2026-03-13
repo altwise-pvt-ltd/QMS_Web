@@ -1,5 +1,3 @@
-import { db } from "../../db/index.js";
-
 // Global alert state management
 let alertListeners = [];
 let currentAlert = null;
@@ -121,49 +119,13 @@ export const AlertManager = {
  */
 export const AlertService = {
   /**
-   * Scans DB for documents expiring within X days
+   * Scans for documents expiring within X days
    * @param {number} daysThreshold - How many days ahead to warn (default 30)
    */
   async checkExpirations(daysThreshold = 30) {
-    const today = new Date();
-    const futureDate = new Date();
-    futureDate.setDate(today.getDate() + daysThreshold);
-
-    // 1. Get all active documents
-    const allDocs = await db.documents.toArray();
-
-    const alerts = allDocs
-      .filter((doc) => {
-        if (!doc.expiryDate) return false;
-        const exp = new Date(doc.expiryDate);
-        return exp >= today && exp <= futureDate;
-      })
-      .map((doc) => {
-        const exp = new Date(doc.expiryDate);
-        const diffTime = Math.abs(exp - today);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        return {
-          id: doc.id || doc.name,
-          title: `Document Expiring: ${doc.name}`,
-          message: `Expires in ${diffDays} days (${doc.expiryDate})`,
-          type: "warning",
-          docId: doc.id,
-        };
-      });
-
-    // 2. Check for already expired documents
-    const expired = allDocs
-      .filter((doc) => doc.expiryDate && new Date(doc.expiryDate) < today)
-      .map((doc) => ({
-        id: doc.id,
-        title: `EXPIRED: ${doc.name}`,
-        message: `Expired on ${doc.expiryDate}`,
-        type: "critical",
-        docId: doc.id,
-      }));
-
-    return [...expired, ...alerts];
+    // Note: Offline document storage via Dexie was removed. 
+    // Expiration checks should now be handled via backend API integration.
+    return [];
   },
 
   /**

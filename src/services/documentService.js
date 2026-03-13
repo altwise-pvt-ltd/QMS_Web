@@ -1,6 +1,7 @@
-import { db } from "../db";
-
 const WORKER_BASE_URL = "https://qms-worker.altwisedigital.workers.dev";
+
+// In-memory fallback for document metadata since Dexie is removed
+let documentsCache = [];
 
 /* ======================================
    Upload file to Cloudflare Worker
@@ -9,35 +10,17 @@ export async function uploadFile(file) {
   const formData = new FormData();
   formData.append("file", file);
 
-  console.log("📤 Uploading file to Worker:", {
-    fileName: file.name,
-    fileSize: file.size,
-    fileType: file.type,
-    workerUrl: `${WORKER_BASE_URL}/upload`,
-  });
-
   const res = await fetch(`${WORKER_BASE_URL}/upload`, {
     method: "POST",
     body: formData,
   });
 
-  console.log("📥 Worker response:", {
-    status: res.status,
-    statusText: res.statusText,
-    ok: res.ok,
-  });
-
   if (!res.ok) {
     const errText = await res.text();
-    console.error("❌ Upload failed:", errText);
     throw new Error(`File upload failed: ${errText}`);
   }
 
-  // Expected response: { fileUrl }
   const responseData = await res.json();
-  console.log("✅ Upload successful:", responseData);
-
-  // Validate the response
   if (!responseData.fileUrl) {
     throw new Error("Worker did not return a fileUrl");
   }
@@ -53,13 +36,11 @@ export async function createDocument({ file, metadata }) {
     throw new Error("File is required");
   }
 
-  // 1️⃣ Upload file to Cloudflare R2 via Worker
   const { fileUrl } = await uploadFile(file);
 
-  // 2️⃣ Store metadata locally (Dexie) - matching mock data structure
   const document = {
-    id: crypto.randomUUID(), // Dexie Cloud safe
-    level: metadata.level ? parseInt(metadata.level.replace("level-", "")) : 1, // Convert "level-2" to 2
+    id: crypto.randomUUID(),
+    level: metadata.level ? parseInt(metadata.level.replace("level-", "")) : 1,
     category: metadata.category || "",
     subCategory: metadata.subCategory || "",
     name: file.name,
@@ -68,14 +49,13 @@ export async function createDocument({ file, metadata }) {
     author: metadata.author || "Unknown",
     status: "Pending",
     version: metadata.version || "v1.0",
-    createdDate: new Date().toISOString().split("T")[0], // Format: YYYY-MM-DD for proper date parsing
-    effectiveDate:
-      metadata.effectiveDate || new Date().toISOString().split("T")[0],
-    expiryDate: metadata.expiryDate || "", // Include expiry date from form
-    fileUrl, // 🔗 Cloudflare Worker URL
+    createdDate: new Date().toISOString().split("T")[0],
+    effectiveDate: metadata.effectiveDate || new Date().toISOString().split("T")[0],
+    expiryDate: metadata.expiryDate || "",
+    fileUrl,
   };
 
-  await db.documents.put(document);
+  documentsCache.unshift(document);
   return document;
 }
 
@@ -83,7 +63,7 @@ export async function createDocument({ file, metadata }) {
    Read documents
 ====================================== */
 export function getDocuments() {
-  return db.documents.orderBy("createdDate").reverse().toArray();
+  return Promise.resolve([...documentsCache]);
 }
 
 /* ======================================
@@ -93,16 +73,13 @@ export function openDocument(document) {
   if (!document?.fileUrl) {
     throw new Error("File URL not found");
   }
-
-  // Opens file directly from Cloudflare Worker
   window.open(document.fileUrl, "_blank", "noopener,noreferrer");
 }
 
 /* ======================================
-   Delete document (metadata only)
-   NOTE: File stays in R2 unless
-   you add delete support in Worker
+   Delete document
 ====================================== */
 export function deleteDocument(id) {
-  return db.documents.delete(id);
+  documentsCache = documentsCache.filter(doc => doc.id !== id);
+  return Promise.resolve(true);
 }

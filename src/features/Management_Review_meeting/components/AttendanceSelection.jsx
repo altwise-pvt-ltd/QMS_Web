@@ -6,30 +6,49 @@ const AttendanceSelection = ({
   onSave,
   onBack,
   initialAttendance = [],
+  staffList = [],
 }) => {
   const invitedAttendees = meeting?.invitedAttendees || [];
 
   // Initialize attendance state. If we already have saved attendance, use it.
   // Otherwise, default all invited attendees to 'Present'.
   const [attendance, setAttendance] = useState(() => {
+    // Utility to get full staff details for an attendee
+    const getFullStaff = (user) => {
+      const uId = Number(user.id || user.userId || user.staffId || user);
+      const staff = staffList.find((s) => Number(s.id) === uId);
+      return {
+        ...user,
+        ...(staff || {}), // Merge with actual staff details if found
+        id: uId, // Ensure ID is consistent
+      };
+    };
+
     if (initialAttendance && initialAttendance.length > 0) {
       return invitedAttendees.map((invited, index) => {
-        const invitedId = invited.id || invited.userId || `id-${index}`;
+        const enrichedInvited = getFullStaff(invited);
+        const invitedId = enrichedInvited.id || `id-${index}`;
         const existing = initialAttendance.find(
-          (a) => a.userId === invitedId || a.username === invited.username,
+          (a) =>
+            Number(a.id || a.userId || a.staffId) === Number(invitedId) ||
+            a.username === enrichedInvited.username,
         );
         return {
-          ...invited,
+          ...enrichedInvited,
           id: invitedId,
           status: existing ? existing.status : "Present",
         };
       });
     }
-    return invitedAttendees.map((user, index) => ({
-      ...user,
-      id: user.id || user.userId || `id-${index}`,
-      status: "Present",
-    }));
+
+    return invitedAttendees.map((user, index) => {
+      const enrichedUser = getFullStaff(user);
+      return {
+        ...enrichedUser,
+        id: enrichedUser.id || `id-${index}`,
+        status: "Present",
+      };
+    });
   });
 
   const toggleStatus = (userId) => {
@@ -123,13 +142,13 @@ const AttendanceSelection = ({
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
-                        {user.username.charAt(0).toUpperCase()}
+                        {user.username?.charAt(0).toUpperCase() || "?"}
                       </div>
                       <div>
                         <p className="font-bold text-gray-900 text-sm">
-                          {user.username}
+                          {user.username || "Unknown Staff"}
                         </p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
+                        <p className="text-xs text-gray-500">{user.email || ""}</p>
                       </div>
                     </div>
                   </td>

@@ -106,7 +106,7 @@ const VendorView = ({ vendor, onCancel }) => {
           <thead>
             <tr>
               <td className="p-0">
-                <div className="pdf-header flex flex-row items-center border-b-2 border-black px-10 py-4 mb-2 text-left">
+                <div className="pdf-header flex flex-row items-center border-b-2 border-black px-10 py-2 mb-1 text-left">
                   {/* Logo Section (20%) */}
                   <div className="w-[20%] flex justify-center pr-4">
                     {organization?.logo ? (
@@ -138,7 +138,7 @@ const VendorView = ({ vendor, onCancel }) => {
                   </div>
                 </div>
 
-                <div className="text-center py-5">
+                <div className="text-center py-2">
                   <h3 className="text-lg font-bold uppercase underline decoration-1 underline-offset-4">
                     Vendor Assessment Record
                   </h3>
@@ -151,7 +151,7 @@ const VendorView = ({ vendor, onCancel }) => {
           <tbody>
             <tr>
               <td className="p-0">
-                <div className="pdf-body px-10 py-6">
+                <div className="pdf-body px-10 py-2">
                   {/* PART A — General Organization Details */}
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-black">
                     <span className="bg-slate-900 text-white px-2 py-0.5 text-[10px] font-black tracking-tighter">
@@ -163,69 +163,69 @@ const VendorView = ({ vendor, onCancel }) => {
                   </div>
 
                   <table
-                    className="w-full border border-black text-sm mb-8 border-collapse"
+                    className="w-full border border-black text-sm mb-4 border-collapse"
                     style={{ wordBreak: "break-word" }}
                   >
                     <tbody>
                       <tr>
-                        <td className="border border-black p-2 font-bold w-[25%] bg-slate-50 text-[11px] uppercase">
+                        <td className="border border-black p-1.5 font-bold w-[25%] bg-slate-50 text-[11px] uppercase">
                           Legal Entity Name
                         </td>
                         <td
-                          className="border border-black p-2 font-bold text-base"
+                          className="border border-black p-1.5 font-bold text-base"
                           colSpan={3}
                         >
                           {show(vendor.name)}
                         </td>
                       </tr>
                       <tr>
-                        <td className="border border-black p-2 font-bold bg-slate-50 text-[11px] uppercase">
+                        <td className="border border-black p-1.5 font-bold bg-slate-50 text-[11px] uppercase">
                           Authorized Contact
                         </td>
-                        <td className="border border-black p-2 w-[25%]">
+                        <td className="border border-black p-1.5 w-[25%]">
                           {show(vendor.contactPerson)}
                         </td>
-                        <td className="border border-black p-2 font-bold w-[25%] bg-slate-50 text-[11px] uppercase">
+                        <td className="border border-black p-1.5 font-bold w-[25%] bg-slate-50 text-[11px] uppercase">
                           Registration Type
                         </td>
-                        <td className="border border-black p-2 font-bold">
+                        <td className="border border-black p-1.5 font-bold">
                           {show(vendor.type)}
                         </td>
                       </tr>
                       <tr>
-                        <td className="border border-black p-2 font-bold bg-slate-50 text-[11px] uppercase">
+                        <td className="border border-black p-1.5 font-bold bg-slate-50 text-[11px] uppercase">
                           Contact Number
                         </td>
-                        <td className="border border-black p-2">
+                        <td className="border border-black p-1.5">
                           {show(vendor.phone)}
                         </td>
-                        <td className="border border-black p-2 font-bold bg-slate-50 text-[11px] uppercase">
+                        <td className="border border-black p-1.5 font-bold bg-slate-50 text-[11px] uppercase">
                           Digital Correspondence
                         </td>
-                        <td className="border border-black p-2">
+                        <td className="border border-black p-1.5">
                           {show(vendor.email)}
                         </td>
                       </tr>
                       <tr>
-                        <td className="border border-black p-2 font-bold bg-slate-50 text-[11px] uppercase">
+                        <td className="border border-black p-1.5 font-bold bg-slate-50 text-[11px] uppercase">
                           Product Portfolio
                         </td>
-                        <td className="border border-black p-2">
+                        <td className="border border-black p-1.5">
                           {show(vendor.category)}
                         </td>
-                        <td className="border border-black p-2 font-bold bg-slate-50 text-[11px] uppercase">
+                        <td className="border border-black p-1.5 font-bold bg-slate-50 text-[11px] uppercase">
                           Period of Assessment
                         </td>
-                        <td className="border border-black p-2 font-bold">
+                        <td className="border border-black p-1.5 font-bold">
                           {show(vendor.assessmentDate)}
                         </td>
                       </tr>
                       <tr>
-                        <td className="border border-black p-2 font-bold bg-slate-50 text-[11px] uppercase">
+                        <td className="border border-black p-1.5 font-bold bg-slate-50 text-[11px] uppercase">
                           Registered Address
                         </td>
                         <td
-                          className="border border-black p-2 leading-relaxed"
+                          className="border border-black p-1.5 leading-relaxed"
                           colSpan={3}
                         >
                           {show(vendor.address)}
@@ -236,7 +236,7 @@ const VendorView = ({ vendor, onCancel }) => {
 
                   {/* PART B — Performance Assessment */}
                   {evaluation ? (
-                    <div className="mb-8 break-inside-avoid">
+                    <div className="mb-4">
                       <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-black">
                         <span className="bg-slate-900 text-white px-2 py-0.5 text-[10px] font-black tracking-tighter">
                           PART B
@@ -246,13 +246,13 @@ const VendorView = ({ vendor, onCancel }) => {
                         </h4>
                       </div>
 
-                      <table className="w-full border border-black text-sm border-collapse mb-6">
+                      <table className="w-full border border-black text-sm border-collapse mb-4">
                         <thead>
                           <tr className="bg-slate-900 text-white text-[10px] uppercase font-black tracking-widest">
-                            <th className="border border-black p-3 text-left w-[75%]">
+                            <th className="border border-black p-2 text-left w-[75%]">
                               Evaluation Criteria & Performance Indicators
                             </th>
-                            <th className="border border-black p-3 text-center w-[25%]">
+                            <th className="border border-black p-2 text-center w-[25%]">
                               Score (Max: 50)
                             </th>
                           </tr>
@@ -286,22 +286,22 @@ const VendorView = ({ vendor, onCancel }) => {
                             ],
                           ].map(([label, sub, score], i) => (
                             <tr key={i}>
-                              <td className="border border-black p-3 font-bold text-slate-800 text-[13px]">
+                              <td className="border border-black px-2 py-1.5 font-bold text-slate-800 text-[13px]">
                                 {label}
                                 <div className="text-[10px] font-medium text-slate-500 mt-0.5 uppercase">
                                   {sub}
                                 </div>
                               </td>
-                              <td className="border border-black p-3 text-center text-2xl font-black bg-slate-50">
+                              <td className="border border-black px-2 py-1.5 text-center text-2xl font-black bg-slate-50">
                                 {score || 0}
                               </td>
                             </tr>
                           ))}
                           <tr className="bg-slate-900 text-white font-black">
-                            <td className="border border-black p-4 text-right uppercase tracking-widest text-xs">
+                            <td className="border border-black p-2 text-right uppercase tracking-widest text-xs">
                               Gross Aggregate Score
                             </td>
-                            <td className="border border-black p-4 text-center text-3xl font-black">
+                            <td className="border border-black p-2 text-center text-3xl font-black">
                               {totalScore}{" "}
                               <span className="text-[10px] opacity-60">
                                 / 250
@@ -312,7 +312,7 @@ const VendorView = ({ vendor, onCancel }) => {
                       </table>
 
                       {/* FINAL STATUS BLOCK */}
-                      <div className="border-2 border-black p-6 flex justify-between items-center break-inside-avoid">
+                      <div className="border-2 border-black p-4 flex justify-between items-center break-inside-avoid">
                         <div>
                           <div className="text-[10px] uppercase font-black text-slate-500 mb-1 tracking-widest">
                             Formal Certification Status
@@ -338,7 +338,7 @@ const VendorView = ({ vendor, onCancel }) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-8 border-2 border-dashed border-slate-300 text-center mb-8 break-inside-avoid">
+                    <div className="p-4 border-2 border-dashed border-slate-300 text-center mb-4 break-inside-avoid">
                       <p className="text-slate-400 font-bold text-sm">
                         Assessment performance data not yet recorded.
                       </p>
@@ -347,20 +347,20 @@ const VendorView = ({ vendor, onCancel }) => {
 
                   {/* REMARKS */}
                   {vendor.remarks && (
-                    <div className="mb-6 break-inside-avoid">
-                      <h4 className="font-bold uppercase border-b border-black text-sm mb-2">
+                    <div className="mb-4 break-inside-avoid">
+                      <h4 className="font-bold uppercase border-b border-black text-sm mb-1">
                         Remarks / Additional Notes
                       </h4>
-                      <p className="text-sm mt-1 min-h-[40px] leading-relaxed whitespace-pre-wrap">
+                      <p className="text-sm mt-1 min-h-[30px] leading-relaxed whitespace-pre-wrap">
                         {show(vendor.remarks)}
                       </p>
                     </div>
                   )}
 
                   {/* SIGNATURE SECTION */}
-                  <div className="mt-10 flex justify-between px-4 pb-2 break-inside-avoid">
+                  <div className="mt-6 flex justify-between px-4 pb-2 break-inside-avoid">
                     <div className="text-center">
-                      <div className="h-16 flex items-end justify-center">
+                      <div className="h-12 flex items-end justify-center">
                         <div className="w-44 border-t-2 border-black pt-2 font-bold text-sm">
                           Evaluated By
                         </div>
@@ -370,7 +370,7 @@ const VendorView = ({ vendor, onCancel }) => {
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="h-16 flex items-end justify-center">
+                      <div className="h-12 flex items-end justify-center">
                         <div className="w-44 border-t-2 border-black pt-2 font-bold text-sm">
                           Approved By
                         </div>
@@ -389,7 +389,7 @@ const VendorView = ({ vendor, onCancel }) => {
           <tfoot>
             <tr>
               <td className="p-0">
-                <div className="pdf-footer px-10 pb-8 pt-4 border-t-2 border-black">
+                <div className="pdf-footer px-10 pb-4 pt-2 border-t-2 border-black">
                   <table
                     className="w-full border border-black text-[10px] border-collapse"
                     style={{ tableLayout: "fixed" }}
@@ -441,7 +441,7 @@ const VendorView = ({ vendor, onCancel }) => {
                       </tr>
                     </tbody>
                   </table>
-                  <div className="mt-2 text-[8px] text-right text-slate-400">
+                  <div className="mt-1 text-[8px] text-right text-slate-400">
                     Proprietary Information — {organization?.name || "QMS"} ©{" "}
                     {new Date().getFullYear()}
                   </div>
@@ -493,7 +493,7 @@ const VendorView = ({ vendor, onCancel }) => {
             top: 0 !important;
             width: 100% !important;
             height: auto !important;
-            max-width: 900px !important;
+            max-width: none !important;
             margin: 0 !important;
             padding: 0 !important;
             border: none !important;

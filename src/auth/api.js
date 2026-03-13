@@ -4,24 +4,25 @@ import { updateToken, logout } from "../store/slices/authSlice";
 import { handleError } from "../utils/errorHandler";
 
 /**
- * Axios instance configured with a base URL and interceptors for token management.
+ * Axios instance configured with base URL
  */
 const api = axios.create({
   baseURL: "/api",
-  timeout: 15000,
+  timeout: 60000,
 });
 
 /**
- * Request Interceptor:
- * Automatically attaches the Access Token to the Authorization header
+ * Attach access token automatically
  */
 api.interceptors.request.use((config) => {
   const state = store.getState();
-  let token = state.auth.accessToken || localStorage.getItem("accessToken");
+  const token = state.auth?.accessToken || localStorage.getItem("accessToken");
 
   if (token && !config.skipAuth) {
+    config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 
@@ -29,27 +30,29 @@ let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
+  failedQueue.forEach((p) => {
     if (error) {
-      prom.reject(error);
+      p.reject(error);
     } else {
-      prom.resolve(token);
+      p.resolve(token);
     }
   });
-
   failedQueue = [];
 };
 
 /**
- * Response Interceptor:
- * Handles global API response logic, retries, and token refresh.
+ * Response interceptor
  */
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    if (!error.config) {
+      return Promise.reject(handleError(error));
+    }
+
     const originalRequest = error.config;
 
-    // 1. Handle Token Refresh (401)
+    // Handle 401 (token expired)
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
@@ -60,7 +63,7 @@ api.interceptors.response.use(
           failedQueue.push({ resolve, reject });
         })
           .then((token) => {
-            originalRequest.headers["Authorization"] = "Bearer " + token;
+            originalRequest.headers.Authorization = `Bearer ${token}`;
             return api(originalRequest);
           })
           .catch((err) => Promise.reject(err));
@@ -73,11 +76,16 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem("refreshToken");
         if (!refreshToken) throw new Error("No refresh token available");
 
-        const response = await axios.post("/api/AdminUser/RefreshToken", {
-          refreshToken,
-        });
+        const response = await api.post(
+          "/AdminUser/RefreshToken",
+          { refreshToken },
+          { skipAuth: true }
+        );
 
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
+        const {
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+        } = response.data;
 
         store.dispatch(
           updateToken({
@@ -86,8 +94,8 @@ api.interceptors.response.use(
           })
         );
 
-        api.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
-        originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+        api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         processQueue(null, newAccessToken);
         return api(originalRequest);
@@ -95,31 +103,36 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         store.dispatch(logout());
 
-        // Redirect to login only if session refresh definitively fails
         const publicPaths = ["/login", "/confirm-password"];
-        const isPublicPath = publicPaths.some(path => window.location.pathname.includes(path));
+        const isPublicPath = publicPaths.some((p) =>
+          window.location.pathname.includes(p)
+        );
 
         if (!isPublicPath) {
           window.location.href = "/login";
         }
+
         return Promise.reject(handleError(refreshError));
       } finally {
         isRefreshing = false;
       }
     }
 
-    // 2. Handle Transient Retries (503/504)
+    // Retry transient server errors
     if (
       [503, 504].includes(error.response?.status) &&
       (originalRequest._retryCount || 0) < 2
     ) {
-      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+      originalRequest._retryCount =
+        (originalRequest._retryCount || 0) + 1;
+
       const delay = originalRequest._retryCount * 1000;
+
       await new Promise((resolve) => setTimeout(resolve, delay));
+
       return api(originalRequest);
     }
 
-    // 3. Centralized Error Transformation
     return Promise.reject(handleError(error));
   }
 );

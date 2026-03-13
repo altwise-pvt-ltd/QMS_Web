@@ -1,48 +1,41 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Search, Filter, X, FileText } from "lucide-react";
-import { MockData } from "../../data/jsonData/MOCK_DATA";
-import SavedDocumentsTable from "./component/SavedDocumentsTable";
 import { getDocuments } from "../../services/documentService";
-
-const mockDocs = MockData;
+import SavedDocumentsTable from "./component/SavedDocumentsTable";
 
 const SavedDocumentsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedSubCategory, setSelectedSubCategory] = useState("All");
-  const [dexieDocs, setDexieDocs] = useState([]);
+  const [apiDocs, setApiDocs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch documents from Dexie on mount
+  // Fetch documents on mount
   useEffect(() => {
-    const fetchDexieDocuments = async () => {
+    const fetchApiDocuments = async () => {
       try {
         const docs = await getDocuments();
-        setDexieDocs(docs);
+        setApiDocs(docs);
       } catch (error) {
-        console.error("Failed to fetch Dexie documents:", error);
+        console.error("Failed to fetch documents:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchDexieDocuments();
+    fetchApiDocuments();
   }, []);
 
-  // Handle document deletion - refresh Dexie documents
   const handleDocumentDeleted = async (deletedId) => {
     try {
       const docs = await getDocuments();
-      setDexieDocs(docs);
+      setApiDocs(docs);
     } catch (error) {
       console.error("Failed to refresh documents after deletion:", error);
     }
   };
 
-  // Combine mock data and Dexie data
-  const allDocuments = useMemo(() => {
-    return [...mockDocs, ...dexieDocs];
-  }, [dexieDocs]);
+  const allDocuments = apiDocs;
 
   // Extract unique categories and subcategories for filters
   const categories = useMemo(() => {
